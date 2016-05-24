@@ -10,15 +10,15 @@ defmodule World.Velocity do
   defstruct theta: 0.0, speed: 0.0
 
   def north do
-    %Velocity{ theta: (:math.pi / 2) }
+    %Velocity{theta: (:math.pi / 2)}
   end
 
   def west do
-    %Velocity{ theta: :math.pi }
+    %Velocity{theta: :math.pi}
   end
 
   def south do
-    %Velocity{ theta: (3 * :math.pi / 2) }
+    %Velocity{theta: (3 * :math.pi / 2)}
   end
 
 end
