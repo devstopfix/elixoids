@@ -1,4 +1,4 @@
-defmodule World.Position do
+defmodule World.Point do
 
   @moduledoc """
   The (x,y) position in 2D. Origin is at bottom left.  
