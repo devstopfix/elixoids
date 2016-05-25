@@ -25,26 +25,19 @@ defmodule Elixoids.Space do
 
   # TODO try with pattern matching
   defp wrap_x p do
-  	{x,_y} = p
   	cond do
-  	  x < 0.0    -> %{p | x: x + @width }
-  	  x > @width -> %{p | x: x - @width }
+  	  p.x < 0.0    -> %{p | x: p.x + @width }
+  	  p.x > @width -> %{p | x: p.x - @width }
   	  true       -> p
   	end
   end
 
   defp wrap_y p do
-  	{_x,y} = p
   	cond do
-  	  y < 0.0     -> %{p | y: y + @height}
-  	  y > @height -> %{p | y: y - @height}
+  	  p.y < 0.0     -> %{p | y: p. y + @height}
+  	  p.y > @height -> %{p | y: p. y - @height}
   	  true        -> p
   	end
-  end
-
-  def inside? p do
-  	{x, y} = p
-  	(x >= 0.0) && (x < @width) && (y >= 0.0) && (y < @height)
   end
 
 end
