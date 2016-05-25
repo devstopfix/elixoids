@@ -6,4 +6,8 @@ defmodule World.Position do
     
   defstruct x: 0.0, y: 0.0
 
+  def move(p, dx, dy) do
+    %{p | x: p.x + dx, y: p.y + dy}
+  end
+
 end
