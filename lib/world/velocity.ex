@@ -21,4 +21,8 @@ defmodule World.Velocity do
     %Velocity{theta: (3 * :math.pi / 2)}
   end
 
+  def east do
+    %Velocity{theta: 0.0}
+  end
+
 end

@@ -7,7 +7,6 @@ defmodule World.VelocityTest do
 
   test "Stationary" do
     v = %Velocity{}
-
     assert 0.0 = v.speed
   end
 

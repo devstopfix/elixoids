@@ -1,5 +1,9 @@
 defmodule Game.Asteroid do
   
+   @moduledoc """
+   Asteroid process.
+   """
+
    use GenServer
 
    def start_link do
