@@ -1,4 +1,4 @@
-defmodule Game.Asteroid do
+defmodule Asteroid.Server do
   
    @moduledoc """
    Asteroid process.
@@ -38,9 +38,9 @@ defmodule Game.Asteroid do
      {:reply, {a.id, a.pos.x, a.pos.y, a.radius}, a}
    end
 
-   # {:ok, a} = Game.Asteroid.start_link(1)
-   # Game.Asteroid.position(a)
-   # Game.Asteroid.move(a,1)
+   # {:ok, a} = Asteroid.Server.start_link(1)
+   # Asteroid.Server.position(a)
+   # Asteroid.Server.move(a,1)
 
    def random_asteroid do
      %{:pos => Elixoids.Space.random_point,

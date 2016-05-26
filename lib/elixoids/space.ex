@@ -40,7 +40,7 @@ defmodule Elixoids.Space do
   end
 
   def random_point do
-    %Point{x: (:rand.uniform * @width), y: (:rand.uniform * @height) }
+    %Point{x: (:rand.uniform * @width), y: (:rand.uniform * @height)}
   end
 
 end
