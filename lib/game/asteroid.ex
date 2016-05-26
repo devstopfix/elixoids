@@ -9,8 +9,9 @@ defmodule Game.Asteroid do
    alias World.Point, as: Point
    alias Elixoids.Space, as: Space
 
-   def start_link do
-     GenServer.start_link(__MODULE__, random_asteroid, [])
+   def start_link(id) do
+     a = Map.put(random_asteroid(), :id, id)
+     GenServer.start_link(__MODULE__, a, [])
    end
 
    def move(pid, delta_t_ms) do
@@ -34,10 +35,10 @@ defmodule Game.Asteroid do
    end
 
    def handle_call(:position, _from, a) do
-     {:reply, {a.pos.x, a.pos.y, a.radius}, a}
+     {:reply, {a.id, a.pos.x, a.pos.y, a.radius}, a}
    end
 
-   # {:ok, a} = Game.Asteroid.start_link
+   # {:ok, a} = Game.Asteroid.start_link(1)
    # Game.Asteroid.position(a)
    # Game.Asteroid.move(a,1)
 
