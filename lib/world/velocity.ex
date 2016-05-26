@@ -25,4 +25,8 @@ defmodule World.Velocity do
     %Velocity{theta: 0.0}
   end
 
+  def random_direction_with_speed(speed) do
+    %Velocity{theta: (:rand.uniform * :math.pi * 2), speed: speed}
+  end
+
 end
