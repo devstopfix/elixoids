@@ -2,6 +2,8 @@
 
 [Asteroids][1] game engine written in [Elixir][2].
 
+[![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
+
 ## Purpose
 
 Game state represented by Actors and Processes. Knows nothing about source of inputs or outputs.

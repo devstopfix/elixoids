@@ -5,7 +5,7 @@ defmodule Elixoids.Space do
   All units are in metres.
   """
 
-  #alias World.Point, as: Point
+  alias World.Point, as: Point
 
   # The ratio of the play area
   @ratio 16.0 / 9.0
@@ -23,7 +23,6 @@ defmodule Elixoids.Space do
     |> wrap_y  	
   end
 
-  # TODO try with pattern matching
   defp wrap_x(p) do
   	cond do
   	  p.x < 0.0    -> %{p| x: p.x + @width}
@@ -38,6 +37,10 @@ defmodule Elixoids.Space do
   	  p.y > @height -> %{p | y: p.y - @height}
   	  true          -> p
   	end
+  end
+
+  def random_point do
+    %Point{x: (:rand.uniform * @width), y: (:rand.uniform * @height) }
   end
 
 end
