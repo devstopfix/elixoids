@@ -9,4 +9,10 @@ defmodule Game.ServerTest do
     Game.show(game)
   end
 
+  test "The clock can update a game" do
+    {:ok, game} = Game.start_link
+    {:elapsed_ms, elapsed_ms} = Game.tick(game)
+    assert elapsed_ms >= 0
+  end
+
 end
