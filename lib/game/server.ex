@@ -131,7 +131,7 @@ defmodule Game.Server do
   def map_of_tuples_to_list(m) do
     m 
     |> Map.values
-    |> Enum.map(fn(t) -> Tuple.to_list(t) end )
+    |> Enum.map(fn(t) -> Tuple.to_list(t) end)
   end
 
 end
