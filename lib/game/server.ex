@@ -18,7 +18,7 @@ defmodule Game.Server do
 
       game_state = Game.Server.state(game)
 
-  The game state is an object containing:
+  The game state is an object containing these properties:
 
   * `a` - a list of Asteroids
 
@@ -46,6 +46,13 @@ defmodule Game.Server do
   """
   def tick(pid) do
     GenServer.call(pid, :tick)
+  end  
+
+  @doc """
+  Retrieve the game state as a Map.
+  """
+  def state(pid) do
+    GenServer.call(pid, :state)
   end  
 
   def update_asteroid(pid, asteroid_state) do
@@ -92,6 +99,12 @@ defmodule Game.Server do
     {:noreply, game}
   end
 
+  def handle_cast({:update_asteroid, asteroid_state}, game) do
+    id = elem(asteroid_state, 0)
+    new_game = put_in(game.state.asteroids[id], asteroid_state)
+    {:noreply, new_game}
+  end
+
   @doc """
   Update the game state and return the number of ms elpased since last tick.
 
@@ -107,10 +120,9 @@ defmodule Game.Server do
     {:reply, {:elapsed_ms, elapsed_ms}, Map.put(game, :clock_ms, Clock.now_ms)}
   end
 
-  def handle_cast({:update_asteroid, asteroid_state}, game) do
-    id = elem(asteroid_state, 0)
-    new_game = put_in(game.state.asteroids[id], asteroid_state)
-    {:noreply, new_game}
+  def handle_call(:state, _from, game) do
+    game_state = %{:a => Map.values(game.state.asteroids)}
+    {:reply, game_state, game}
   end
 
 end
