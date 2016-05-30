@@ -3,16 +3,25 @@ defmodule Elixoids.Mixfile do
 
   def project do
     [app: :elixoids,
-     version: "0.0.2",
+     description: "Asteroids game server",
+     name: "Elixoids",
+     version: "0.1.0",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps,
+     package: package]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
+  defp package do
+    [
+      files: ["lib", "mix.exs", "README.md", "LICENSE"],
+      maintainers: ["J Every"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/devstopfix/elixoids"},
+    ]
+  end
+
   def application do
     [applications: [:logger]]
   end

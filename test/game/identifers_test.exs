@@ -14,12 +14,14 @@ defmodule Game.IdentifiersTest do
       ids = Enum.reduce(Range.new(1, n), [], 
         fn (_i, acc) -> [Identifiers.next(pid) | acc] end)
 
-      expected = Range.new(1, n) |> Enum.to_list |> Enum.reverse
-
-      assert ids == expected
+      assert ids == expected(n)
       assert List.first(ids) == n
       assert List.last(ids) == 1
     end
+  end
+
+  def expected(n) do
+    Range.new(1, n) |> Enum.to_list |> Enum.reverse
   end
 
 end
