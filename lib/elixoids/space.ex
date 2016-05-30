@@ -43,4 +43,8 @@ defmodule Elixoids.Space do
     %Point{x: (:rand.uniform * @width), y: (:rand.uniform * @height)}
   end
 
+  def dimensions do
+    [@width, @height]
+  end
+
 end

@@ -121,7 +121,10 @@ defmodule Game.Server do
   end
 
   def handle_call(:state, _from, game) do
-    game_state = %{:a => map_of_tuples_to_list(game.state.asteroids)}
+    game_state = %{
+      :dim => Elixoids.Space.dimensions,
+      :a => map_of_tuples_to_list(game.state.asteroids) 
+    }
     {:reply, game_state, game}
   end
 
