@@ -17,6 +17,8 @@ defmodule Game.IdentifiersTest do
       expected = Range.new(1, n) |> Enum.to_list |> Enum.reverse
 
       assert ids == expected
+      assert List.first(ids) == n
+      assert List.last(ids) == 1
     end
   end
 
