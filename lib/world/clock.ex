@@ -1,5 +1,5 @@
 defmodule World.Clock do
-  
+
   @moduledoc """
   Functions that deal with time.
   """

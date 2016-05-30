@@ -20,7 +20,7 @@ defmodule Elixoids.Space do
   def wrap p do
     p
     |> wrap_x
-    |> wrap_y  	
+    |> wrap_y
   end
 
   defp wrap_x(p) do
@@ -40,7 +40,7 @@ defmodule Elixoids.Space do
   end
 
   def random_point do
-    %Point{x: (:rand.uniform * @width), y: (:rand.uniform * @height) }
+    %Point{x: (:rand.uniform * @width), y: (:rand.uniform * @height)}
   end
 
 end

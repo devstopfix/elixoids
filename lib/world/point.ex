@@ -1,9 +1,9 @@
 defmodule World.Point do
 
   @moduledoc """
-  The (x,y) position in 2D. Origin is at bottom left.  
+  The (x,y) position in 2D. Origin is at bottom left.
   """
-    
+
   defstruct x: 0.0, y: 0.0
 
   @ms_in_s 1000
