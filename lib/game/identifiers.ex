@@ -1,6 +1,6 @@
 defmodule Game.Identifiers do
   @moduledoc """
-  Generate unique, sequential, integers identifiers.
+  Generate unique, sequential, integer identifiers.
   """
   use GenServer
 
