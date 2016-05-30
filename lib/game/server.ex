@@ -121,8 +121,14 @@ defmodule Game.Server do
   end
 
   def handle_call(:state, _from, game) do
-    game_state = %{:a => Map.values(game.state.asteroids)}
+    game_state = %{:a => map_of_tuples_to_list(game.state.asteroids)}
     {:reply, game_state, game}
+  end
+
+  def map_of_tuples_to_list(m) do
+    m 
+    |> Map.values
+    |> Enum.map(fn(t) -> Tuple.to_list(t) end )
   end
 
 end

@@ -18,7 +18,9 @@ Run tests whenever source changes:
 
     mix test.watch
 
+# Build
 
+    mix hex.build
 
 [1]: https://en.wikipedia.org/wiki/Asteroids_(video_game)
 [2]: http://elixir-lang.org/
