@@ -20,7 +20,6 @@ defmodule Game.ServerTest do
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
     game_state = Game.state(game)
     assert 5 == length(game_state[:a])
-  
   end
 
 end

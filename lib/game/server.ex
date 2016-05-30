@@ -78,11 +78,11 @@ defmodule Game.Server do
   def init(:ok) do
     {:ok, ids} = Identifiers.start_link
     rocks = asteroids(ids, @initial_asteroid_count)
-    state = %{:ids => ids, 
+    game_state = %{:ids => ids, 
               :pids => %{:asteroids => rocks},
               :state => %{:asteroids => %{}},
               :clock_ms => Clock.now_ms}
-    {:ok, state}
+    {:ok, game_state}
   end
 
   @doc """
