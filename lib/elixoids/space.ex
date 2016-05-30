@@ -20,7 +20,7 @@ defmodule Elixoids.Space do
   def wrap p do
     p
     |> wrap_x
-    |> wrap_y  	
+    |> wrap_y
   end
 
   defp wrap_x(p) do

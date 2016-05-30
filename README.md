@@ -8,6 +8,17 @@
 
 Game state represented by Actors and Processes. Knows nothing about source of inputs or outputs.
 
+# Testing
+
+Inspect source code:
+
+    mix credo
+
+Run tests whenever source changes:
+
+    mix test.watch
+
+
 
 [1]: https://en.wikipedia.org/wiki/Asteroids_(video_game)
 [2]: http://elixir-lang.org/

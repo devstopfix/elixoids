@@ -1,5 +1,5 @@
 defmodule Asteroid.Server do
-  
+
    @moduledoc """
    Asteroid process.
    """

@@ -1,5 +1,5 @@
 defmodule Game.Server do
-  
+
    @moduledoc """
    Game process. One process per running Game.
    """
