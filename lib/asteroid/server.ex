@@ -9,7 +9,7 @@ defmodule Asteroid.Server do
    alias World.Point, as: Point
    alias Elixoids.Space, as: Space
 
-   @asteroid_radius_m 40
+   @asteroid_radius_m 80
 
    def start_link(id) do
      a = Map.put(random_asteroid(), :id, id)

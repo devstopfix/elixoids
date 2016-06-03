@@ -23,8 +23,8 @@ defmodule Game.ServerTest do
 
     game_state = Game.state(game)
 
-    assert 8 == length(game_state[:a])
-    assert [1, _, _, 40] = List.first(game_state[:a])
+    assert 16 == length(game_state[:a])
+    assert [1, _, _, 80] = List.first(game_state[:a])
   end
 
   test "We can retrieve game state of Ships" do
@@ -33,7 +33,17 @@ defmodule Game.ServerTest do
 
     game_state = Game.state(game)
 
-    assert 0 == length(game_state[:s])
+    assert 1 == length(game_state[:s])
+    #assert [1, _, _, 40] = List.first(game_state[:a])
+  end
+
+  test "We can retrieve game state of eXplosions" do
+    {:ok, game} = Game.start_link
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+
+    game_state = Game.state(game)
+
+    assert 0 == length(game_state[:x])
     #assert [1, _, _, 40] = List.first(game_state[:a])
   end
 

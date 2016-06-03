@@ -30,7 +30,7 @@ defmodule Game.Server do
   alias Game.Identifiers, as: Identifiers
   alias World.Clock, as: Clock
 
-  @initial_asteroid_count 8
+  @initial_asteroid_count 16
 
   def start_link do
     GenServer.start_link(__MODULE__, :ok, [])
@@ -124,7 +124,9 @@ defmodule Game.Server do
     game_state = %{
       :dim => Elixoids.Space.dimensions,
       :a => map_of_tuples_to_list(game.state.asteroids),
-      :s => []
+      :s => [["AAA", 2000, 1000, 20, 1.0, "FFFFFF"]],
+      :x => [],
+      :b => []
     }
     {:reply, game_state, game}
   end
