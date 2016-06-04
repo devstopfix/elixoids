@@ -33,4 +33,11 @@ defmodule World.Velocity do
     (:rand.uniform * :math.pi * 2)
   end
 
+  @doc """
+  Round angle to 4dp.
+  """
+  def round_theta(theta) do
+    Float.round(theta, 4)
+  end
+
 end

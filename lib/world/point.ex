@@ -24,4 +24,11 @@ defmodule World.Point do
     move(p, dx, dy)
   end
 
+  @doc """
+  Round ordinate to 1dp.
+  """
+  def round(o) do
+    Float.round(o, 1)
+  end
+
 end

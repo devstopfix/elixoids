@@ -71,9 +71,9 @@ defmodule Asteroid.Server do
    """
    def state_tuple(a) do
      {a.id, 
-      Float.round(a.pos.x), 
-      Float.round(a.pos.y),
-      a.radius}
+      Point.round(a.pos.x), 
+      Point.round(a.pos.y),
+      Float.round(a.radius, 1)}
    end
 
 end

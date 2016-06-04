@@ -6,10 +6,11 @@ defmodule Ship.Server do
   
   use GenServer
 
+  alias World.Point, as: Point
   alias World.Velocity, as: Velocity
   alias Elixoids.Space, as: Space
 
-  @ship_radius_m 20
+  @ship_radius_m 20.0
 
   def start_link(id) do
     ship = Map.put(random_ship(), :id, id)
@@ -49,9 +50,10 @@ defmodule Ship.Server do
   """
   def state_tuple(ship) do
     {ship.id, 
-     Float.round(ship.pos.x, 2), 
-     Float.round(ship.pos.y, 2), 
-     @ship_radius_m, ship.theta, 
+     Point.round(ship.pos.x), 
+     Point.round(ship.pos.y), 
+     Point.round(@ship_radius_m),
+     Velocity.round_theta(ship.theta), 
      "FFFFFF"}
   end  
 
