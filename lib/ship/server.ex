@@ -48,7 +48,11 @@ defmodule Ship.Server do
   The tuple that will be shown to the UI for rendering.
   """
   def state_tuple(ship) do
-    {ship.id, ship.pos.x, ship.pos.y, @ship_radius_m, ship.theta, "FFFFFF"}
+    {ship.id, 
+     Float.round(ship.pos.x, 2), 
+     Float.round(ship.pos.y, 2), 
+     @ship_radius_m, ship.theta, 
+     "FFFFFF"}
   end  
 
   def random_ship do

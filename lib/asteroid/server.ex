@@ -70,7 +70,10 @@ defmodule Asteroid.Server do
    The tuple that will be shown to the UI for rendering.
    """
    def state_tuple(a) do
-     {a.id, a.pos.x, a.pos.y, a.radius}
+     {a.id, 
+      Float.round(a.pos.x), 
+      Float.round(a.pos.y),
+      a.radius}
    end
 
 end
