@@ -164,9 +164,12 @@ defmodule Game.Server do
 
   """
   def handle_cast({:ship_fires_bullet, ship_id}, game) do
-    case Ship.nose(game.pids.ships[ship_id]) do
-      {ship_pos, theta} -> fire_bullet_in_game(game, ship_pos, theta)
-      _ -> {:noreply, game}
+    ship_pid = game.pids.ships[ship_id]
+    if (ship_id != nil) do
+      case Ship.nose(game.pids.ships[ship_id]) do
+        {ship_pos, theta} -> fire_bullet_in_game(game, ship_pos, theta)
+        _ -> {:noreply, game}
+      end
     end
   end
 
