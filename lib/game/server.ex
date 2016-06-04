@@ -27,6 +27,7 @@ defmodule Game.Server do
   use GenServer
 
   alias Asteroid.Server, as: Asteroid
+  alias Bullet.Server, as: Bullet
   alias Ship.Server, as: Ship
   alias Game.Identifiers, as: Identifiers
   alias World.Clock, as: Clock
@@ -65,6 +66,18 @@ defmodule Game.Server do
     GenServer.cast(pid, {:update_ship, new_state})
   end
 
+  def ship_fires_bullet(pid, ship_id) do
+    GenServer.cast(pid, {:ship_fires_bullet, ship_id})
+  end
+
+  def update_bullet(pid, new_state) do
+    GenServer.cast(pid, {:update_bullet, new_state})
+  end
+
+  def delete_bullet(pid, id) do
+    GenServer.cast(pid, {:delete_bullet, id})
+  end
+
   ## Initial state
 
   @doc """
@@ -99,8 +112,10 @@ defmodule Game.Server do
     ships = generate_ships(ids, @initial_ship_count)
     game_state = %{:ids => ids, 
               :pids =>  %{:asteroids => rocks, 
+                          :bullets => %{},
                           :ships => ships},
               :state => %{:asteroids => %{},
+                          :bullets => %{},
                           :ships => %{}},
               :clock_ms => Clock.now_ms}
     start_ticker(self(), fps)
@@ -133,6 +148,36 @@ defmodule Game.Server do
     {:noreply, new_game}
   end
 
+
+  @doc """
+  Ship fires a bullet in the direction it is facing.
+
+      {:ok, game} = Game.Server.start_link
+      Game.Server.tick(game)
+      Game.Server.show(game)
+      Game.Server.ship_fires_bullet(game, 1)
+      Game.Server.show(game)
+
+  """
+  def handle_cast({:ship_fires_bullet, ship_id}, game) do
+    id = Identifiers.next(game.ids)
+    {ship_pos, theta} = Ship.nose(game.pids.ships[ship_id])
+    {:ok, b} = Bullet.start_link(id, ship_pos, theta)
+    new_game = put_in(game.pids.bullets[id], b)
+    {:noreply, new_game}
+  end
+
+  def handle_cast({:update_bullet, b}, game) do
+    id = elem(b, 0)
+    new_game = put_in(game.state.bullets[id], b)
+    {:noreply, new_game}
+  end
+
+  def handle_cast({:delete_bullet, id}, game) do
+    new_game = update_in(game.state.bullets, &Map.delete(&1, id))
+    {:noreply, new_game}
+  end
+
   @doc """
   Update the game state and return the number of ms elpased since last tick.
 
@@ -146,6 +191,7 @@ defmodule Game.Server do
 
     move_asteroids(game, elapsed_ms)
     move_ships(game, elapsed_ms)
+    move_bullets(game, elapsed_ms)
 
     {:reply, {:elapsed_ms, elapsed_ms}, Map.put(game, :clock_ms, Clock.now_ms)}
   end
@@ -156,10 +202,10 @@ defmodule Game.Server do
       :a => game.state.asteroids |> map_of_tuples_to_list,
       :s => game.state.ships |> map_of_tuples_to_list |> map_rest,
       :x => [],
-      :b => []
+      :b => game.state.bullets |> map_of_tuples_to_list
     }
     {:reply, game_state, game}
-  end
+  end  
 
   @doc """
   Convert a map of tuples into a list of lists
@@ -175,7 +221,7 @@ defmodule Game.Server do
   """
   def map_rest(m) do
     m
-    |> Enum.map(fn([h|t]) -> t end )
+    |> Enum.map(fn([_h|t]) -> t end )
   end
 
   defp start_ticker(pid, fps) do
@@ -192,6 +238,11 @@ defmodule Game.Server do
   defp move_ships(game, elapsed_ms) do
     Enum.each(Map.values(game.pids.ships), 
       fn(s) -> Ship.move(s, elapsed_ms, self()) end)
+  end
+
+  defp move_bullets(game, elapsed_ms) do
+    Enum.each(Map.values(game.pids.bullets), 
+      fn(s) -> Bullet.move(s, elapsed_ms, self()) end)
   end
 
 end

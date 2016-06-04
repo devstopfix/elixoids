@@ -31,6 +31,10 @@ defmodule Ship.Server do
     GenServer.call(pid, :position)
   end
 
+  def nose(pid) do
+    GenServer.call(pid, :nose)
+  end
+
   # GenServer callbacks
 
   def init(ship) do
@@ -44,6 +48,10 @@ defmodule Ship.Server do
 
   def handle_call(:position, _from, ship) do
     {:reply, state_tuple(ship), ship}
+  end
+
+  def handle_call(:nose, _from, ship) do
+    {:reply, {ship.pos, ship.theta}, ship}
   end
 
   # Data
