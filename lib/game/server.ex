@@ -152,10 +152,14 @@ defmodule Game.Server do
   @doc """
   Ship fires a bullet in the direction it is facing.
 
-      {:ok, game} = Game.Server.start_link
+      {:ok, game} = Game.Server.start_link(4)
       Game.Server.tick(game)
       Game.Server.show(game)
       Game.Server.ship_fires_bullet(game, 1)
+      Game.Server.show(game)
+      Game.Server.ship_fires_bullet(game, 2)
+      Game.Server.show(game)
+      Game.Server.ship_fires_bullet(game, 3)
       Game.Server.show(game)
 
   """
@@ -192,6 +196,7 @@ defmodule Game.Server do
     move_asteroids(game, elapsed_ms)
     move_ships(game, elapsed_ms)
     move_bullets(game, elapsed_ms)
+    Game.Server.ship_fires_bullet(self(), 1)
 
     {:reply, {:elapsed_ms, elapsed_ms}, Map.put(game, :clock_ms, Clock.now_ms)}
   end

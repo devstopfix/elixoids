@@ -13,8 +13,6 @@ defmodule Bullet.Server do
   @bullet_range_m        2000.0
   @bullet_speed_m_per_s   500.0
 
-  @bullet_speed_m_per_ms (@bullet_speed_m_per_s / 1000.0)
-
   @doc """
   Fire a bullet with:
 
@@ -26,7 +24,7 @@ defmodule Bullet.Server do
   def start_link(id, pos, theta) do
     b = %{:id=>id,
           :pos=>pos,
-          :velocity=>%World.Velocity{:theta=>theta, :speed=>@bullet_speed_m_per_ms},
+          :velocity=>%World.Velocity{:theta=>theta, :speed=>@bullet_speed_m_per_s},
           :expire_at=>calculate_ttl()}
     GenServer.start_link(__MODULE__, b, [])
   end
@@ -52,25 +50,23 @@ defmodule Bullet.Server do
   end
 
   def handle_cast({:move, delta_t_ms, game_pid}, b) do
-    if (b.expire_at >= Clock.now_ms) do
-      IO.puts("Bullet expired")
-      Game.Server.delete_bullet(game_pid, b.id)
-      #GenServer.stop(self())
-      {:noreply, b}
-    else
-      IO.puts("Move")
+    if (b.expire_at > Clock.now_ms) do
       moved_bullet = move_bullet(b, delta_t_ms)
       Game.Server.update_bullet(game_pid, state_tuple(moved_bullet))
       {:noreply, moved_bullet}
+    else
+      Game.Server.delete_bullet(game_pid, b.id)
+      GenServer.stop(self())
+      {:noreply, b}
     end
   end
 
   # Functions
 
   def move_bullet(b, delta_t_ms) do
-     p1 = Point.apply_velocity(b.pos, b.velocity, delta_t_ms)
-     p2 = Space.wrap(p1)
-     %{b | :pos => p2}
+    p1 = Point.apply_velocity(b.pos, b.velocity, delta_t_ms)
+    p2 = Space.wrap(p1)
+    %{b | :pos => p2}
   end
 
   @doc """
@@ -87,8 +83,8 @@ defmodule Bullet.Server do
   from the distance it can cover and it's velocity.
   """
   def calculate_ttl do
-    fly_time_ms = (@bullet_range_m / @bullet_speed_m_per_ms)
-    trunc(Clock.now_ms + fly_time_ms)
+    fly_time_ms = trunc(@bullet_range_m / (@bullet_speed_m_per_s / 1000.0))
+    Clock.now_ms + fly_time_ms
   end
 
 end

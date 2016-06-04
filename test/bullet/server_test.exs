@@ -12,6 +12,7 @@ defmodule Bullet.ServerTest do
 
     elapsed_ms = (ttl - now)
     assert elapsed_ms <= (4 * 1000)
+    assert elapsed_ms >= (3 * 1000)
   end
 
   test "UI state" do
