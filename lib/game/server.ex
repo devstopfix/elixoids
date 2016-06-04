@@ -164,11 +164,10 @@ defmodule Game.Server do
 
   """
   def handle_cast({:ship_fires_bullet, ship_id}, game) do
-    id = Identifiers.next(game.ids)
-    {ship_pos, theta} = Ship.nose(game.pids.ships[ship_id])
-    {:ok, b} = Bullet.start_link(id, ship_pos, theta)
-    new_game = put_in(game.pids.bullets[id], b)
-    {:noreply, new_game}
+    case Ship.nose(game.pids.ships[ship_id]) do
+      {ship_pos, theta} -> fire_bullet_in_game(game, ship_pos, theta)
+      _ -> {:noreply, game}
+    end
   end
 
   def handle_cast({:update_bullet, b}, game) do
@@ -254,6 +253,13 @@ defmodule Game.Server do
     if Map.has_key?(game.pids.ships, 1) do
       Game.Server.ship_fires_bullet(self(), 1)
     end
+  end
+
+  defp fire_bullet_in_game(game, ship_pos, theta) do
+    id = Identifiers.next(game.ids)
+    {:ok, b} = Bullet.start_link(id, ship_pos, theta)
+    new_game = put_in(game.pids.bullets[id], b)
+    {:noreply, new_game}
   end
 
 end
