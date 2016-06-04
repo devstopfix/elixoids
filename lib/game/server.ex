@@ -253,7 +253,7 @@ defmodule Game.Server do
   end
 
   defp fire_bullets(game) do
-    trigger = rem(World.Clock.now_ms, 100)
+    trigger = rem(World.Clock.now_ms, 1000)
     Enum.each(Map.keys(game.pids.ships), 
       fn(ship_id) -> if (ship_id == trigger) do Game.Server.ship_fires_bullet(self(), ship_id) end; end)
   end
