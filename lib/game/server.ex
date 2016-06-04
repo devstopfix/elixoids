@@ -32,8 +32,8 @@ defmodule Game.Server do
 
   @initial_asteroid_count 16
 
-  def start_link do
-    GenServer.start_link(__MODULE__, :ok, [])
+  def start_link(fps \\ 0) do
+    GenServer.start_link(__MODULE__, {:ok, fps}, [])
   end
 
   def show(pid) do
@@ -75,13 +75,14 @@ defmodule Game.Server do
 
   ## Server Callbacks
 
-  def init(:ok) do
+  def init({:ok, fps}) do
     {:ok, ids} = Identifiers.start_link
     rocks = asteroids(ids, @initial_asteroid_count)
     game_state = %{:ids => ids, 
               :pids => %{:asteroids => rocks},
               :state => %{:asteroids => %{}},
               :clock_ms => Clock.now_ms}
+    start_ticker(self(), fps)
     {:ok, game_state}
   end
 
@@ -135,6 +136,12 @@ defmodule Game.Server do
     m 
     |> Map.values
     |> Enum.map(fn(t) -> Tuple.to_list(t) end)
+  end
+
+  defp start_ticker(pid, fps) do
+    if ((fps > 0) && (fps <= 60)) do
+      Game.Ticker.start_link(pid, fps)
+    end
   end
 
 end

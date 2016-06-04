@@ -4,6 +4,10 @@
 
 [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
 
+The UI is rendered by [asteroids-ui](https://github.com/lachok/asteroids).
+
+[Asteroids Video](https://www.youtube.com/watch?v=WYSupJ5r2zo)
+
 ## Purpose
 
 Game state represented by Actors and Processes. Knows nothing about source of inputs or outputs.
