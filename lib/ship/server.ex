@@ -6,7 +6,7 @@ defmodule Ship.Server do
   
   use GenServer
 
-  #alias World.Point, as: Point
+  alias World.Velocity, as: Velocity
   alias Elixoids.Space, as: Space
 
   @ship_radius_m 20
@@ -48,11 +48,12 @@ defmodule Ship.Server do
   The tuple that will be shown to the UI for rendering.
   """
   def state_tuple(ship) do
-    {ship.id, ship.pos.x, ship.pos.y, @ship_radius_m, 0, "FFFFFF"}
+    {ship.id, ship.pos.x, ship.pos.y, @ship_radius_m, ship.theta, "FFFFFF"}
   end  
 
   def random_ship do
-    %{:pos => random_ship_point()}
+    %{:pos => random_ship_point(),
+      :theta => Velocity.random_direction}
   end
 
   def random_ship_point do
