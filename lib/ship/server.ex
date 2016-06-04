@@ -13,7 +13,10 @@ defmodule Ship.Server do
   @ship_radius_m 20.0
 
   def start_link(id) do
-    ship = Map.put(random_ship(), :id, id)
+    ship = random_ship() 
+           |> Map.put(:id, id)
+           |> Map.put(:tag, "AAA")
+
     GenServer.start_link(__MODULE__, ship, [])
   end
 
@@ -50,6 +53,7 @@ defmodule Ship.Server do
   """
   def state_tuple(ship) do
     {ship.id, 
+     ship.tag,
      Point.round(ship.pos.x), 
      Point.round(ship.pos.y), 
      Point.round(@ship_radius_m),

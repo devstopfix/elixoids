@@ -153,18 +153,29 @@ defmodule Game.Server do
   def handle_call(:state, _from, game) do
     game_state = %{
       :dim => Elixoids.Space.dimensions,
-      :a => map_of_tuples_to_list(game.state.asteroids),
-      :s => map_of_tuples_to_list(game.state.ships),
+      :a => game.state.asteroids |> map_of_tuples_to_list,
+      :s => game.state.ships |> map_of_tuples_to_list |> map_rest,
       :x => [],
       :b => []
     }
     {:reply, game_state, game}
   end
 
+  @doc """
+  Convert a map of tuples into a list of lists
+  """
   def map_of_tuples_to_list(m) do
     m 
     |> Map.values
     |> Enum.map(fn(t) -> Tuple.to_list(t) end)
+  end
+
+  @doc """
+  Drop the head of each list in the given list.
+  """
+  def map_rest(m) do
+    m
+    |> Enum.map(fn([h|t]) -> t end )
   end
 
   defp start_ticker(pid, fps) do

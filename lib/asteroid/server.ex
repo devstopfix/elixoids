@@ -73,7 +73,7 @@ defmodule Asteroid.Server do
      {a.id, 
       Point.round(a.pos.x), 
       Point.round(a.pos.y),
-      Float.round(a.radius, 1)}
+      Point.round(a.radius)}
    end
 
 end
