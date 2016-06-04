@@ -53,7 +53,7 @@ defmodule Bullet.Server do
     if (b.expire_at > Clock.now_ms) do
       moved_bullet = move_bullet(b, delta_t_ms)
       Game.Server.update_bullet(game_pid, state_tuple(moved_bullet))
-      {:noreply, b}
+      {:noreply, moved_bullet}
     else
       Game.Server.delete_bullet(game_pid, b.id)
       GenServer.stop(self())

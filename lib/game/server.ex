@@ -195,7 +195,7 @@ defmodule Game.Server do
   def handle_call(:tick, _from, game) do
     elapsed_ms = Clock.now_ms - game.clock_ms
 
-    move_asteroids(game, elapsed_ms)
+    #move_asteroids(game, elapsed_ms)
     move_ships(game, elapsed_ms)
     move_bullets(game, elapsed_ms)
     fire_bullets(game)
@@ -249,7 +249,7 @@ defmodule Game.Server do
 
   defp move_bullets(game, elapsed_ms) do
     Enum.each(Map.values(game.pids.bullets), 
-      fn(s) -> Bullet.move(s, elapsed_ms, self()) end)
+      fn(b) -> Bullet.move(b, elapsed_ms, self()) end)
   end
 
   defp fire_bullets(game) do
