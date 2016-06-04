@@ -165,7 +165,7 @@ defmodule Game.Server do
   """
   def handle_cast({:ship_fires_bullet, ship_id}, game) do
     ship_pid = game.pids.ships[ship_id]
-    if (ship_id != nil) do
+    if (ship_pid != nil) do
       case Ship.nose(game.pids.ships[ship_id]) do
         {ship_pos, theta} -> fire_bullet_in_game(game, ship_pos, theta)
         _ -> {:noreply, game}
@@ -253,9 +253,9 @@ defmodule Game.Server do
   end
 
   defp fire_bullets(game) do
-    if Map.has_key?(game.pids.ships, 1) do
-      Game.Server.ship_fires_bullet(self(), 1)
-    end
+    trigger = rem(World.Clock.now_ms, 100)
+    Enum.each(Map.keys(game.pids.ships), 
+      fn(ship_id) -> if (ship_id == trigger) do Game.Server.ship_fires_bullet(self(), ship_id) end; end)
   end
 
   defp fire_bullet_in_game(game, ship_pos, theta) do
