@@ -196,7 +196,7 @@ defmodule Game.Server do
     move_asteroids(game, elapsed_ms)
     move_ships(game, elapsed_ms)
     move_bullets(game, elapsed_ms)
-    Game.Server.ship_fires_bullet(self(), 1)
+    fire_bullets(game)
 
     {:reply, {:elapsed_ms, elapsed_ms}, Map.put(game, :clock_ms, Clock.now_ms)}
   end
@@ -248,6 +248,12 @@ defmodule Game.Server do
   defp move_bullets(game, elapsed_ms) do
     Enum.each(Map.values(game.pids.bullets), 
       fn(s) -> Bullet.move(s, elapsed_ms, self()) end)
+  end
+
+  defp fire_bullets(game) do
+    if Map.has_key?(game.pids.ships, 1) do
+      Game.Server.ship_fires_bullet(self(), 1)
+    end
   end
 
 end
