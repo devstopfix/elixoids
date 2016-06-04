@@ -1,7 +1,8 @@
 defmodule Asteroid.Server do
 
    @moduledoc """
-   Asteroid process.
+   Asteroid process. Asteroids have position, size and velocity,
+   and wonder the game area.
    """
 
    use GenServer
@@ -9,7 +10,8 @@ defmodule Asteroid.Server do
    alias World.Point, as: Point
    alias Elixoids.Space, as: Space
 
-   @asteroid_radius_m 80
+   @asteroid_radius_m      80.0
+   @asteroid_speed_m_per_s 20.0
 
    def start_link(id) do
      a = Map.put(random_asteroid(), :id, id)
@@ -23,6 +25,9 @@ defmodule Asteroid.Server do
      GenServer.cast(pid, {:move, delta_t_ms, game_pid})
    end
 
+   @doc """
+   Return the state of the process as a tuple
+   """
    def position(pid) do
      GenServer.call(pid, :position)
    end
@@ -49,7 +54,7 @@ defmodule Asteroid.Server do
 
    def random_asteroid do
      %{:pos => Elixoids.Space.random_point,
-       :velocity => World.Velocity.random_direction_with_speed(10.0),
+       :velocity => World.Velocity.random_direction_with_speed(@asteroid_speed_m_per_s),
        :radius => @asteroid_radius_m}
    end
 

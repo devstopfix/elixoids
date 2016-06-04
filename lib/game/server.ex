@@ -27,10 +27,12 @@ defmodule Game.Server do
   use GenServer
 
   alias Asteroid.Server, as: Asteroid
+  alias Ship.Server, as: Ship
   alias Game.Identifiers, as: Identifiers
   alias World.Clock, as: Clock
 
-  @initial_asteroid_count 16
+  @initial_asteroid_count 8
+  @initial_ship_count     6
 
   def start_link(fps \\ 0) do
     GenServer.start_link(__MODULE__, {:ok, fps}, [])
@@ -55,8 +57,12 @@ defmodule Game.Server do
     GenServer.call(pid, :state)
   end  
 
-  def update_asteroid(pid, asteroid_state) do
-    GenServer.cast(pid, {:update_asteroid, asteroid_state})
+  def update_asteroid(pid, new_state) do
+    GenServer.cast(pid, {:update_asteroid, new_state})
+  end
+
+  def update_ship(pid, new_state) do
+    GenServer.cast(pid, {:update_ship, new_state})
   end
 
   ## Initial state
@@ -65,7 +71,7 @@ defmodule Game.Server do
   Generate n new asteroids and store as a map of their
   identifier to a tuple of their {pid, state}.
   """
-  def asteroids(ids, n) do
+  def generate_asteroids(ids, n) do
     Enum.reduce(1..n, %{}, fn(i, rocks) ->
       id = Identifiers.next(ids)
       {:ok, pid} = Asteroid.start_link(id)
@@ -73,14 +79,29 @@ defmodule Game.Server do
     end)
   end
 
+  @doc """
+  Generate n new ships and store as a map of their
+  identifier to a tuple of their {pid, state}.
+  """
+  def generate_ships(ids, n) do
+    Enum.reduce(1..n, %{}, fn(i, ships) ->
+      id = Identifiers.next(ids)
+      {:ok, pid} = Ship.start_link(id)
+      Map.put(ships, i, pid)
+    end)
+  end
+
   ## Server Callbacks
 
   def init({:ok, fps}) do
     {:ok, ids} = Identifiers.start_link
-    rocks = asteroids(ids, @initial_asteroid_count)
+    rocks = generate_asteroids(ids, @initial_asteroid_count)
+    ships = generate_ships(ids, @initial_ship_count)
     game_state = %{:ids => ids, 
-              :pids => %{:asteroids => rocks},
-              :state => %{:asteroids => %{}},
+              :pids =>  %{:asteroids => rocks, 
+                          :ships => ships},
+              :state => %{:asteroids => %{},
+                          :ships => %{}},
               :clock_ms => Clock.now_ms}
     start_ticker(self(), fps)
     {:ok, game_state}
@@ -106,6 +127,12 @@ defmodule Game.Server do
     {:noreply, new_game}
   end
 
+  def handle_cast({:update_ship, ship_state}, game) do
+    id = elem(ship_state, 0)
+    new_game = put_in(game.state.ships[id], ship_state)
+    {:noreply, new_game}
+  end
+
   @doc """
   Update the game state and return the number of ms elpased since last tick.
 
@@ -116,8 +143,10 @@ defmodule Game.Server do
   """
   def handle_call(:tick, _from, game) do
     elapsed_ms = Clock.now_ms - game.clock_ms
-    Enum.each(Map.values(game.pids.asteroids), 
-      fn(a) -> Asteroid.move(a, elapsed_ms, self()) end)
+
+    move_asteroids(game, elapsed_ms)
+    move_ships(game, elapsed_ms)
+
     {:reply, {:elapsed_ms, elapsed_ms}, Map.put(game, :clock_ms, Clock.now_ms)}
   end
 
@@ -125,7 +154,7 @@ defmodule Game.Server do
     game_state = %{
       :dim => Elixoids.Space.dimensions,
       :a => map_of_tuples_to_list(game.state.asteroids),
-      :s => [["AAA", 2000, 1000, 20, 1.0, "FFFFFF"]],
+      :s => map_of_tuples_to_list(game.state.ships),
       :x => [],
       :b => []
     }
@@ -142,6 +171,16 @@ defmodule Game.Server do
     if ((fps > 0) && (fps <= 60)) do
       Game.Ticker.start_link(pid, fps)
     end
+  end
+
+  defp move_asteroids(game, elapsed_ms) do
+    Enum.each(Map.values(game.pids.asteroids), 
+      fn(a) -> Asteroid.move(a, elapsed_ms, self()) end)
+  end
+
+  defp move_ships(game, elapsed_ms) do
+    Enum.each(Map.values(game.pids.ships), 
+      fn(s) -> Ship.move(s, elapsed_ms, self()) end)
   end
 
 end
