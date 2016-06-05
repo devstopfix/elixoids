@@ -222,7 +222,7 @@ defmodule Game.Server do
       :x => game.explosions |> list_of_tuples_to_list,
       :b => game.state.bullets |> map_of_tuples_to_list
     }
-    {:reply, game_state, game}
+    {:reply, game_state, %{game | :explosions => []}}
   end  
 
   @doc """
