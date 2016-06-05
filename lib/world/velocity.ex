@@ -7,6 +7,8 @@ defmodule World.Velocity do
 
   alias World.Velocity, as: Velocity
 
+  @two_pi_radians (2 * :math.pi)
+
   defstruct theta: 0.0, speed: 0.0
 
   def north do
@@ -38,6 +40,17 @@ defmodule World.Velocity do
   """
   def round_theta(theta) do
     Float.round(theta, 4)
+  end
+
+  @doc """
+  Keep angle theta between 0..2π
+  """
+  def wrap_angle(theta) do
+    cond do
+      (theta < 0.0)              -> (theta + @two_pi_radians)
+      (theta >= @two_pi_radians) -> (theta - @two_pi_radians)
+      true                       -> theta
+    end
   end
 
 end

@@ -11,6 +11,7 @@ defmodule Ship.Server do
   alias Elixoids.Space, as: Space
 
   @ship_radius_m 20.0
+  @ship_rotation_rad_per_sec (:math.pi * 2 / 10.0)
 
   def start_link(id) do
     ship = random_ship() 
@@ -41,9 +42,10 @@ defmodule Ship.Server do
     {:ok, ship}
   end
 
-  def handle_cast({:move, _delta_t_ms, game_pid}, ship) do
-    Game.Server.update_ship(game_pid, state_tuple(ship))
-    {:noreply, ship}
+  def handle_cast({:move, delta_t_ms, game_pid}, ship) do
+    new_ship = rotate_ship(ship, delta_t_ms)
+    Game.Server.update_ship(game_pid, state_tuple(new_ship))
+    {:noreply, new_ship}
   end
 
   def handle_call(:position, _from, ship) do
@@ -76,6 +78,12 @@ defmodule Ship.Server do
 
   def random_ship_point do
     Space.random_point
+  end
+
+  def rotate_ship(ship, delta_t_ms) do
+    theta = ship.theta
+    delta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
+    %{ship | :theta => Velocity.wrap_angle(theta+delta)} 
   end
 
 end

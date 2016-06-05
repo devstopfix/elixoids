@@ -18,4 +18,16 @@ defmodule World.VelocityTest do
     assert v1.theta != v2.theta
   end
 
+  test "Wrap angle" do
+    assert 0.0 == Velocity.wrap_angle(0.0)
+  end
+
+  test "Wrap negative angle" do
+    assert :math.pi == Velocity.wrap_angle( -1 * :math.pi)
+  end
+
+  test "Wrap overflow angle" do
+    assert :math.pi == Velocity.wrap_angle( 3 * :math.pi)
+  end
+
 end
