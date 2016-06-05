@@ -165,7 +165,7 @@ defmodule Game.Server do
   """
   def handle_cast({:ship_fires_bullet, ship_id}, game) do
     ship_pid = game.pids.ships[ship_id]
-    if (ship_pid != nil) do
+    if ((ship_pid != nil) && Process.alive?(ship_pid)) do
       case Ship.nose(game.pids.ships[ship_id]) do
         {ship_pos, theta} -> fire_bullet_in_game(game, ship_pos, theta)
         _ -> {:noreply, game}
@@ -181,7 +181,8 @@ defmodule Game.Server do
 
   def handle_cast({:delete_bullet, id}, game) do
     new_game = update_in(game.state.bullets, &Map.delete(&1, id))
-    {:noreply, new_game}
+    new_game2 = update_in(new_game.pids.bullets, &Map.delete(&1, id))
+    {:noreply, new_game2}
   end
 
   @doc """
@@ -252,10 +253,16 @@ defmodule Game.Server do
       fn(b) -> Bullet.move(b, elapsed_ms, self()) end)
   end
 
+  # Development
+
   defp fire_bullets(game) do
-    trigger = rem(World.Clock.now_ms, 1000)
+    trigger = rem(World.Clock.now_ms, 100)
     Enum.each(Map.keys(game.pids.ships), 
-      fn(ship_id) -> if (ship_id == trigger) do Game.Server.ship_fires_bullet(self(), ship_id) end; end)
+      fn(ship_id) -> 
+        if (ship_id == trigger) do 
+          Game.Server.ship_fires_bullet(self(), ship_id) 
+        end; 
+      end)
   end
 
   defp fire_bullet_in_game(game, ship_pos, theta) do

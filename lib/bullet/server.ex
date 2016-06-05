@@ -11,7 +11,7 @@ defmodule Bullet.Server do
   alias World.Clock, as: Clock
 
   @bullet_range_m        2000.0
-  @bullet_speed_m_per_s   5.0
+  @bullet_speed_m_per_s   500.0
 
   @doc """
   Fire a bullet with:
