@@ -8,7 +8,7 @@ defmodule Game.Server do
 
   To use, start a Game, and periodically send it tick messages:
 
-      {:ok, game} = Game.Server.start_link
+      {:ok, game} = Game.Server.start_link(4)
       Game.Server.tick(game)
       ...
       Game.Server.tick(game)
@@ -18,9 +18,10 @@ defmodule Game.Server do
 
       game_state = Game.Server.state(game)
 
-  The game state is an object containing these properties:
+  To start a running Game at 4 fps:
 
-  * `a` - a list of Asteroids
+      {:ok, game} = Game.Server.start_link(4)
+      Game.Server.show(game)
 
   """
 
@@ -156,11 +157,6 @@ defmodule Game.Server do
       Game.Server.tick(game)
       Game.Server.show(game)
       Game.Server.ship_fires_bullet(game, 1)
-      Game.Server.show(game)
-      Game.Server.ship_fires_bullet(game, 2)
-      Game.Server.show(game)
-      Game.Server.ship_fires_bullet(game, 3)
-      Game.Server.show(game)
 
   """
   def handle_cast({:ship_fires_bullet, ship_id}, game) do

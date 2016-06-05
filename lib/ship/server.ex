@@ -52,8 +52,15 @@ defmodule Ship.Server do
     {:reply, state_tuple(ship), ship}
   end
 
+  @doc """
+  The nose of the ship is defined as the centre offset by 
+  half of the radius, in the direction the ship is pointing.
+  """
   def handle_call(:nose, _from, ship) do
-    {:reply, {ship.pos, ship.theta}, ship}
+    ship_centre = ship.pos
+    v = %Velocity{:theta => ship.theta, :speed => (@ship_radius_m * 0.6)}
+    nose = Point.apply_velocity(ship_centre, v, 1000.0)
+    {:reply, {nose, ship.theta}, ship}
   end
 
   # Data

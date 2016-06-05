@@ -56,8 +56,7 @@ defmodule Bullet.Server do
       {:noreply, moved_bullet}
     else
       Game.Server.delete_bullet(game_pid, b.id)
-      GenServer.stop(self())
-      {:noreply, b}
+      {:stop, :normal, b}
     end
   end
 
