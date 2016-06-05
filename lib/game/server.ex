@@ -32,8 +32,8 @@ defmodule Game.Server do
   alias Game.Identifiers, as: Identifiers
   alias World.Clock, as: Clock
 
-  @initial_asteroid_count 1 #8
-  @initial_ship_count     1 #6
+  @initial_asteroid_count  4
+  @initial_ship_count      6
 
   def start_link(fps \\ 0) do
     GenServer.start_link(__MODULE__, {:ok, fps}, [])
