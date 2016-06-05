@@ -4,15 +4,15 @@ defmodule Bullet.ServerTest do
 
   alias Bullet.Server, as: Bullet
 
-  test "Bullet lives less than 4 seconds" do
+  test "Bullet live 2-3 seconds" do
     now = World.Clock.now_ms
     ttl = Bullet.calculate_ttl
 
     assert ttl > now
 
     elapsed_ms = (ttl - now)
-    assert elapsed_ms <= (4 * 1000)
-    assert elapsed_ms >= (3 * 1000)
+    assert elapsed_ms <= (3 * 1000)
+    assert elapsed_ms >= (2 * 1000)
   end
 
   test "UI state" do
