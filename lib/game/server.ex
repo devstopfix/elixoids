@@ -18,9 +18,9 @@ defmodule Game.Server do
 
       game_state = Game.Server.state(game)
 
-  To start a running Game at 4 fps:
+  To start a running Game at 60 fps:
 
-      {:ok, game} = Game.Server.start_link(4)
+      {:ok, game} = Game.Server.start_link(60)
       Game.Server.show(game)
 
   """
@@ -32,6 +32,7 @@ defmodule Game.Server do
   alias Ship.Server, as: Ship
   alias Game.Identifiers, as: Identifiers
   alias World.Clock, as: Clock
+  alias Game.Collision, as: Collision
 
   @initial_asteroid_count  4
   @initial_ship_count      6
@@ -79,6 +80,10 @@ defmodule Game.Server do
     GenServer.cast(pid, {:delete_bullet, id})
   end
 
+  def explosion(pid, x, y) do
+    GenServer.cast(pid, {:explosion, x, y})
+  end
+
   ## Initial state
 
   @doc """
@@ -118,6 +123,7 @@ defmodule Game.Server do
               :state => %{:asteroids => %{},
                           :bullets => %{},
                           :ships => %{}},
+              :explosions => [],
               :clock_ms => Clock.now_ms}
     start_ticker(self(), fps)
     {:ok, game_state}
@@ -181,6 +187,11 @@ defmodule Game.Server do
     {:noreply, new_game2}
   end
 
+  def handle_cast({:explosion, x, y}, game) do
+    new_game = update_in(game.explosions, &[{x,y} | &1])
+    {:noreply, new_game}
+  end
+
   @doc """
   Update the game state and return the number of ms elpased since last tick.
 
@@ -196,8 +207,11 @@ defmodule Game.Server do
     move_ships(game, elapsed_ms)
     move_bullets(game, elapsed_ms)
     fire_bullets(game)
+    check_for_collisions(game)
 
-    {:reply, {:elapsed_ms, elapsed_ms}, Map.put(game, :clock_ms, Clock.now_ms)}
+    {:reply, 
+      {:elapsed_ms, elapsed_ms}, 
+      Map.put(game, :clock_ms, Clock.now_ms)}
   end
 
   def handle_call(:state, _from, game) do
@@ -205,11 +219,19 @@ defmodule Game.Server do
       :dim => Elixoids.Space.dimensions,
       :a => game.state.asteroids |> map_of_tuples_to_list,
       :s => game.state.ships |> map_of_tuples_to_list |> map_rest,
-      :x => [],
+      :x => game.explosions |> list_of_tuples_to_list,
       :b => game.state.bullets |> map_of_tuples_to_list
     }
     {:reply, game_state, game}
   end  
+
+  @doc """
+  Convert a list of tuples into a list of lists
+  """
+  def list_of_tuples_to_list(m) do
+    m 
+    |> Enum.map(fn(t) -> Tuple.to_list(t) end)
+  end
 
   @doc """
   Convert a map of tuples into a list of lists
@@ -248,6 +270,23 @@ defmodule Game.Server do
     Enum.each(Map.values(game.pids.bullets), 
       fn(b) -> Bullet.move(b, elapsed_ms, self()) end)
   end
+
+  # Collisions
+
+  defp check_for_collisions(game) do
+    all_bullets = Map.values(game.state.bullets)
+    all_ships   = Map.values(game.state.ships)
+
+    collisions = Collision.detect_bullets_hitting_ships(all_bullets, all_ships)
+
+    collisions
+    |> Collision.unique_bullets
+    |> Enum.map(fn(b) -> 
+      {_, x, y} = game.state.bullets[b]
+      Game.Server.explosion(self(), x, y)
+    end)
+  end
+
 
   # Development
 
