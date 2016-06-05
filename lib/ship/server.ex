@@ -11,6 +11,7 @@ defmodule Ship.Server do
   alias Elixoids.Space, as: Space
 
   @ship_radius_m 20.0
+  @nose_radius_m (@ship_radius_m * 1.1)
   @ship_rotation_rad_per_sec (:math.pi * 2 / 10.0)
 
   def start_link(id) do
@@ -58,7 +59,7 @@ defmodule Ship.Server do
   """
   def handle_call(:nose, _from, ship) do
     ship_centre = ship.pos
-    v = %Velocity{:theta => ship.theta, :speed => (@ship_radius_m * 0.6)}
+    v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
     nose = Point.apply_velocity(ship_centre, v, 1000.0)
     {:reply, {nose, ship.theta}, ship}
   end
