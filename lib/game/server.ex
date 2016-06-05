@@ -32,8 +32,8 @@ defmodule Game.Server do
   alias Game.Identifiers, as: Identifiers
   alias World.Clock, as: Clock
 
-  @initial_asteroid_count 8
-  @initial_ship_count     6
+  @initial_asteroid_count 1 #8
+  @initial_ship_count     1 #6
 
   def start_link(fps \\ 0) do
     GenServer.start_link(__MODULE__, {:ok, fps}, [])
@@ -85,10 +85,10 @@ defmodule Game.Server do
   identifier to a tuple of their {pid, state}.
   """
   def generate_asteroids(ids, n) do
-    Enum.reduce(1..n, %{}, fn(i, rocks) ->
+    Enum.reduce(1..n, %{}, fn(_i, rocks) ->
       id = Identifiers.next(ids)
       {:ok, pid} = Asteroid.start_link(id)
-      Map.put(rocks, i, pid)
+      Map.put(rocks, id, pid)
     end)
   end
 
@@ -97,10 +97,10 @@ defmodule Game.Server do
   identifier to a tuple of their {pid, state}.
   """
   def generate_ships(ids, n) do
-    Enum.reduce(1..n, %{}, fn(i, ships) ->
+    Enum.reduce(1..n, %{}, fn(_i, ships) ->
       id = Identifiers.next(ids)
       {:ok, pid} = Ship.start_link(id)
-      Map.put(ships, i, pid)
+      Map.put(ships, id, pid)
     end)
   end
 
@@ -195,7 +195,7 @@ defmodule Game.Server do
   def handle_call(:tick, _from, game) do
     elapsed_ms = Clock.now_ms - game.clock_ms
 
-    #move_asteroids(game, elapsed_ms)
+    move_asteroids(game, elapsed_ms)
     move_ships(game, elapsed_ms)
     move_bullets(game, elapsed_ms)
     fire_bullets(game)
