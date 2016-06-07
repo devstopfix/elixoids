@@ -34,7 +34,7 @@ defmodule Game.Server do
   alias World.Clock, as: Clock
   alias Game.Collision, as: Collision
 
-  @initial_asteroid_count  16
+  @initial_asteroid_count   6
   @initial_ship_count      20
 
   def start_link(fps \\ 0) do
@@ -291,7 +291,7 @@ defmodule Game.Server do
   # Development
 
   defp fire_bullets(game) do
-    trigger = rem(World.Clock.now_ms, 100)
+    trigger = rem(World.Clock.now_ms, 200)
     Enum.each(Map.keys(game.pids.ships), 
       fn(ship_id) -> 
         if (ship_id == trigger) do 
