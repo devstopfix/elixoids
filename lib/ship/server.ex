@@ -17,7 +17,7 @@ defmodule Ship.Server do
   def start_link(id) do
     ship = random_ship() 
            |> Map.put(:id, id)
-           |> Map.put(:tag, "AAA")
+           |> Map.put(:tag, random_tag())
 
     GenServer.start_link(__MODULE__, ship, [])
   end
@@ -94,4 +94,8 @@ defmodule Ship.Server do
     %{ship | :theta => Velocity.wrap_angle(theta+delta)} 
   end
 
+  defp random_tag do
+    Enum.to_list(?A .. ?Z) |> Enum.take_random(3)
+  end
+ 
 end
