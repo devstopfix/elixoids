@@ -7,7 +7,7 @@ defmodule World.Point do
   defstruct x: 0.0, y: 0.0
 
   @ms_in_s 1000.0
-
+  
   @doc """
   Move point p by (dx,dy).
   """

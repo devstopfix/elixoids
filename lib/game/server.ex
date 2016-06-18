@@ -64,6 +64,10 @@ defmodule Game.Server do
     GenServer.cast(pid, {:update_asteroid, new_state})
   end
 
+  def asteroid_hit(pid, id) do
+    GenServer.cast(pid, {:asteroid_hit, id})
+  end
+
   def update_ship(pid, new_state) do
     GenServer.cast(pid, {:update_ship, new_state})
   end
@@ -191,6 +195,23 @@ defmodule Game.Server do
     {:noreply, new_game2}
   end
 
+  @doc """
+      {:ok, game} = Game.Server.start_link(60)
+      Game.Server.show(game)
+      Game.Server.asteroid_hit(game, 1)
+  """
+  def handle_cast({:asteroid_hit, id}, game) do
+    pid = game.pids.asteroids[id]
+    if pid != nil do
+      fragments = Asteroid.split(pid)
+      new_game = Enum.reduce(fragments, game, fn(f, game) ->
+       new_asteroid_in_game(f, game) end)
+      {:noreply, new_game}
+    else
+      {:noreply, game}
+    end
+  end
+
   def handle_cast({:explosion, x, y}, game) do
     new_game = update_in(game.explosions, &[{x,y} | &1])
     {:noreply, new_game}
@@ -292,6 +313,13 @@ defmodule Game.Server do
     end)
   end
 
+  # Asteroids
+
+  defp new_asteroid_in_game(a, game) do
+    id = Identifiers.next(game.ids)
+    {:ok, pid} = Asteroid.start_link(id, a)
+    put_in(game.pids.asteroids[id], pid)
+  end
 
   # Development
 
