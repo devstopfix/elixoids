@@ -23,6 +23,10 @@ defmodule Game.Server do
       {:ok, game} = Game.Server.start_link(60)
       Game.Server.show(game)
 
+  To split an asteroid:
+
+      Game.Server.asteroid_hit(:game, 1)
+
   """
 
   use GenServer
@@ -311,9 +315,9 @@ defmodule Game.Server do
     handle_bullets_hitting_ships(game, bullet_ships)
 
     bullet_asteroids = Collision.detect_bullets_hitting_asteroids(all_bullets, all_asteroids)
-    #handle_bullets_hitting_asteroids(game, bullet_asteroids)
-    # TODO stop bullets here - union with asteroid bullets
-    stop_bullets(Collision.unique_bullets(bullet_ships) ++ Collision.unique_bullets(bullet_asteroids))
+    handle_bullets_hitting_asteroids(game, bullet_asteroids)
+    stop_bullets(Collision.unique_bullets(bullet_ships) 
+              ++ Collision.unique_bullets(bullet_asteroids))
   end
 
   defp handle_bullets_hitting_ships(game, bullet_ships) do
@@ -327,9 +331,10 @@ defmodule Game.Server do
 
   defp handle_bullets_hitting_asteroids(game, bullet_asteroids) do
     bullet_asteroids
-    |> Collision.unique_bullets
-    |> Enum.map(fn(b) -> 
-      {_, x, y} = game.state.bullets[b]
+    |> Collision.unique_targets
+    |> Enum.map(fn(a) -> 
+      #{_, x, y} = game.state.bullets[b]
+      Game.Server.asteroid_hit(self(), a)
     end)
   end
 
