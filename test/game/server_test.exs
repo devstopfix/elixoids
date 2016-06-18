@@ -20,6 +20,7 @@ defmodule Game.ServerTest do
   test "We can retrieve game state of Asteroids" do
     {:ok, game} = Game.start_link
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
 
     game_state = Game.state(game)
 
@@ -29,6 +30,7 @@ defmodule Game.ServerTest do
   test "We can retrieve game state of Ships" do
     {:ok, game} = Game.start_link
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
 
     game_state = Game.state(game)
 
@@ -38,6 +40,7 @@ defmodule Game.ServerTest do
   test "We can retrieve game state of eXplosions" do
     {:ok, game} = Game.start_link
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
 
     game_state = Game.state(game)
 
@@ -48,6 +51,7 @@ defmodule Game.ServerTest do
   test "We can retrieve viewport dimensions from game state" do
     {:ok, game} = Game.start_link
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
 
     game_state = Game.state(game)
 
