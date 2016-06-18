@@ -76,8 +76,8 @@ defmodule Game.Server do
     GenServer.cast(pid, {:update_bullet, new_state})
   end
 
-  def delete_bullet(pid, id) do
-    GenServer.cast(pid, {:delete_bullet, id})
+  def stop_bullet(pid, id) do
+    GenServer.cast(pid, {:stop_bullet, id})
   end
 
   def explosion(pid, x, y) do
@@ -181,7 +181,11 @@ defmodule Game.Server do
     {:noreply, new_game}
   end
 
-  def handle_cast({:delete_bullet, id}, game) do
+  def handle_cast({:stop_bullet, id}, game) do
+    pid = game.pids.bullets[id]
+    if pid != nil do
+      Bullet.stop(pid)
+    end
     new_game = update_in(game.state.bullets, &Map.delete(&1, id))
     new_game2 = update_in(new_game.pids.bullets, &Map.delete(&1, id))
     {:noreply, new_game2}
@@ -284,17 +288,10 @@ defmodule Game.Server do
     |> Enum.map(fn(b) -> 
       {_, x, y} = game.state.bullets[b]
       Game.Server.explosion(self(), x, y)
-      #stop_bullet
+      Game.Server.stop_bullet(self(), b)
     end)
   end
 
-  @doc """
-  Stop the bullet with given id. Tell the process to stop
-  and remove from the game state.
-  """
-  defp stop_bullet(id) do
-    
-  end
 
   # Development
 
