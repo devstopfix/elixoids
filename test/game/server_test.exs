@@ -32,7 +32,7 @@ defmodule Game.ServerTest do
 
     game_state = Game.state(game)
 
-    assert ["AAA", _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
+    assert [_, _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
   end
 
   test "We can retrieve game state of eXplosions" do

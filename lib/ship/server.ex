@@ -60,8 +60,8 @@ defmodule Ship.Server do
   def handle_call(:nose, _from, ship) do
     ship_centre = ship.pos
     v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
-    nose = Point.apply_velocity(ship_centre, v, 1000.0)
-    {:reply, {nose, ship.theta}, ship}
+    p = Point.apply_velocity(ship_centre, v, 1000.0)
+    {:reply, {p, ship.theta}, ship}
   end
 
   # Data
@@ -91,7 +91,7 @@ defmodule Ship.Server do
   def rotate_ship(ship, delta_t_ms) do
     theta = ship.theta
     delta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
-    %{ship | :theta => Velocity.wrap_angle(theta+delta)} 
+    %{ship | :theta => Velocity.wrap_angle(theta + delta)} 
   end
 
   defp random_tag do

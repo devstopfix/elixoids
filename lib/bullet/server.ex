@@ -43,6 +43,20 @@ defmodule Bullet.Server do
     GenServer.cast(pid, {:move, delta_t_ms, game_pid})
   end
 
+  @doc """
+  The bullet has expired and should be removed from the game.
+
+      {:ok, b} = Bullet.Server.start_link(999, 
+        %World.Point{:x=>0.0, :y=>0.0},
+        1.0)
+      Process.alive?(b)
+      Bullet.Server.stop(b)
+      Process.alive?(b)
+  """
+  def stop(pid) do
+    GenServer.cast(pid, :stop)
+  end
+
   # GenServer callbacks
 
   def init(b) do
@@ -55,9 +69,13 @@ defmodule Bullet.Server do
       Game.Server.update_bullet(game_pid, state_tuple(moved_bullet))
       {:noreply, moved_bullet}
     else
-      Game.Server.delete_bullet(game_pid, b.id)
+      Game.Server.stop_bullet(game_pid, b.id)
       {:stop, :normal, b}
     end
+  end
+
+  def handle_cast(:stop, b) do
+    {:stop, :normal, b}
   end
 
   # Functions
