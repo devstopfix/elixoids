@@ -9,7 +9,7 @@ defmodule Game.Collision do
     {bullet_id, bx, by} = bullet
     {ship_id, _tag, sx, sy, sr, _, _} = ship
     d = sr * sr
-    (((bx-sx)*(bx-sx)) + ((by-sy)*(by-sy))) < d
+    (((bx - sx) * (bx - sx)) + ((by - sy) * (by - sy))) < d
   end
 
   def detect_bullets_hitting_ships(bullets, ships) do

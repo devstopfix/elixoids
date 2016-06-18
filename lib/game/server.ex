@@ -247,7 +247,7 @@ defmodule Game.Server do
   """
   def map_rest(m) do
     m
-    |> Enum.map(fn([_h|t]) -> t end )
+    |> Enum.map(fn([_h|t]) -> t end)
   end
 
   defp start_ticker(pid, fps) do
@@ -284,9 +284,17 @@ defmodule Game.Server do
     |> Enum.map(fn(b) -> 
       {_, x, y} = game.state.bullets[b]
       Game.Server.explosion(self(), x, y)
+      #stop_bullet
     end)
   end
 
+  @doc """
+  Stop the bullet with given id. Tell the process to stop
+  and remove from the game state.
+  """
+  defp stop_bullet(id) do
+    
+  end
 
   # Development
 
