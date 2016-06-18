@@ -21,10 +21,12 @@ defmodule Bullet.Server do
         1.0)
       Bullet.Server.move(b, 100, self())
   """
-  def start_link(id, pos, theta) do
+  def start_link(id, pos, theta, shooter) do
+    v = %World.Velocity{:theta=>theta, :speed=>@bullet_speed_m_per_s}
     b = %{:id=>id,
           :pos=>pos,
-          :velocity=>%World.Velocity{:theta=>theta, :speed=>@bullet_speed_m_per_s},
+          :velocity=>v,
+          :shooter=>shooter,
           :expire_at=>calculate_ttl()}
     GenServer.start_link(__MODULE__, b, [])
   end
@@ -57,6 +59,10 @@ defmodule Bullet.Server do
     GenServer.cast(pid, :stop)
   end
 
+  def hit_asteroid(pid) do
+    GenServer.cast(pid, :hit_asteroid)
+  end
+
   # GenServer callbacks
 
   def init(b) do
@@ -76,6 +82,14 @@ defmodule Bullet.Server do
 
   def handle_cast(:stop, b) do
     {:stop, :normal, b}
+  end
+
+  def handle_cast(:hit_asteroid, b) do
+    [b.shooter, "shot an ASTEROID"]
+    |> Enum.join(" ")
+    |> IO.puts
+    
+    {:noreply, b}
   end
 
   # Functions

@@ -14,10 +14,10 @@ defmodule Ship.Server do
   @nose_radius_m (@ship_radius_m * 1.1)
   @ship_rotation_rad_per_sec (:math.pi * 2 / 10.0)
 
-  def start_link(id) do
+  def start_link(id, tag \\ random_tag()) do
     ship = random_ship() 
            |> Map.put(:id, id)
-           |> Map.put(:tag, random_tag())
+           |> Map.put(:tag, tag)
 
     GenServer.start_link(__MODULE__, ship, [])
   end
@@ -33,8 +33,8 @@ defmodule Ship.Server do
     GenServer.call(pid, :position)
   end
 
-  def nose(pid) do
-    GenServer.call(pid, :nose)
+  def nose_tag(pid) do
+    GenServer.call(pid, :nose_tag)
   end
 
   # GenServer callbacks
@@ -57,11 +57,9 @@ defmodule Ship.Server do
   The nose of the ship is defined as the centre offset by 
   half of the radius, in the direction the ship is pointing.
   """
-  def handle_call(:nose, _from, ship) do
-    ship_centre = ship.pos
-    v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
-    p = Point.apply_velocity(ship_centre, v, 1000.0)
-    {:reply, {p, ship.theta}, ship}
+  def handle_call(:nose_tag, _from, ship) do
+    p = calculate_nose(ship)
+    {:reply, {p, ship.theta, ship.tag}, ship}
   end
 
   # Data
@@ -98,4 +96,10 @@ defmodule Ship.Server do
     ?A..?Z |> Enum.to_list |> Enum.take_random(3) |> to_string
   end
  
+  defp calculate_nose(ship) do
+    ship_centre = ship.pos
+    v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
+    Point.apply_velocity(ship_centre, v, 1000.0)
+  end
+
 end

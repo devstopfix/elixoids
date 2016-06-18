@@ -5,15 +5,10 @@ defmodule Ship.ServerTest do
   alias Ship.Server, as: Ship
 
 
-  test "Nose of ship is temporatily the centre" do
-    {:ok, ship} = Ship.start_link(1)
-    #Ship.position(ship, self())
-    #receive do
-    #  {:position}
-    #end
-    {pos, theta} = Ship.nose(ship)
-    refute 0.0 == theta
-    refute [] == pos
+  test "Retrive nose of ship and its tag" do
+    {:ok, ship} = Ship.start_link(1, "AAA")
+    {pos, theta, tag} = Ship.nose_tag(ship)
+    assert "AAA" == tag
   end
 
 end

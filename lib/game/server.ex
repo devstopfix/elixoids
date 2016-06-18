@@ -38,8 +38,8 @@ defmodule Game.Server do
   alias World.Clock, as: Clock
   alias Game.Collision, as: Collision
 
-  @initial_asteroid_count   8
-  @initial_ship_count       8
+  @initial_asteroid_count   16
+  @initial_ship_count       16
 
   def start_link(fps \\ 0) do
     GenServer.start_link(__MODULE__, {:ok, fps}, [])
@@ -90,6 +90,10 @@ defmodule Game.Server do
 
   def explosion(pid, x, y) do
     GenServer.cast(pid, {:explosion, x, y})
+  end
+
+  def say_player_shot_asteroid(pid, bullet_id) do
+    GenServer.cast(pid, {:say_player_shot_asteroid, bullet_id})
   end
 
   ## Initial state
@@ -180,8 +184,8 @@ defmodule Game.Server do
   def handle_cast({:ship_fires_bullet, ship_id}, game) do
     ship_pid = game.pids.ships[ship_id]
     if ((ship_pid != nil) && Process.alive?(ship_pid)) do
-      case Ship.nose(game.pids.ships[ship_id]) do
-        {ship_pos, theta} -> fire_bullet_in_game(game, ship_pos, theta)
+      case Ship.nose_tag(game.pids.ships[ship_id]) do
+        {ship_pos, theta, tag} -> fire_bullet_in_game(game, ship_pos, theta, tag)
         _ -> {:noreply, game}
       end
     end
@@ -229,6 +233,19 @@ defmodule Game.Server do
     else
       {:noreply, game}
     end
+  end
+
+  @doc """
+      {:ok, game} = Game.Server.start_link(60)
+      Game.Server.show(game)
+      Game.Server.say_player_shot_asteroid(game, 55)
+  """
+  def handle_cast({:say_player_shot_asteroid, bullet_id}, game) do
+    bullet_pid = game.pids.bullets[bullet_id]
+    if bullet_pid != nil do
+      Bullet.hit_asteroid(bullet_pid)
+    end
+    {:noreply, game}
   end
 
   def handle_cast({:explosion, x, y}, game) do
@@ -346,7 +363,8 @@ defmodule Game.Server do
     bullet_asteroids
     |> Collision.unique_targets
     |> Enum.map(fn(a) -> 
-      #{_, x, y} = game.state.bullets[b]
+      {_, x, y, _r} = game.state.asteroids[a]
+      Game.Server.explosion(self(), x, y)
       Game.Server.asteroid_hit(self(), a)
     end)
   end
@@ -377,9 +395,9 @@ defmodule Game.Server do
       end)
   end
 
-  defp fire_bullet_in_game(game, ship_pos, theta) do
+  defp fire_bullet_in_game(game, ship_pos, theta, shooter) do
     id = Identifiers.next(game.ids)
-    {:ok, b} = Bullet.start_link(id, ship_pos, theta)
+    {:ok, b} = Bullet.start_link(id, ship_pos, theta, shooter)
     new_game = put_in(game.pids.bullets[id], b)
     {:noreply, new_game}
   end

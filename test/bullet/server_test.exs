@@ -23,7 +23,9 @@ defmodule Bullet.ServerTest do
 
   test "Stop a bullet" do
       {:ok, b} = Bullet.start_link(999, 
-                   %World.Point{:x=>0.0, :y=>0.0}, 1.0)
+                   %World.Point{:x=>0.0, :y=>0.0}, 
+                   1.0,
+                   0)
       assert Process.alive?(b)
 
       #ref  = Process.monitor(b)
