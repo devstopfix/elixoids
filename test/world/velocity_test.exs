@@ -30,4 +30,29 @@ defmodule World.VelocityTest do
     assert :math.pi == Velocity.wrap_angle( 3 * :math.pi)
   end
 
+  property :double_velocity_doubles_speed do
+    for_all {speed} in {real} do
+      v1 = Velocity.random_direction_with_speed(speed)
+      assert v1.speed == speed
+
+      v2 = Velocity.double(v1)
+
+      assert v2.speed == speed * 2
+      assert v1.theta == v2.theta
+    end
+  end
+
+  test :fork_velocity do
+      v = Velocity.north
+
+      vl = Velocity.fork(v,  0.2)
+      vr = Velocity.fork(v, -0.2)
+
+      assert vl.speed == v.speed
+      assert vr.speed == v.speed
+
+      assert vl.theta > v.theta
+      assert vr.theta < v.theta
+  end
+
 end

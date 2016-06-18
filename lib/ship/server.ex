@@ -95,7 +95,7 @@ defmodule Ship.Server do
   end
 
   defp random_tag do
-    Enum.to_list(?A .. ?Z) |> Enum.take_random(3) |> to_string
+    ?A..?Z |> Enum.to_list |> Enum.take_random(3) |> to_string
   end
  
 end

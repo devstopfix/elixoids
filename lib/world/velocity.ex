@@ -7,12 +7,13 @@ defmodule World.Velocity do
 
   alias World.Velocity, as: Velocity
 
+  # 360º
   @two_pi_radians (2 * :math.pi)
 
   defstruct theta: 0.0, speed: 0.0
 
-  def north do
-    %Velocity{theta: (:math.pi / 2)}
+  def north(speed \\ 0.0) do
+    %Velocity{theta: (:math.pi / 2), speed: speed}
   end
 
   def west do
@@ -34,6 +35,22 @@ defmodule World.Velocity do
   def random_direction do
     (:rand.uniform * :math.pi * 2)
   end
+
+  @doc """
+  Double the speed component of Velocity
+  """
+  def double(v) do
+    %{v | speed: v.speed * 2}
+  end
+
+  @doc """
+  Change the direction by delta_thetaº clockwise
+  """
+  def fork(v, delta_theta) do
+    theta = wrap_angle(v.theta + delta_theta) 
+    %{v | theta: theta}
+  end
+
 
   @doc """
   Round angle to 4dp.
