@@ -23,6 +23,10 @@ defmodule Game.Server do
       {:ok, game} = Game.Server.start_link(60)
       Game.Server.show(game)
 
+  To split an asteroid:
+
+      Game.Server.asteroid_hit(:game, 1)
+
   """
 
   use GenServer
@@ -34,8 +38,8 @@ defmodule Game.Server do
   alias World.Clock, as: Clock
   alias Game.Collision, as: Collision
 
-  @initial_asteroid_count   6
-  @initial_ship_count      20
+  @initial_asteroid_count  16
+  @initial_ship_count       8
 
   def start_link(fps \\ 0) do
     GenServer.start_link(__MODULE__, {:ok, fps}, [])
@@ -62,6 +66,10 @@ defmodule Game.Server do
 
   def update_asteroid(pid, new_state) do
     GenServer.cast(pid, {:update_asteroid, new_state})
+  end
+
+  def asteroid_hit(pid, id) do
+    GenServer.cast(pid, {:asteroid_hit, id})
   end
 
   def update_ship(pid, new_state) do
@@ -191,6 +199,30 @@ defmodule Game.Server do
     {:noreply, new_game2}
   end
 
+  @doc """
+      {:ok, game} = Game.Server.start_link(60)
+      Game.Server.show(game)
+      Game.Server.asteroid_hit(game, 1)
+
+  If the game is identified by the atom :game then:
+
+      Game.Server.asteroid_hit(:game, 1)
+  """
+  def handle_cast({:asteroid_hit, id}, game) do
+    pid = game.pids.asteroids[id]
+    if pid != nil do
+      fragments = Asteroid.split(pid)
+      new_game = Enum.reduce(fragments, game, fn(f, game) ->
+       new_asteroid_in_game(f, game) end)
+      new_game2 = update_in(new_game.state.asteroids, &Map.delete(&1, id))
+      new_game3 = update_in(new_game2.pids.asteroids, &Map.delete(&1, id))
+      Asteroid.stop(pid)
+      {:noreply, new_game3}
+    else
+      {:noreply, game}
+    end
+  end
+
   def handle_cast({:explosion, x, y}, game) do
     new_game = update_in(game.explosions, &[{x,y} | &1])
     {:noreply, new_game}
@@ -278,20 +310,49 @@ defmodule Game.Server do
   # Collisions
 
   defp check_for_collisions(game) do
-    all_bullets = Map.values(game.state.bullets)
-    all_ships   = Map.values(game.state.ships)
+    all_asteroids = Map.values(game.state.asteroids)
+    all_bullets   = Map.values(game.state.bullets)
+    all_ships     = Map.values(game.state.ships)
 
-    collisions = Collision.detect_bullets_hitting_ships(all_bullets, all_ships)
+    bullet_ships = Collision.detect_bullets_hitting_ships(all_bullets, all_ships)
+    handle_bullets_hitting_ships(game, bullet_ships)
 
-    collisions
+    bullet_asteroids = Collision.detect_bullets_hitting_asteroids(all_bullets, all_asteroids)
+    handle_bullets_hitting_asteroids(game, bullet_asteroids)
+    stop_bullets(Collision.unique_bullets(bullet_ships) 
+              ++ Collision.unique_bullets(bullet_asteroids))
+  end
+
+  defp handle_bullets_hitting_ships(game, bullet_ships) do
+    bullet_ships
     |> Collision.unique_bullets
     |> Enum.map(fn(b) -> 
       {_, x, y} = game.state.bullets[b]
       Game.Server.explosion(self(), x, y)
-      Game.Server.stop_bullet(self(), b)
     end)
   end
 
+  defp handle_bullets_hitting_asteroids(game, bullet_asteroids) do
+    bullet_asteroids
+    |> Collision.unique_targets
+    |> Enum.map(fn(a) -> 
+      #{_, x, y} = game.state.bullets[b]
+      Game.Server.asteroid_hit(self(), a)
+    end)
+  end
+
+  defp stop_bullets(bullets) do
+    Enum.map(bullets, fn(b) -> Game.Server.stop_bullet(self(), b) end)
+  end
+
+
+  # Asteroids
+
+  defp new_asteroid_in_game(a, game) do
+    id = Identifiers.next(game.ids)
+    {:ok, pid} = Asteroid.start_link(id, a)
+    put_in(game.pids.asteroids[id], pid)
+  end
 
   # Development
 

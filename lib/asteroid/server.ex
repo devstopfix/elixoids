@@ -2,7 +2,7 @@ defmodule Asteroid.Server do
 
    @moduledoc """
    Asteroid process. Asteroids have position, size and velocity,
-   and wonder the game area.
+   and wander the game area.
    """
 
    use GenServer
@@ -10,11 +10,20 @@ defmodule Asteroid.Server do
    alias World.Point, as: Point
    alias Elixoids.Space, as: Space
 
-   @asteroid_radius_m      80.0
+   # Radius of random asteroid
+   @asteroid_radius_m     120.0
+
+   # Smallest asteroid that can survive being hit
+   @splittable_radius_m    20.0
+
+   # 45º
+   @quarter_pi_radians (:math.pi / 4.0) 
+
+   # Initial speed of asteroid
    @asteroid_speed_m_per_s 20.0
 
-   def start_link(id) do
-     a = Map.put(random_asteroid(), :id, id)
+   def start_link(id, asteroid \\ random_asteroid()) do
+     a = Map.put(asteroid, :id, id)
      GenServer.start_link(__MODULE__, a, [])
    end
 
@@ -32,6 +41,35 @@ defmodule Asteroid.Server do
      GenServer.call(pid, :position)
    end
 
+   @doc """
+   The asteroid has been destroyed.
+
+      {:ok, a} = Asteroid.Server.start_link(9999)
+      Process.alive?(a)
+      Asteroid.Server.stop(a)
+      Process.alive?(a)   
+   """
+   def stop(pid) do
+     GenServer.cast(pid, :stop)
+   end
+
+   @doc """
+   Return a list of zero or two new asteroid states.
+
+   Returns empty list if the asteroid is too small to be split.
+   Otherwise returns a list of two new states of smaller rocks 
+   flying in opposite directions.
+
+   {:ok, game} = Game.Server.start_link(60)
+   Game.Server.show(game)
+
+   rock = IEx.Helpers.pid(0,140,0)
+   Asteroid.Server.split(rock)
+   """
+   def split(pid) do
+     GenServer.call(pid, :split)
+   end
+
    # GenServer callbacks
 
    def init(a) do
@@ -44,8 +82,23 @@ defmodule Asteroid.Server do
      {:noreply, moved_asteroid}
    end
 
+   def handle_cast(:stop, b) do
+     {:stop, :normal, b}
+   end
+
    def handle_call(:position, _from, a) do
      {:reply, {a.id, a.pos.x, a.pos.y, a.radius}, a}
+   end
+
+   def handle_call(:split, _game_pid, a) do
+     if a.radius >= @splittable_radius_m do
+       directions = [@quarter_pi_radians, -1 * @quarter_pi_radians]
+       fragments = Enum.map(directions, 
+        fn(delta_theta) -> cleave(delta_theta, a) end)
+       {:reply, fragments, a}
+     else
+       {:reply, [], a}
+     end
    end
 
    # {:ok, a} = Asteroid.Server.start_link(1)
@@ -74,6 +127,34 @@ defmodule Asteroid.Server do
       Point.round(a.pos.x), 
       Point.round(a.pos.y),
       Point.round(a.radius)}
+   end
+
+   @doc """
+   Remove the id of the asteroid
+   """
+   def anonymous(a) do
+     Map.delete(a, :id)
+   end
+
+   def halve(a) do
+     r = a.radius / 2.0
+     %{a | radius: r}
+   end
+
+   def fork(a, delta_theta) do
+     update_in(a.velocity, &World.Velocity.fork(&1, delta_theta))
+   end
+
+   def explode(a) do
+     update_in(a.velocity, &World.Velocity.double(&1))
+   end
+
+   def cleave(delta_theta, a) do
+     a 
+     |> anonymous
+     |> halve
+     |> fork(delta_theta)
+     |> explode
    end
 
 end

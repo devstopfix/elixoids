@@ -13,14 +13,18 @@ defmodule Game.CollisionTest do
     assert [] = Collision.detect_bullets_hitting_ships(bullets, ships)
   end
 
-  test "Collision" do
-    assert Collision.collision?({0, 5, 5}, {0,"", 4, 4, 20, 0, ""})
+  test "Collision between bullet and ship" do
+    assert Collision.bullet_hits_ship?({0, 5, 5}, {0,"", 4, 4, 20, 0, ""})
+  end
+
+  test "Collision between bullet and asteroid" do
+    assert Collision.bullet_hits_asteroid?({0, 5, 5}, {1, 4, 4, 20})
   end
 
   test "No Collision" do
-    refute Collision.collision?({0, 50, 50}, {1, "", 4, 4, 20, 0, ""})
-    refute Collision.collision?({0,  0, 50}, {2, "", 4, 4, 20, 0, ""})
-    refute Collision.collision?({0, 50,  0}, {3, "", 4, 4, 20, 0, ""})
+    refute Collision.bullet_hits_ship?({0, 50, 50}, {1, "", 4, 4, 20, 0, ""})
+    refute Collision.bullet_hits_ship?({0,  0, 50}, {2, "", 4, 4, 20, 0, ""})
+    refute Collision.bullet_hits_ship?({0, 50,  0}, {3, "", 4, 4, 20, 0, ""})
   end
 
   test "Unique bullets" do
@@ -28,7 +32,7 @@ defmodule Game.CollisionTest do
   end
 
   test "Unique ships" do
-    assert [3, 4, 5] == Collision.unique_ships([{1,3},{2,4},{1,5}]) 
+    assert [3, 4, 5] == Collision.unique_targets([{1,3},{2,4},{1,5}]) 
   end
 
 end
