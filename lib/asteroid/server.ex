@@ -7,7 +7,8 @@ defmodule Asteroid.Server do
 
    use GenServer
 
-   alias World.Point, as: Point
+   alias World.Point,    as: Point
+   alias World.Velocity, as: Velocity
    alias Elixoids.Space, as: Space
 
    # Radius of random asteroid
@@ -94,7 +95,10 @@ defmodule Asteroid.Server do
      if a.radius >= @splittable_radius_m do
        directions = [@quarter_pi_radians, -1 * @quarter_pi_radians]
        fragments = Enum.map(directions, 
-        fn(delta_theta) -> cleave(delta_theta, a) end)
+        fn(delta_theta) -> 
+          delta_theta
+          |> Velocity.perturb
+          |> cleave(a) end)
        {:reply, fragments, a}
      else
        {:reply, [], a}
@@ -107,7 +111,7 @@ defmodule Asteroid.Server do
 
    def random_asteroid do
      %{:pos => Elixoids.Space.random_point_on_border,
-       :velocity => World.Velocity.random_direction_with_speed(@asteroid_speed_m_per_s),
+       :velocity => Velocity.random_direction_with_speed(@asteroid_speed_m_per_s),
        :radius => @asteroid_radius_m}
    end
 
@@ -142,11 +146,11 @@ defmodule Asteroid.Server do
    end
 
    def fork(a, delta_theta) do
-     update_in(a.velocity, &World.Velocity.fork(&1, delta_theta))
+     update_in(a.velocity, &Velocity.fork(&1, delta_theta))
    end
 
    def explode(a) do
-     update_in(a.velocity, &World.Velocity.double(&1))
+     update_in(a.velocity, &Velocity.double(&1))
    end
 
    def cleave(delta_theta, a) do

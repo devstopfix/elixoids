@@ -51,6 +51,13 @@ defmodule World.Velocity do
     %{v | theta: theta}
   end
 
+  @doc """
+  Modify the angle by a small amount
+  """
+  def perturb(theta) do
+    delta_theta = (:rand.uniform * :math.pi * 12.0)
+    wrap_angle(theta + delta_theta)
+  end
 
   @doc """
   Round angle to 4dp.
