@@ -38,7 +38,7 @@ defmodule Game.Server do
   alias World.Clock, as: Clock
   alias Game.Collision, as: Collision
 
-  @initial_asteroid_count   16
+  @initial_asteroid_count    1
   @initial_ship_count       16
 
   def start_link(fps \\ 0) do
@@ -270,9 +270,11 @@ defmodule Game.Server do
     fire_bullets(game)
     check_for_collisions(game)
 
-    {:reply, 
-      {:elapsed_ms, elapsed_ms}, 
-      Map.put(game, :clock_ms, Clock.now_ms)}
+    new_game = game
+    |> maybe_spawn_asteroid
+    |> update_game_clock
+
+    {:reply, {:elapsed_ms, elapsed_ms}, new_game}
   end
 
   def handle_call(:state, _from, game) do
@@ -382,6 +384,25 @@ defmodule Game.Server do
     {:ok, pid} = Asteroid.start_link(id, a)
     put_in(game.pids.asteroids[id], pid)
   end
+
+  # Game state
+
+  defp update_game_clock(game) do
+    Map.put(game, :clock_ms, Clock.now_ms)
+  end
+
+  defp maybe_spawn_asteroid(game) do
+    if not_enough_asteroids(game.pids.asteroids) do
+      new_asteroid_in_game(Asteroid.random_asteroid, game)
+    else
+      game
+    end
+  end
+
+  defp not_enough_asteroids(asteroids) do
+    length(Map.keys(asteroids)) < @initial_asteroid_count
+  end
+
 
   # Development
 
