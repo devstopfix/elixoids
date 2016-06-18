@@ -8,7 +8,7 @@ defmodule Game.Server do
 
   To use, start a Game, and periodically send it tick messages:
 
-      {:ok, game} = Game.Server.start_link(4)
+      {:ok, game} = Game.Server.start_link()
       Game.Server.tick(game)
       ...
       Game.Server.tick(game)
