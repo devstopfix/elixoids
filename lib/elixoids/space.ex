@@ -52,6 +52,12 @@ defmodule Elixoids.Space do
     end
   end
 
+  def random_central_point do
+    x = Float.ceil((@width  / 2) + (:rand.normal * @width  / 4.0))
+    y = Float.ceil((@height / 2) + (:rand.normal * @height / 4.0))
+    %Point{x: x, y: y}
+  end
+
   def dimensions do
     [@width, @height]
   end
