@@ -24,7 +24,7 @@ defmodule Game.ServerTest do
 
     game_state = Game.state(game)
 
-    assert [1, _, _, 80.0] = List.first(game_state[:a])
+    assert [1, _, _, 120.0] = List.first(game_state[:a])
   end
 
   test "We can retrieve game state of Ships" do
