@@ -153,8 +153,12 @@ defmodule Game.Server do
 
   def handle_cast({:update_asteroid, asteroid_state}, game) do
     id = elem(asteroid_state, 0)
-    new_game = put_in(game.state.asteroids[id], asteroid_state)
-    {:noreply, new_game}
+    if (Map.has_key?(game.pids.asteroids, id)) do 
+      new_game = put_in(game.state.asteroids[id], asteroid_state)
+      {:noreply, new_game}
+    else
+      {:noreply, game}
+    end
   end
 
   def handle_cast({:update_ship, ship_state}, game) do
@@ -185,8 +189,12 @@ defmodule Game.Server do
 
   def handle_cast({:update_bullet, b}, game) do
     id = elem(b, 0)
-    new_game = put_in(game.state.bullets[id], b)
-    {:noreply, new_game}
+    if (Map.has_key?(game.pids.bullets, id)) do
+      new_game = put_in(game.state.bullets[id], b)
+      {:noreply, new_game}
+    else
+      {:noreply, game}
+    end
   end
 
   def handle_cast({:stop_bullet, id}, game) do
@@ -212,11 +220,11 @@ defmodule Game.Server do
     pid = game.pids.asteroids[id]
     if pid != nil do
       fragments = Asteroid.split(pid)
+      Asteroid.stop(pid)
       new_game = Enum.reduce(fragments, game, fn(f, game) ->
        new_asteroid_in_game(f, game) end)
       new_game2 = update_in(new_game.state.asteroids, &Map.delete(&1, id))
       new_game3 = update_in(new_game2.pids.asteroids, &Map.delete(&1, id))
-      Asteroid.stop(pid)
       {:noreply, new_game3}
     else
       {:noreply, game}
@@ -319,8 +327,10 @@ defmodule Game.Server do
 
     bullet_asteroids = Collision.detect_bullets_hitting_asteroids(all_bullets, all_asteroids)
     handle_bullets_hitting_asteroids(game, bullet_asteroids)
-    stop_bullets(Collision.unique_bullets(bullet_ships) 
+
+    dud_bullets = Enum.uniq(Collision.unique_bullets(bullet_ships) 
               ++ Collision.unique_bullets(bullet_asteroids))
+    stop_bullets(dud_bullets)
   end
 
   defp handle_bullets_hitting_ships(game, bullet_ships) do
@@ -342,7 +352,8 @@ defmodule Game.Server do
   end
 
   defp stop_bullets(bullets) do
-    Enum.map(bullets, fn(b) -> Game.Server.stop_bullet(self(), b) end)
+    Enum.map(bullets, fn(b) -> 
+      Game.Server.stop_bullet(self(), b) end)
   end
 
 

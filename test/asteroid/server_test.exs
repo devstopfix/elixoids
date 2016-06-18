@@ -21,9 +21,8 @@ defmodule Asteroid.ServerTest do
     assert f1.velocity.speed == 20.0
     assert f2.velocity.speed == 20.0
 
-    assert f1.velocity.theta == 2.356194490192345
-    assert f2.velocity.theta == 0.7853981633974483
-
+    assert f1.velocity.theta >= 1.856194490192345
+    assert f2.velocity.theta <= 1.6
   end
 
 end
