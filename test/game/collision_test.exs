@@ -13,8 +13,12 @@ defmodule Game.CollisionTest do
     assert [] = Collision.detect_bullets_hitting_ships(bullets, ships)
   end
 
-  test "Collision" do
+  test "Collision between bullet and ship" do
     assert Collision.bullet_hits_ship?({0, 5, 5}, {0,"", 4, 4, 20, 0, ""})
+  end
+
+  test "Collision between bullet and asteroid" do
+    assert Collision.bullet_hits_asteroid?({0, 5, 5}, {1, 4, 4, 20})
   end
 
   test "No Collision" do
