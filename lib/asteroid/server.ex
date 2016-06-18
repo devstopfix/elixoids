@@ -11,7 +11,7 @@ defmodule Asteroid.Server do
    alias Elixoids.Space, as: Space
 
    # Radius of random asteroid
-   @asteroid_radius_m      80.0
+   @asteroid_radius_m     120.0
 
    # Smallest asteroid that can survive being hit
    @splittable_radius_m    20.0
