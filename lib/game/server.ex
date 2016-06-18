@@ -41,8 +41,10 @@ defmodule Game.Server do
   @initial_asteroid_count   8
   @initial_ship_count       8
 
-  def start_link(fps \\ 0) do
-    GenServer.start_link(__MODULE__, {:ok, fps}, [])
+  def start_link(fps \\ 0, 
+                 asteroid_count \\ @initial_asteroid_count,
+                 ship_count     \\ @initial_ship_count) do
+    GenServer.start_link(__MODULE__, {:ok, fps, asteroid_count, ship_count}, [])
   end
 
   def show(pid) do
@@ -124,10 +126,10 @@ defmodule Game.Server do
 
   ## Server Callbacks
 
-  def init({:ok, fps}) do
+  def init({:ok, fps, asteroid_count, ship_count}) do
     {:ok, ids} = Identifiers.start_link
-    rocks = generate_asteroids(ids, @initial_asteroid_count)
-    ships = generate_ships(ids, @initial_ship_count)
+    rocks = generate_asteroids(ids, asteroid_count)
+    ships = generate_ships(ids, ship_count)
     game_state = %{:ids => ids, 
               :pids =>  %{:asteroids => rocks, 
                           :bullets => %{},
