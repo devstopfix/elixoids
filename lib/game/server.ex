@@ -34,8 +34,8 @@ defmodule Game.Server do
   alias World.Clock, as: Clock
   alias Game.Collision, as: Collision
 
-  @initial_asteroid_count   6
-  @initial_ship_count      20
+  @initial_asteroid_count  12
+  @initial_ship_count       3
 
   def start_link(fps \\ 0) do
     GenServer.start_link(__MODULE__, {:ok, fps}, [])
@@ -199,6 +199,10 @@ defmodule Game.Server do
       {:ok, game} = Game.Server.start_link(60)
       Game.Server.show(game)
       Game.Server.asteroid_hit(game, 1)
+
+  If the game is identified by the atom :game then:
+
+      Game.Server.asteroid_hit(:game, 1)
   """
   def handle_cast({:asteroid_hit, id}, game) do
     pid = game.pids.asteroids[id]
@@ -299,19 +303,26 @@ defmodule Game.Server do
   # Collisions
 
   defp check_for_collisions(game) do
-    all_bullets = Map.values(game.state.bullets)
-    all_ships   = Map.values(game.state.ships)
+    all_asteroids = Map.values(game.state.asteroids)
+    all_bullets   = Map.values(game.state.bullets)
+    all_ships     = Map.values(game.state.ships)
 
-    collisions = Collision.detect_bullets_hitting_ships(all_bullets, all_ships)
+    bullet_ships = Collision.detect_bullets_hitting_ships(all_bullets, all_ships)
 
-    collisions
+    handle_bullets_hitting_ships(game, bullet_ships)
+    # TODO stop bullets here - union with asteroid bullets
+  end
+
+  defp handle_bullets_hitting_ships(game, bullet_ships) do
+    bullet_ships
     |> Collision.unique_bullets
     |> Enum.map(fn(b) -> 
       {_, x, y} = game.state.bullets[b]
       Game.Server.explosion(self(), x, y)
-      Game.Server.stop_bullet(self(), b)
+      Game.Server.stop_bullet(self(), b) # TODO move
     end)
   end
+
 
   # Asteroids
 
