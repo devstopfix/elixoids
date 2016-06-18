@@ -47,7 +47,7 @@ defmodule World.Velocity do
   Change the direction by delta_thetaº clockwise
   """
   def fork(v, delta_theta) do
-    theta = (v.theta + delta_theta) |> wrap_angle
+    theta = wrap_angle(v.theta + delta_theta) 
     %{v | theta: theta}
   end
 

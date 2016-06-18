@@ -22,7 +22,7 @@ defmodule Game.Collision do
 
   def bullet_hits_asteroid?(bullet, asteroid) do
     {_bullet_id, bx, by} = bullet
-    {_asteroid_id, ax, ay, ar, } = asteroid
+    {_asteroid_id, ax, ay, ar,} = asteroid
     d = ar * ar
     (((bx - ax) * (bx - ax)) + ((by - ay) * (by - ay))) < d
   end

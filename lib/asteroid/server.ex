@@ -138,7 +138,7 @@ defmodule Asteroid.Server do
 
    def halve(a) do
      r = a.radius / 2.0
-     %{ a | radius: r }
+     %{a | radius: r}
    end
 
    def fork(a, delta_theta) do
