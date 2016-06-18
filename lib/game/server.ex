@@ -214,7 +214,10 @@ defmodule Game.Server do
       fragments = Asteroid.split(pid)
       new_game = Enum.reduce(fragments, game, fn(f, game) ->
        new_asteroid_in_game(f, game) end)
-      {:noreply, new_game}
+      new_game2 = update_in(new_game.state.asteroids, &Map.delete(&1, id))
+      new_game3 = update_in(new_game2.pids.asteroids, &Map.delete(&1, id))
+      Asteroid.stop(pid)
+      {:noreply, new_game3}
     else
       {:noreply, game}
     end

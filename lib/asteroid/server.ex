@@ -42,6 +42,18 @@ defmodule Asteroid.Server do
    end
 
    @doc """
+   The asteroid has been destroyed.
+
+      {:ok, a} = Asteroid.Server.start_link(9999)
+      Process.alive?(a)
+      Asteroid.Server.stop(a)
+      Process.alive?(a)   
+   """
+   def stop(pid) do
+     GenServer.cast(pid, :stop)
+   end
+
+   @doc """
    Return a list of zero or two new asteroid states.
 
    Returns empty list if the asteroid is too small to be split.
@@ -68,6 +80,10 @@ defmodule Asteroid.Server do
      moved_asteroid = move_asteroid(a, delta_t_ms)
      Game.Server.update_asteroid(game_pid, state_tuple(moved_asteroid))
      {:noreply, moved_asteroid}
+   end
+
+   def handle_cast(:stop, b) do
+     {:stop, :normal, b}
    end
 
    def handle_call(:position, _from, a) do
