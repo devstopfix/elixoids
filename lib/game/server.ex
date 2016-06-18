@@ -35,7 +35,7 @@ defmodule Game.Server do
   alias Game.Collision, as: Collision
 
   @initial_asteroid_count  12
-  @initial_ship_count       3
+  @initial_ship_count      24
 
   def start_link(fps \\ 0) do
     GenServer.start_link(__MODULE__, {:ok, fps}, [])
@@ -308,9 +308,12 @@ defmodule Game.Server do
     all_ships     = Map.values(game.state.ships)
 
     bullet_ships = Collision.detect_bullets_hitting_ships(all_bullets, all_ships)
-
     handle_bullets_hitting_ships(game, bullet_ships)
+
+    bullet_asteroids = Collision.detect_bullets_hitting_asteroids(all_bullets, all_asteroids)
+    #handle_bullets_hitting_asteroids(game, bullet_asteroids)
     # TODO stop bullets here - union with asteroid bullets
+    stop_bullets(Collision.unique_bullets(bullet_ships) ++ Collision.unique_bullets(bullet_asteroids))
   end
 
   defp handle_bullets_hitting_ships(game, bullet_ships) do
@@ -319,8 +322,19 @@ defmodule Game.Server do
     |> Enum.map(fn(b) -> 
       {_, x, y} = game.state.bullets[b]
       Game.Server.explosion(self(), x, y)
-      Game.Server.stop_bullet(self(), b) # TODO move
     end)
+  end
+
+  defp handle_bullets_hitting_asteroids(game, bullet_asteroids) do
+    bullet_asteroids
+    |> Collision.unique_bullets
+    |> Enum.map(fn(b) -> 
+      {_, x, y} = game.state.bullets[b]
+    end)
+  end
+
+  defp stop_bullets(bullets) do
+    Enum.map(bullets, fn(b) -> Game.Server.stop_bullet(self(), b) end)
   end
 
 
