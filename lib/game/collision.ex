@@ -1,15 +1,26 @@
 defmodule Game.Collision do
-  
+
   @moduledoc """
   Simplistic collision detections.
-  We use points (bullets) inside circles (ships)
   """
 
+  @doc """
+  Square a number.
+  """
+  defmacro sq(n) do
+    quote do
+      (unquote(n) * unquote(n))
+    end
+  end
+
+  @doc """
+  We use points (bullets) inside circles (ships)
+  """
   def bullet_hits_ship?(bullet, ship) do
     {_bullet_id, bx, by} = bullet
     {_ship_id, _tag, sx, sy, sr, _, _} = ship
-    d = sr * sr
-    (((bx - sx) * (bx - sx)) + ((by - sy) * (by - sy))) < d
+
+    (sq(bx - sx) + sq(by - sy)) < sq(sr)
   end
 
   @doc """
@@ -24,8 +35,8 @@ defmodule Game.Collision do
   def bullet_hits_asteroid?(bullet, asteroid) do
     {_bullet_id, bx, by} = bullet
     {_asteroid_id, ax, ay, ar,} = asteroid
-    d = ar * ar
-    (((bx - ax) * (bx - ax)) + ((by - ay) * (by - ay))) < d
+
+    (sq(bx - ax) + sq(by - ay)) < sq(ar)
   end
 
   @doc """
@@ -53,6 +64,17 @@ defmodule Game.Collision do
     collisions
     |> Enum.map(fn {_,s} -> s end)
     |> Enum.uniq
+  end
+
+  @doc """
+  Test if two circles touch or overlap by comparing
+  distances between their centres
+  """
+  def asteroid_hits_ship?(asteroid, ship) do
+    {_asteroid_id, ax, ay, ar,} = asteroid
+    {_ship_id, _tag, sx, sy, sr, _, _} = ship
+
+    (sq(ax - sx) + sq(ay - sy)) < (sq(sr) + sq(ar))
   end
 
 end

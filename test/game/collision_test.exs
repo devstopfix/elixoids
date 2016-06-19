@@ -1,8 +1,29 @@
 defmodule Game.CollisionTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
   doctest Game.Collision
 
   alias Game.Collision, as: Collision
+
+  test "No collision between asteroid and rock" do
+    ship =     {1, "AAA", 1000.0, 0,  20, 5.8957, "FFFFFF"}
+    asteroid = {2,         900.0, 0,  80}
+
+    assert false == Collision.asteroid_hits_ship?(asteroid, ship)
+  end
+
+  test "Collision between touching asteroid and rock" do
+    ship =     {1, "AAA", 1000.0, 0,  20, 5.8957, "FFFFFF"}
+    asteroid = {2,         921.0, 0,  80}
+
+    assert Collision.asteroid_hits_ship?(asteroid, ship)
+  end
+
+  test "Collision between overlapping asteroid and rock" do
+    ship =     {1, "AAA", 1000.0, 0,  20, 5.8957, "FFFFFF"}
+    asteroid = {2,        1000.0, 0,  80}
+
+    assert Collision.asteroid_hits_ship?(asteroid, ship)
+  end
 
   test "No collision" do
     bullets = [{6869, 1408.1, 427.8}, 
