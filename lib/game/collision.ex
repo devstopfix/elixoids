@@ -119,7 +119,8 @@ defmodule Game.Collision do
     bullet_ships = detect_bullets_hitting_ships(all_bullets, all_ships)
     handle_bullets_hitting_ships(game, bullet_ships, game_pid)
 
-    detect_asteroids_hitting_ships(all_asteroids, all_ships)
+    all_asteroids
+    |> detect_asteroids_hitting_ships(all_ships)
     |> handle_asteroid_hitting_ships(game_pid)
 
     bullet_asteroids = detect_bullets_hitting_asteroids(all_bullets, all_asteroids)
@@ -157,7 +158,7 @@ defmodule Game.Collision do
   defp handle_bullets_hitting_asteroids(game, bullet_asteroids, game_pid) do
     bullet_asteroids
     |> unique_bullets
-    |> Enum.map(fn(b)->Game.Server.say_player_shot_asteroid(game_pid, b) end)
+    |> Enum.map(fn(b) -> Game.Server.say_player_shot_asteroid(game_pid, b) end)
 
     bullet_asteroids
     |> unique_targets

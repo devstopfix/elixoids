@@ -268,7 +268,7 @@ defmodule Game.Server do
     {:noreply, game}
   end
 
-  def handle_cast( {:say_player_shot_ship, bullet_id, victim_id}, game) do
+  def handle_cast({:say_player_shot_ship, bullet_id, victim_id}, game) do
     bullet_pid = game.pids.bullets[bullet_id]
     victim = game.state.ships[victim_id]
     if (bullet_pid != nil) && (victim != nil) do
@@ -288,8 +288,9 @@ defmodule Game.Server do
   def handle_cast({:say_ship_hit_by_asteroid, ship_id}, game) do
     case game.state.ships[ship_id] do
       nil -> {:noreply, game}
-      {_ship_id, tag, _, _, _, _, _,} ->
+      {_ship_id, tag, x, y, _, _, _,} ->
         IO.puts(Enum.join(["ASTEROID", "hit", tag], " "))
+        Game.Server.explosion(self(), x, y)
         {:noreply, game}
     end
   end

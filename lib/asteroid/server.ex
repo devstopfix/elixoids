@@ -98,7 +98,8 @@ defmodule Asteroid.Server do
         fn(delta_theta) -> 
           delta_theta
           |> Velocity.perturb
-          |> cleave(a) end)
+          |> cleave(a) 
+        end)
        {:reply, fragments, a}
      else
        {:reply, [], a}
