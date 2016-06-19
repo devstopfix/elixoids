@@ -13,6 +13,15 @@ defmodule Game.CollisionTest do
     assert [] = Collision.detect_bullets_hitting_ships(bullets, ships)
   end
 
+  test "Collision between bullet and one of two ships" do
+    bullets = [{869, 1408.1, 427.8}, 
+               {666,  500.8, 500.4}]
+    ships = [{1, "AAA", 500.3, 501.4, 20, 5.8957, "FFFFFF"}, 
+             {2, "BBB", 500.6, 501.5, 20, 0.5861, "FFFFFF"}]
+
+    assert [{666,1}] = Collision.detect_bullets_hitting_ships(bullets, ships)
+  end
+
   test "Collision between bullet and ship" do
     assert Collision.bullet_hits_ship?({0, 5, 5}, {0,"", 4, 4, 20, 0, ""})
   end

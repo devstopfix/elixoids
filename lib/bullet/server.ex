@@ -63,6 +63,10 @@ defmodule Bullet.Server do
     GenServer.cast(pid, :hit_asteroid)
   end
 
+  def hit_ship(pid, victim_tag) do
+    GenServer.cast(pid, {:hit_ship, victim_tag})
+  end
+
   # GenServer callbacks
 
   def init(b) do
@@ -100,6 +104,15 @@ defmodule Bullet.Server do
     
     {:noreply, b}
   end
+
+  def handle_cast({:hit_ship, victim_tag}, b) do
+    [b.shooter, "shot", victim_tag]
+    |> Enum.join(" ")
+    |> IO.puts
+    
+    {:noreply, b}
+  end
+
 
   # Functions
 

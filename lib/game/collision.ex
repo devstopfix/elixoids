@@ -16,8 +16,9 @@ defmodule Game.Collision do
   Return a tuple of {bullet_id, ship_id} for each collision.
   """
   def detect_bullets_hitting_ships(bullets, ships) do
-    for b <- bullets, s <- ships, bullet_hits_ship?(b,s), 
+    l = for b <- bullets, s <- ships, bullet_hits_ship?(b,s), 
       do: {elem(b, 0), elem(s, 0)}
+    Enum.uniq_by(l, fn {b,_s} -> b end)
   end
 
   def bullet_hits_asteroid?(bullet, asteroid) do
@@ -31,12 +32,13 @@ defmodule Game.Collision do
   Return a tuple of {bullet_id, asteroid_id} for each collision.
   """
   def detect_bullets_hitting_asteroids(bullets, asteroids) do
-    for b <- bullets, a <- asteroids, bullet_hits_asteroid?(b,a), 
+    l = for b <- bullets, a <- asteroids, bullet_hits_asteroid?(b,a), 
       do: {elem(b, 0), elem(a, 0)}
+    Enum.uniq_by(l, fn {b,_s} -> b end)
   end
 
   @doc """
-  List of bullets to stop.
+  List of bullets (bullet_ids) to stop.
   """
   def unique_bullets(collisions) do
     collisions
@@ -45,7 +47,7 @@ defmodule Game.Collision do
   end
 
   @doc """
-  List of targets to destroy
+  List of targets (ship_ids) to destroy
   """
   def unique_targets(collisions) do
     collisions

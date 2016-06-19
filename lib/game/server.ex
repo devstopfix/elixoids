@@ -98,6 +98,10 @@ defmodule Game.Server do
     GenServer.cast(pid, {:say_player_shot_asteroid, bullet_id})
   end
 
+  def say_player_shot_ship(pid, bullet_id, victim_id) do
+    GenServer.cast(pid, {:say_player_shot_ship, bullet_id, victim_id})
+  end
+
   ## Initial state
 
   @doc """
@@ -250,6 +254,16 @@ defmodule Game.Server do
     {:noreply, game}
   end
 
+  def handle_cast( {:say_player_shot_ship, bullet_id, victim_id}, game) do
+    bullet_pid = game.pids.bullets[bullet_id]
+    victim = game.state.ships[victim_id]
+    if (bullet_pid != nil) && (victim != nil) do
+      Bullet.hit_ship(bullet_pid, elem(victim, 1))
+    end
+    {:noreply, game}
+  end
+
+
   def handle_cast({:explosion, x, y}, game) do
     new_game = update_in(game.explosions, &[{x,y} | &1])
     {:noreply, new_game}
@@ -356,6 +370,9 @@ defmodule Game.Server do
 
   defp handle_bullets_hitting_ships(game, bullet_ships) do
     bullet_ships
+    |> Enum.map(fn({b,s})->Game.Server.say_player_shot_ship(self(), b, s) end)
+
+    bullet_ships
     |> Collision.unique_bullets
     |> Enum.map(fn(b) -> 
       {_, x, y} = game.state.bullets[b]
@@ -366,7 +383,7 @@ defmodule Game.Server do
   defp handle_bullets_hitting_asteroids(game, bullet_asteroids) do
     bullet_asteroids
     |> Collision.unique_bullets
-    |> Enum.map(fn(b)->Game.Server.say_player_shot_asteroid(self, b) end)
+    |> Enum.map(fn(b)->Game.Server.say_player_shot_asteroid(self(), b) end)
 
     bullet_asteroids
     |> Collision.unique_targets
