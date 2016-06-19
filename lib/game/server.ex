@@ -365,6 +365,10 @@ defmodule Game.Server do
 
   defp handle_bullets_hitting_asteroids(game, bullet_asteroids) do
     bullet_asteroids
+    |> Collision.unique_bullets
+    |> Enum.map(fn(b)->Game.Server.say_player_shot_asteroid(self, b) end)
+
+    bullet_asteroids
     |> Collision.unique_targets
     |> Enum.map(fn(a) -> 
       {_, x, y, _r} = game.state.asteroids[a]
