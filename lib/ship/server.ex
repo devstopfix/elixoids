@@ -37,6 +37,14 @@ defmodule Ship.Server do
     GenServer.call(pid, :nose_tag)
   end
 
+  @doc """
+  Move the ship to a random position on the map
+  and prevent it firing.
+  """
+  def hyperspace(pid) do
+    GenServer.cast(pid, :hyperspace)
+  end
+
   # GenServer callbacks
 
   def init(ship) do
@@ -46,6 +54,13 @@ defmodule Ship.Server do
   def handle_cast({:move, delta_t_ms, game_pid}, ship) do
     new_ship = rotate_ship(ship, delta_t_ms)
     Game.Server.update_ship(game_pid, state_tuple(new_ship))
+    {:noreply, new_ship}
+  end
+
+  def handle_cast(:hyperspace, ship) do
+    p = random_ship_point()
+    theta = Velocity.random_direction
+    new_ship = %{ship | pos: p, theta: theta}
     {:noreply, new_ship}
   end
 
