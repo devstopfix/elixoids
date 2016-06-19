@@ -139,13 +139,13 @@ defmodule Game.Collision do
   end
 
   defp handle_bullets_hitting_ships(game, bullet_ships, game_pid) do
-    Enum.map(bullet_ships, fn({b,s}) -> 
+    Enum.each(bullet_ships, fn({b,s}) -> 
       Game.Server.say_player_shot_ship(game_pid, b, s) 
     end)
 
     bullet_ships
     |> unique_bullets
-    |> Enum.map(fn(b) -> 
+    |> Enum.each(fn(b) -> 
       {_, x, y} = game.state.bullets[b]
       Game.Server.explosion(game_pid, x, y)
     end)
@@ -158,11 +158,11 @@ defmodule Game.Collision do
   defp handle_bullets_hitting_asteroids(game, bullet_asteroids, game_pid) do
     bullet_asteroids
     |> unique_bullets
-    |> Enum.map(fn(b) -> Game.Server.say_player_shot_asteroid(game_pid, b) end)
+    |> Enum.each(fn(b) -> Game.Server.say_player_shot_asteroid(game_pid, b) end)
 
     bullet_asteroids
     |> unique_targets
-    |> Enum.map(fn(a) -> 
+    |> Enum.each(fn(a) -> 
       {_, x, y, _r} = game.state.asteroids[a]
       Game.Server.explosion(game_pid, x, y)
       Game.Server.asteroid_hit(game_pid, a)
@@ -170,7 +170,7 @@ defmodule Game.Collision do
   end
 
   defp stop_bullets(bullets, game_pid) do
-    Enum.map(bullets, fn(b) -> 
+    Enum.each(bullets, fn(b) -> 
       Game.Server.stop_bullet(game_pid, b) end)
   end
 end
