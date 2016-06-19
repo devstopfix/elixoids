@@ -27,6 +27,10 @@ defmodule Game.Server do
 
       Game.Server.asteroid_hit(:game, 1)
 
+  To hyperspace a ship:
+
+      Game.Server.hyperspace_ship(game, 10)
+
   """
 
   use GenServer
@@ -100,6 +104,10 @@ defmodule Game.Server do
 
   def say_player_shot_ship(pid, bullet_id, victim_id) do
     GenServer.cast(pid, {:say_player_shot_ship, bullet_id, victim_id})
+  end
+
+  def hyperspace_ship(pid, ship_id) do
+    GenServer.cast(pid, {:hyperspace_ship, ship_id})
   end
 
   ## Initial state
@@ -263,6 +271,13 @@ defmodule Game.Server do
     {:noreply, game}
   end
 
+  def handle_cast({:hyperspace_ship, ship_id}, game) do
+    case game.pids.ships[ship_id] do
+      nil -> {:noreply, game}
+      pid -> Ship.hyperspace(pid)
+             {:noreply, game} 
+    end
+  end
 
   def handle_cast({:explosion, x, y}, game) do
     new_game = update_in(game.explosions, &[{x,y} | &1])
@@ -369,14 +384,20 @@ defmodule Game.Server do
   end
 
   defp handle_bullets_hitting_ships(game, bullet_ships) do
-    bullet_ships
-    |> Enum.map(fn({b,s})->Game.Server.say_player_shot_ship(self(), b, s) end)
+    
+    Enum.map(bullet_ships, fn({b,s}) -> 
+      Game.Server.say_player_shot_ship(self(), b, s) 
+    end)
 
     bullet_ships
     |> Collision.unique_bullets
     |> Enum.map(fn(b) -> 
       {_, x, y} = game.state.bullets[b]
       Game.Server.explosion(self(), x, y)
+    end)
+
+    Enum.map(bullet_ships, fn({_,s}) -> 
+      Game.Server.hyperspace_ship(self(), s)
     end)
   end
 
