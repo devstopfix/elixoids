@@ -77,4 +77,13 @@ defmodule Game.Collision do
     (sq(ax - sx) + sq(ay - sy)) < (sq(sr) + sq(ar))
   end
 
+  @doc """
+  Return a tuple of {asteroid_id, ship_id} for each collision.
+  """
+  def detect_asteroids_hitting_ships(asteroids, ships) do
+    l = for a <- asteroids, s <- ships, asteroid_hits_ship?(a,s), 
+      do: {elem(a, 0), elem(s, 0)}
+    Enum.uniq_by(l, fn {_a,s} -> s end)
+  end
+
 end

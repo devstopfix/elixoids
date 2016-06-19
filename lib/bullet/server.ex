@@ -106,7 +106,7 @@ defmodule Bullet.Server do
   end
 
   def handle_cast({:hit_ship, victim_tag}, b) do
-    [b.shooter, "shot", victim_tag]
+    [b.shooter, "killed", victim_tag]
     |> Enum.join(" ")
     |> IO.puts
     

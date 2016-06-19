@@ -25,6 +25,14 @@ defmodule Game.CollisionTest do
     assert Collision.asteroid_hits_ship?(asteroid, ship)
   end
 
+  test "Detect between overlapping asteroid and rock" do
+    ships =     [{51, "AAA", 1000.0, 0,  20, 5.8957, "FFFFFF"}]
+    asteroids = [{73,        1000.0, 0,  80},
+                 {99,        1000.0, 200, 80}]
+
+    assert [{73,51}] == Collision.detect_asteroids_hitting_ships(asteroids, ships)
+  end
+
   test "No collision" do
     bullets = [{6869, 1408.1, 427.8}, 
                {6870, 534.8, 1690.4}]
