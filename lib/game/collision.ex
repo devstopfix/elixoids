@@ -150,7 +150,7 @@ defmodule Game.Collision do
       Game.Server.explosion(game_pid, x, y)
     end)
 
-    Enum.map(bullet_ships, fn({_,s}) -> 
+    Enum.each(bullet_ships, fn({_,s}) -> 
       Game.Server.hyperspace_ship(game_pid, s)
     end)
   end
