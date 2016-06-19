@@ -4,10 +4,9 @@ defmodule Ship.ServerTest do
 
   alias Ship.Server, as: Ship
 
-
   test "Retrive nose of ship and its tag" do
     {:ok, ship} = Ship.start_link(1, "AAA")
-    {pos, theta, tag} = Ship.nose_tag(ship)
+    {_pos, _theta, tag} = Ship.nose_tag(ship)
     assert "AAA" == tag
   end
 

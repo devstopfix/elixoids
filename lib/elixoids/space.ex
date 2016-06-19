@@ -43,12 +43,11 @@ defmodule Elixoids.Space do
     %Point{x: (:rand.uniform * @width), y: (:rand.uniform * @height)}
   end
 
-  def random_point_on_border(margin \\ 0.0) do
-    offset = :rand.normal * margin
+  def random_point_on_border() do
     if ((:rand.uniform * @ratio) < 1.0) do
-      %Point{x: (:rand.uniform * @width), y: offset}
+      %Point{x: (:rand.uniform * @width), y: 0.0}
     else
-      %Point{x: offset, y: (:rand.uniform * @height)}
+      %Point{x: 0.0, y: (:rand.uniform * @height)}
     end
   end
 

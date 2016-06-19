@@ -110,7 +110,7 @@ defmodule Asteroid.Server do
    # Asteroid.Server.move(a,1)
 
    def random_asteroid do
-     p = Elixoids.Space.random_point_on_border(@asteroid_radius_m)
+     p = Elixoids.Space.random_point_on_border()
      v = Velocity.random_direction_with_speed(@asteroid_speed_m_per_s)
      %{:pos => p, :velocity => v, :radius => @asteroid_radius_m}
    end
