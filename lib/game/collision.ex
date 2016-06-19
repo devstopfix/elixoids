@@ -74,7 +74,7 @@ defmodule Game.Collision do
     {_asteroid_id, ax, ay, ar,} = asteroid
     {_ship_id, _tag, sx, sy, sr, _, _} = ship
 
-    (sq(ax - sx) + sq(ay - sy)) < (sq(sr) + sq(ar))
+    :math.sqrt(sq(ax - sx) + sq(ay - sy)) <= (sr + ar)
   end
 
   @doc """
