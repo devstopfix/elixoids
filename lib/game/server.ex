@@ -144,6 +144,7 @@ defmodule Game.Server do
 
   def init({:ok, fps, asteroid_count, ship_count}) do
     {:ok, ids} = Identifiers.start_link
+    {:ok, collision_pid} = Game.Collision.start_link(self())
     rocks = generate_asteroids(ids, asteroid_count)
     ships = generate_ships(ids, ship_count)
     game_state = %{:ids => ids, 
@@ -154,6 +155,7 @@ defmodule Game.Server do
                           :bullets => %{},
                           :ships => %{}},
               :explosions => [],
+              :collision_pid => collision_pid,
               :clock_ms => Clock.now_ms}
     start_ticker(self(), fps)
     {:ok, game_state}
@@ -286,7 +288,7 @@ defmodule Game.Server do
   def handle_cast({:say_ship_hit_by_asteroid, ship_id}, game) do
     case game.state.ships[ship_id] do
       nil -> {:noreply, game}
-      {ship_id, tag, _, _, _, _, _,} ->
+      {_ship_id, tag, _, _, _, _, _,} ->
         IO.puts(Enum.join(["ASTEROID", "hit", tag], " "))
         {:noreply, game}
     end
@@ -312,7 +314,7 @@ defmodule Game.Server do
     move_ships(game, elapsed_ms)
     move_bullets(game, elapsed_ms)
     fire_bullets(game)
-    check_for_collisions(game)
+    Collision.collision_tests(game.collision_pid, game) 
 
     new_game = game
     |> maybe_spawn_asteroid
@@ -377,71 +379,6 @@ defmodule Game.Server do
     Enum.each(Map.values(game.pids.bullets), 
       fn(b) -> Bullet.move(b, elapsed_ms, self()) end)
   end
-
-  # Collisions
-
-  defp check_for_collisions(game) do
-    all_asteroids = Map.values(game.state.asteroids)
-    all_bullets   = Map.values(game.state.bullets)
-    all_ships     = Map.values(game.state.ships)
-
-    bullet_ships = Collision.detect_bullets_hitting_ships(all_bullets, all_ships)
-    handle_bullets_hitting_ships(game, bullet_ships)
-
-    Collision.detect_asteroids_hitting_ships(all_asteroids, all_ships)
-    |> handle_asteroid_hitting_ships(game)
-
-    bullet_asteroids = Collision.detect_bullets_hitting_asteroids(all_bullets, all_asteroids)
-    handle_bullets_hitting_asteroids(game, bullet_asteroids)
-
-    dud_bullets = Enum.uniq(Collision.unique_bullets(bullet_ships) 
-              ++ Collision.unique_bullets(bullet_asteroids))
-    stop_bullets(dud_bullets)
-  end
-
-  defp handle_asteroid_hitting_ships(asteroid_ships, game) do
-    Enum.map(asteroid_ships, fn({_a,s}) ->
-      Game.Server.say_ship_hit_by_asteroid(self(), s)
-      Game.Server.hyperspace_ship(self(), s)
-    end)
-  end
-
-  defp handle_bullets_hitting_ships(game, bullet_ships) do
-    Enum.map(bullet_ships, fn({b,s}) -> 
-      Game.Server.say_player_shot_ship(self(), b, s) 
-    end)
-
-    bullet_ships
-    |> Collision.unique_bullets
-    |> Enum.map(fn(b) -> 
-      {_, x, y} = game.state.bullets[b]
-      Game.Server.explosion(self(), x, y)
-    end)
-
-    Enum.map(bullet_ships, fn({_,s}) -> 
-      Game.Server.hyperspace_ship(self(), s)
-    end)
-  end
-
-  defp handle_bullets_hitting_asteroids(game, bullet_asteroids) do
-    bullet_asteroids
-    |> Collision.unique_bullets
-    |> Enum.map(fn(b)->Game.Server.say_player_shot_asteroid(self(), b) end)
-
-    bullet_asteroids
-    |> Collision.unique_targets
-    |> Enum.map(fn(a) -> 
-      {_, x, y, _r} = game.state.asteroids[a]
-      Game.Server.explosion(self(), x, y)
-      Game.Server.asteroid_hit(self(), a)
-    end)
-  end
-
-  defp stop_bullets(bullets) do
-    Enum.map(bullets, fn(b) -> 
-      Game.Server.stop_bullet(self(), b) end)
-  end
-
 
   # Asteroids
 
