@@ -156,7 +156,8 @@ defmodule Game.Server do
                           :ships => %{}},
               :explosions => [],
               :collision_pid => collision_pid,
-              :clock_ms => Clock.now_ms}
+              :clock_ms => Clock.now_ms,
+              :kby => %{}}
     start_ticker(self(), fps)
     {:ok, game_state}
   end
@@ -272,9 +273,12 @@ defmodule Game.Server do
     bullet_pid = game.pids.bullets[bullet_id]
     victim = game.state.ships[victim_id]
     if (bullet_pid != nil) && (victim != nil) do
-      Bullet.hit_ship(bullet_pid, elem(victim, 1))
+      {shooter_tag, victim_tag} = Bullet.hit_ship(bullet_pid, elem(victim, 1))
+      new_game = put_in(game.kby[victim_tag], shooter_tag)
+      {:noreply, new_game}
+    else
+      {:noreply, game}
     end
-    {:noreply, game}
   end
 
   def handle_cast({:hyperspace_ship, ship_id}, game) do
@@ -330,7 +334,8 @@ defmodule Game.Server do
       :a => game.state.asteroids |> map_of_tuples_to_list,
       :s => game.state.ships |> map_of_tuples_to_list |> map_rest,
       :x => game.explosions |> list_of_tuples_to_list,
-      :b => game.state.bullets |> map_of_tuples_to_list
+      :b => game.state.bullets |> map_of_tuples_to_list,
+      :kby => game.kby
     }
     {:reply, game_state, %{game | :explosions => []}}
   end  

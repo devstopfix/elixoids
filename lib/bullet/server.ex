@@ -64,7 +64,7 @@ defmodule Bullet.Server do
   end
 
   def hit_ship(pid, victim_tag) do
-    GenServer.cast(pid, {:hit_ship, victim_tag})
+    GenServer.call(pid, {:hit_ship, victim_tag})
   end
 
   # GenServer callbacks
@@ -105,12 +105,12 @@ defmodule Bullet.Server do
     {:noreply, b}
   end
 
-  def handle_cast({:hit_ship, victim_tag}, b) do
+  def handle_call({:hit_ship, victim_tag}, _from, b) do
     [b.shooter, "killed", victim_tag]
     |> Enum.join(" ")
     |> IO.puts
     
-    {:noreply, b}
+    {:reply, {b.shooter, victim_tag}, b}
   end
 
 

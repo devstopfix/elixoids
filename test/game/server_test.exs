@@ -59,4 +59,35 @@ defmodule Game.ServerTest do
     assert 2250.0 == List.last(game_state.dim)
   end
 
+  test "We record who shot a player" do
+    {:ok, game} = Game.start_link
+    :timer.sleep(10)
+
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
+
+    Game.ship_fires_bullet(game, 9)
+    :timer.sleep(10)
+
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
+    
+    Game.show(game)
+    :timer.sleep(10)
+
+    Game.say_player_shot_ship(game, 17, 10)
+    :timer.sleep(10)
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+
+    Game.show(game)
+    :timer.sleep(10)
+
+    state = Game.state(game)
+
+    [player_9_tag,_,_,_,_,_] = hd(state.s)
+    [player_10_tag,_,_,_,_,_] = hd(tl(state.s))
+
+    assert player_9_tag == state.kby[player_10_tag]
+  end
+
 end
