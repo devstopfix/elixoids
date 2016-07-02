@@ -442,7 +442,7 @@ defmodule Game.Server do
 
   def only_ship(ships, tag) do
     # TODO must be better way to get head of list or nil
-    candidates=ships
+    candidates = ships
     |> Map.values
     |> Enum.filter(fn(s) -> ship_state_has_tag(s, tag) end) 
     case candidates do
