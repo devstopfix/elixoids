@@ -70,6 +70,10 @@ defmodule Game.Server do
     GenServer.call(pid, :state)
   end  
 
+  def state_of_ship(pid, ship_tag) do
+    GenServer.call(pid, {:state_of_ship, ship_tag})
+  end
+
   def update_asteroid(pid, new_state) do
     GenServer.cast(pid, {:update_asteroid, new_state})
   end
@@ -340,6 +344,21 @@ defmodule Game.Server do
     {:reply, game_state, %{game | :explosions => []}}
   end  
 
+  def handle_call({:state_of_ship, ship_tag}, _from, game) do
+    ship = only_ship(game.state.ships, ship_tag)
+    if ship != nil do
+      {_, ship_tag, x, y, _, theta, _} = ship
+      ship_state = %{
+        :status => 200,
+        :tag => ship_tag,
+        :theta => theta
+      }
+      {:reply, ship_state, game}
+    else
+      {:reply, %{:status => 404}, game}
+    end
+  end
+
   @doc """
   Convert a list of tuples into a list of lists
   """
@@ -412,6 +431,32 @@ defmodule Game.Server do
     length(Map.keys(asteroids)) < @initial_asteroid_count
   end
 
+  def ship_state_has_tag(ship, expected_tag) do
+    {_, tag, _, _, _, _, _} = ship
+    tag == expected_tag
+    # case ship do
+    #   {_, expected_tag, _, _, _, _, _} -> true
+    #   _ -> false
+    # end 
+  end
+
+  def only_ship(ships, tag) do
+    # TODO must be better way to get head of list or nil
+    candidates = ships
+    |> Map.values
+    |> Enum.filter(fn(s) -> ship_state_has_tag(s, tag) end) 
+    case candidates do
+      [] -> nil
+      [s] -> s
+      [s,_] -> s
+    end
+  end
+
+  def ships_except(ships, tag) do
+    ships
+    |> Map.values
+    |> Enum.reject(fn(s) -> ship_state_has_tag(s, tag) end) 
+  end
 
   # Development
 

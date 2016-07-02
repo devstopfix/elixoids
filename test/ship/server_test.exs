@@ -1,6 +1,6 @@
 defmodule Ship.ServerTest do
   use ExUnit.Case, async: false
-  doctest Bullet.Server
+  doctest Ship.Server
 
   alias Ship.Server, as: Ship
 
@@ -18,6 +18,17 @@ defmodule Ship.ServerTest do
 
     assert p1 != p2
     assert theta1 != theta2
+  end
+
+  test "Valid player tags" do
+    assert Ship.valid_player_tag?("AAA")
+    assert Ship.valid_player_tag?("ZZZ")
+  end
+
+  test "Invalid player tags" do
+    refute Ship.valid_player_tag?("AA")
+    refute Ship.valid_player_tag?("ZZZZ")
+    refute Ship.valid_player_tag?("A1A")
   end
 
 end

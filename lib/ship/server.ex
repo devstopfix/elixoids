@@ -117,4 +117,8 @@ defmodule Ship.Server do
     Point.apply_velocity(ship_centre, v, 1000.0)
   end
 
+  def valid_player_tag?(tag) do
+    Regex.match?(~r/^[A-Z]{3}$/, tag)
+  end
+
 end
