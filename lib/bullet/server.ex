@@ -113,7 +113,6 @@ defmodule Bullet.Server do
     {:reply, {b.shooter, victim_tag}, b}
   end
 
-
   # Functions
 
   def move_bullet(b, delta_t_ms) do
