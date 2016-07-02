@@ -441,10 +441,15 @@ defmodule Game.Server do
   end
 
   def only_ship(ships, tag) do
-    ships
+    # TODO must be better way to get head of list or nil
+    candidates=ships
     |> Map.values
     |> Enum.filter(fn(s) -> ship_state_has_tag(s, tag) end) 
-    |> hd
+    case candidates do
+      [] -> nil
+      [s] -> s
+      [s,_] -> s
+    end
   end
 
   def ships_except(ships, tag) do
