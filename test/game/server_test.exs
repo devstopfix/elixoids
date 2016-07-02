@@ -95,10 +95,6 @@ defmodule Game.ServerTest do
     :timer.sleep(10)
 
     game_state = Game.state(game)
-<<<<<<< HEAD
-    Game.show(game)
-=======
->>>>>>> player-state
 
     [player_tag, _, _, 20.0, theta,_] = List.first(game_state[:s])
 

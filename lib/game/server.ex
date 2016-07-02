@@ -472,11 +472,7 @@ defmodule Game.Server do
   end
 
   def only_ship(ships, tag) do
-<<<<<<< HEAD
-    # TODO must be better way to get head of list or nil
-=======
     # TO DO must be better way to get head of list or nil
->>>>>>> player-state
     candidates = ships
     |> Map.values
     |> Enum.filter(fn(s) -> ship_state_has_tag(s, tag) end) 
@@ -492,8 +488,6 @@ defmodule Game.Server do
     |> Map.values
     |> Enum.reject(fn(s) -> ship_state_has_tag(s, tag) end) 
   end
-<<<<<<< HEAD
-=======
 
   def id_of_ship_tagged(ships, tag) do
     case Enum.find(ships, fn {_key, ship_state} -> elem(ship_state, 1) == tag end) do
@@ -501,7 +495,6 @@ defmodule Game.Server do
       nil -> nil      
     end
   end
->>>>>>> player-state
 
   # Development
 
