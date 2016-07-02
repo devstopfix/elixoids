@@ -34,13 +34,19 @@ defmodule Ship.ServerTest do
   test "Test firing laser" do
     {:ok, ship} = Ship.start_link(1, "AAA")
     {_pos, _theta, "AAA", false} = Ship.nose_tag(ship)
+
     :timer.sleep(300)
     {_pos, _theta, "AAA", true} = Ship.nose_tag(ship)
+
     Ship.fire(ship)
     :timer.sleep(10)
     {_pos, _theta, "AAA", false} = Ship.nose_tag(ship)
+
     :timer.sleep(300)
     {_pos, _theta, "AAA", true} = Ship.nose_tag(ship)
+
+    Ship.hyperspace(ship)
+    {_pos, _theta, "AAA", false} = Ship.nose_tag(ship)
   end
 
 end

@@ -14,7 +14,9 @@ defmodule Ship.Server do
   @ship_radius_m 20.0
   @nose_radius_m (@ship_radius_m * 1.1)
   @ship_rotation_rad_per_sec (:math.pi * 2 / 10.0)
+
   @laser_recharge_ms 250
+  @laser_recharge_penalty_ms 2500
 
   def start_link(id, tag \\ random_tag()) do
     ship = random_ship() 
@@ -69,7 +71,10 @@ defmodule Ship.Server do
   def handle_cast(:hyperspace, ship) do
     p = random_ship_point()
     theta = Velocity.random_direction
+
     new_ship = %{ship | pos: p, theta: theta}
+    |> discharge_laser
+
     {:noreply, new_ship}
   end
 
@@ -138,6 +143,10 @@ defmodule Ship.Server do
 
   def recharge_laser(ship) do
     %{ship | :laser_charged_at => (Clock.now_ms + @laser_recharge_ms)}
+  end
+
+  def discharge_laser(ship) do
+    %{ship | :laser_charged_at => (Clock.now_ms + @laser_recharge_penalty_ms)}
   end
 
 end
