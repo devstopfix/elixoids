@@ -95,7 +95,10 @@ defmodule Game.ServerTest do
     :timer.sleep(10)
 
     game_state = Game.state(game)
+<<<<<<< HEAD
     Game.show(game)
+=======
+>>>>>>> player-state
 
     [player_tag, _, _, 20.0, theta,_] = List.first(game_state[:s])
 
@@ -126,6 +129,17 @@ defmodule Game.ServerTest do
     assert nil == Game.only_ship(ships, "UKN")
   end
 
+  test "We can find ship by it's ID" do
+    ships = %{
+       9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
+      10 => {10, "CXN", 1704.0, 1555.0, 20.0, 1.3603, "FFFFFF"},
+      15 => {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
+      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}}
+
+    assert 15 == Game.id_of_ship_tagged(ships, "SYX")
+    #assert nil == Game.id_of_ship_tagged(ships, "UKN")
+  end
+
   test "We can filter out ship id" do
     ships = %{9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
       14 => {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
@@ -143,6 +157,28 @@ defmodule Game.ServerTest do
 
   test "We do not find missing ship state by tag" do
     refute Game.ship_state_has_tag({9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"}, "XXX")
+  end
+
+  test "We can add and remove ships from game" do
+    {:ok, game} = Game.start_link
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
+
+    game_state = Game.state(game)
+    assert 8 == game_state[:s] |> Enum.count
+
+    Game.spawn_player(game, "AST")
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
+    game_state_2 = Game.state(game)
+    assert 9 == game_state_2[:s] |> Enum.count
+
+    Game.remove_player(game, "AST")
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
+    game_state_3 = Game.state(game)
+    assert 8 == game_state_3[:s] |> Enum.count
+
   end
 
 end

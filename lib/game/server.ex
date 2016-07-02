@@ -118,6 +118,14 @@ defmodule Game.Server do
     GenServer.cast(pid, {:say_ship_hit_by_asteroid, ship_id})
   end
 
+  def spawn_player(pid, player_tag) do
+    GenServer.cast(pid, {:spawn_player, player_tag})
+  end
+
+  def remove_player(pid, player_tag) do
+    GenServer.cast(pid, {:remove_player, player_tag})
+  end
+
   ## Initial state
 
   @doc """
@@ -308,6 +316,29 @@ defmodule Game.Server do
     {:noreply, new_game}
   end
 
+  def handle_cast({:spawn_player, player_tag}, game) do
+    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
+    if ship_id == nil do
+      id = Identifiers.next(game.ids)
+      {:ok, pid} = Ship.start_link(id, player_tag)
+      new_game = put_in(game.pids.ships[id], pid)
+      {:noreply, new_game}
+    else
+      {:noreply, game}
+    end
+  end
+
+  def handle_cast({:remove_player, player_tag}, game) do
+    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
+    if ship_id != nil do
+      new_game  = update_in(game.state.ships,     &Map.delete(&1, ship_id))
+      new_game2 = update_in(new_game.pids.ships, &Map.delete(&1, ship_id))
+      {:noreply, new_game2}
+    else
+      {:noreply, game}
+    end
+  end
+
   @doc """
   Update the game state and return the number of ms elpased since last tick.
 
@@ -441,7 +472,11 @@ defmodule Game.Server do
   end
 
   def only_ship(ships, tag) do
+<<<<<<< HEAD
     # TODO must be better way to get head of list or nil
+=======
+    # TO DO must be better way to get head of list or nil
+>>>>>>> player-state
     candidates = ships
     |> Map.values
     |> Enum.filter(fn(s) -> ship_state_has_tag(s, tag) end) 
@@ -457,6 +492,16 @@ defmodule Game.Server do
     |> Map.values
     |> Enum.reject(fn(s) -> ship_state_has_tag(s, tag) end) 
   end
+<<<<<<< HEAD
+=======
+
+  def id_of_ship_tagged(ships, tag) do
+    case Enum.find(ships, fn {_key, ship_state} -> elem(ship_state, 1) == tag end) do
+      {id, _} -> id
+      nil -> nil      
+    end
+  end
+>>>>>>> player-state
 
   # Development
 
