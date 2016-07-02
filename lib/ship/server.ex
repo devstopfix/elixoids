@@ -6,6 +6,7 @@ defmodule Ship.Server do
   
   use GenServer
 
+  alias World.Clock, as: Clock
   alias World.Point, as: Point
   alias World.Velocity, as: Velocity
   alias Elixoids.Space, as: Space
@@ -13,6 +14,7 @@ defmodule Ship.Server do
   @ship_radius_m 20.0
   @nose_radius_m (@ship_radius_m * 1.1)
   @ship_rotation_rad_per_sec (:math.pi * 2 / 10.0)
+  @laser_recharge_ms 250
 
   def start_link(id, tag \\ random_tag()) do
     ship = random_ship() 
@@ -45,6 +47,13 @@ defmodule Ship.Server do
     GenServer.cast(pid, :hyperspace)
   end
 
+  @doc """
+  Update laser recharge rate
+  """
+  def fire(pid) do
+    GenServer.cast(pid, :fire)
+  end
+
   # GenServer callbacks
 
   def init(ship) do
@@ -64,6 +73,10 @@ defmodule Ship.Server do
     {:noreply, new_ship}
   end
 
+  def handle_cast(:fire, ship) do    
+    {:noreply, recharge_laser(ship)}
+  end
+
   def handle_call(:position, _from, ship) do
     {:reply, state_tuple(ship), ship}
   end
@@ -74,7 +87,8 @@ defmodule Ship.Server do
   """
   def handle_call(:nose_tag, _from, ship) do
     p = calculate_nose(ship)
-    {:reply, {p, ship.theta, ship.tag}, ship}
+    can_fire = (Clock.now_ms > ship.laser_charged_at)
+    {:reply, {p, ship.theta, ship.tag, can_fire}, ship}
   end
 
   # Data
@@ -94,7 +108,8 @@ defmodule Ship.Server do
 
   def random_ship do
     %{:pos => random_ship_point(),
-      :theta => Velocity.random_direction}
+      :theta => Velocity.random_direction,
+      :laser_charged_at => Clock.now_ms}
   end
 
   def random_ship_point do
@@ -119,6 +134,10 @@ defmodule Ship.Server do
 
   def valid_player_tag?(tag) do
     Regex.match?(~r/^[A-Z]{3}$/, tag)
+  end
+
+  def recharge_laser(ship) do
+    %{ship | :laser_charged_at => (Clock.now_ms + @laser_recharge_ms)}
   end
 
 end

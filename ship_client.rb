@@ -2,7 +2,7 @@ require 'faye/websocket'
 require 'eventmachine'
 require 'json'
 
-$SHIP = ARGV.first || 'XXX'
+$SHIP = ARGV.first || 'PLY'
 
 EM.run {
   ws = Faye::WebSocket::Client.new("ws://localhost:8065/ship/#{$SHIP}")

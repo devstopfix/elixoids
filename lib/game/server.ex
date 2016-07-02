@@ -218,7 +218,9 @@ defmodule Game.Server do
     ship_pid = game.pids.ships[ship_id]
     if ((ship_pid != nil) && Process.alive?(ship_pid)) do
       case Ship.nose_tag(game.pids.ships[ship_id]) do
-        {ship_pos, theta, tag} -> fire_bullet_in_game(game, ship_pos, theta, tag)
+        {ship_pos, theta, tag, true} -> 
+          Ship.fire(ship_pid)
+          fire_bullet_in_game(game, ship_pos, theta, tag)
         _ -> {:noreply, game}
       end
     end
@@ -292,7 +294,7 @@ defmodule Game.Server do
       #                            [{file,"lib/game/server.ex"},{line,288}]},
       case Bullet.hit_ship(bullet_pid, elem(victim, 1)) do
         {:noproc, _} -> {:noreply, game}
-        {shooter_tag, victim_tag} ->{:noreply, put_in(game.kby[victim_tag], shooter_tag) }          
+        {shooter_tag, victim_tag} -> {:noreply, put_in(game.kby[victim_tag], shooter_tag)}          
       end      
     else
       {:noreply, game}
@@ -509,7 +511,7 @@ defmodule Game.Server do
   # Development
 
   defp fire_bullets(game) do
-    trigger = rem(World.Clock.now_ms, 200)
+    trigger = rem(World.Clock.now_ms, 16)
     Enum.each(Map.keys(game.pids.ships), 
       fn(ship_id) -> 
         if (ship_id == trigger) do 
