@@ -348,12 +348,12 @@ defmodule Game.Server do
     ship = only_ship(game.state.ships, ship_tag)
     if ship != nil do
       {_, ship_tag, x, y, _, theta, _} = ship
-      state = %{
+      ship_state = %{
         :status => 200,
         :tag => ship_tag,
         :theta => theta
       }
-      {:reply, state, game}
+      {:reply, ship_state, game}
     else
       {:reply, %{:status => 404}, game}
     end
