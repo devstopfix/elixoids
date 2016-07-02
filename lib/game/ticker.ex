@@ -31,7 +31,7 @@ defmodule Game.Ticker do
       > fps_to_ms(60)
       16
   """
-  defp fps_to_ms(fps) do
+  def fps_to_ms(fps) do
     div(1000, fps)
   end
 

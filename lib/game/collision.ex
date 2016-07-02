@@ -132,9 +132,10 @@ defmodule Game.Collision do
   end
 
   defp handle_asteroid_hitting_ships(asteroid_ships, game_pid) do
-    Enum.map(asteroid_ships, fn({_a,s}) ->
+    Enum.map(asteroid_ships, fn({a,s}) ->
       Game.Server.say_ship_hit_by_asteroid(game_pid, s)
       Game.Server.hyperspace_ship(game_pid, s)
+      Game.Server.asteroid_hit(game_pid, a)
     end)
   end
 
@@ -173,4 +174,5 @@ defmodule Game.Collision do
     Enum.each(bullets, fn(b) -> 
       Game.Server.stop_bullet(game_pid, b) end)
   end
+
 end
