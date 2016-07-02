@@ -86,6 +86,9 @@ defmodule Game.ServerTest do
     [player_10_tag,_,_,_,_,_] = hd(tl(state.s))
 
     assert player_9_tag == state.kby[player_10_tag]
+
+    ship_state = Game.state_of_ship(game, player_10_tag)
+    assert player_9_tag == ship_state.kby
   end
 
   test "We can retrieve game state of a player by their ID" do

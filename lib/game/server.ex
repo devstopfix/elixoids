@@ -291,7 +291,7 @@ defmodule Game.Server do
       #      {'Elixir.Game.Server',handle_cast,2,
       #                            [{file,"lib/game/server.ex"},{line,288}]},
       case Bullet.hit_ship(bullet_pid, elem(victim, 1)) do
-        {noproc, _} -> {:noreply, game}
+        {:noproc, _} -> {:noreply, game}
         {shooter_tag, victim_tag} ->{:noreply, put_in(game.kby[victim_tag], shooter_tag) }          
       end      
     else
@@ -390,7 +390,11 @@ defmodule Game.Server do
         :tag => ship_tag,
         :theta => theta
       }
-      {:reply, ship_state, game}
+      if Map.has_key?(game.kby, ship_tag) do
+        {:reply, Map.put(ship_state, :kby, game.kby[ship_tag]) , game}
+      else
+        {:reply, ship_state, game}
+      end
     else
       {:reply, %{:status => 404}, game}
     end
