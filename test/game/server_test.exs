@@ -72,14 +72,12 @@ defmodule Game.ServerTest do
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
     :timer.sleep(10)
     
-    Game.show(game)
     :timer.sleep(10)
 
     Game.say_player_shot_ship(game, 17, 10)
     :timer.sleep(10)
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
 
-    Game.show(game)
     :timer.sleep(10)
 
     state = Game.state(game)
@@ -88,6 +86,53 @@ defmodule Game.ServerTest do
     [player_10_tag,_,_,_,_,_] = hd(tl(state.s))
 
     assert player_9_tag == state.kby[player_10_tag]
+  end
+
+  test "We can retrieve game state of a player by their ID" do
+    {:ok, game} = Game.start_link
+    :timer.sleep(10)
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
+
+    game_state = Game.state(game)
+    Game.show(game)
+
+    [player_tag, _, _, 20.0, theta,_] = List.first(game_state[:s])
+
+    ship_state = Game.state_of_ship(game, player_tag)
+
+    assert ship_state.status == 200
+    assert ship_state.tag == player_tag
+    assert ship_state.theta == theta
+  end
+
+  test "We can filter on ship id" do
+    ships = %{
+       9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
+      10 => {10, "CXN", 1704.0, 1555.0, 20.0, 1.3603, "FFFFFF"},
+      15 => {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
+      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}}
+
+    assert {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"} == Game.only_ship(ships, "SYX")
+  end
+
+  test "We can filter out ship id" do
+    ships = %{9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
+      14 => {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
+      15 => {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
+      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}}
+
+    assert [{9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
+            {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
+            {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}] == Game.ships_except(ships, "SYX")
+  end
+
+  test "We can find ship state by tag" do
+    assert Game.ship_state_has_tag({15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"}, "SYX")
+  end
+
+  test "We do not find missing ship state by tag" do
+    refute Game.ship_state_has_tag({9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"}, "XXX")
   end
 
 end
