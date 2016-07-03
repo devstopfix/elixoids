@@ -20,7 +20,7 @@ defmodule Game.Server do
 
   To start a running Game at 60 fps with 4 random ships:
 
-      {:ok, game} = Game.Server.start_link(60, 4)
+      {:ok, game} = Game.Server.start_link(60)
       Game.Server.show(game)
 
   To split an asteroid:
@@ -42,8 +42,8 @@ defmodule Game.Server do
   alias World.Clock, as: Clock
   alias Game.Collision, as: Collision
 
-  @initial_asteroid_count   8
-  @initial_ship_count       8
+  @initial_asteroid_count   4
+  @initial_ship_count       4
 
   def start_link(fps \\ 0, 
                  asteroid_count \\ @initial_asteroid_count,
@@ -365,7 +365,6 @@ defmodule Game.Server do
     move_asteroids(game, elapsed_ms)
     move_ships(game, elapsed_ms)
     move_bullets(game, elapsed_ms)
-    fire_bullets(game)
     Collision.collision_tests(game.collision_pid, game) 
 
     new_game = game
@@ -513,16 +512,6 @@ defmodule Game.Server do
   end
 
   # Development
-
-  defp fire_bullets(game) do
-    trigger = rem(World.Clock.now_ms, 16)
-    Enum.each(Map.keys(game.pids.ships), 
-      fn(ship_id) -> 
-        if (ship_id == trigger) do 
-          Game.Server.ship_fires_bullet(self(), ship_id) 
-        end; 
-      end)
-  end
 
   defp fire_bullet_in_game(game, ship_pos, theta, shooter) do
     id = Identifiers.next(game.ids)

@@ -60,7 +60,7 @@ defmodule Game.ServerTest do
   end
 
   test "We record who shot a player" do
-    {:ok, game} = Game.start_link
+    {:ok, game} = Game.start_link(0,8,8)
     :timer.sleep(10)
 
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
@@ -159,7 +159,7 @@ defmodule Game.ServerTest do
   end
 
   test "We can add and remove ships from game" do
-    {:ok, game} = Game.start_link
+    {:ok, game} = Game.start_link(0,8,8)
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
     :timer.sleep(10)
 
