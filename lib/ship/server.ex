@@ -41,6 +41,10 @@ defmodule Ship.Server do
     GenServer.call(pid, :nose_tag)
   end
 
+  def new_heading(pid, theta) do
+    GenServer.cast(pid, {:new_heading, theta})
+  end
+
   @doc """
   Move the ship to a random position on the map
   and prevent it firing.
@@ -80,6 +84,11 @@ defmodule Ship.Server do
 
   def handle_cast(:fire, ship) do    
     {:noreply, recharge_laser(ship)}
+  end
+
+  def handle_cast({:new_heading, theta}, ship) do
+    new_ship = %{ship | :target_theta => Velocity.wrap_angle(theta)}
+    {:noreply, new_ship}
   end
 
   def handle_call(:position, _from, ship) do
@@ -122,10 +131,21 @@ defmodule Ship.Server do
     Space.random_grid_point
   end
 
-  def rotate_ship(ship, _delta_t_ms) do
-    theta = ship.theta
-    delta = 0.0 #@ship_rotation_rad_per_sec * delta_t_ms / 1000.0
-    %{ship | :theta => Velocity.wrap_angle(theta + delta)} 
+  defp clip_delta_theta(delta_theta, delta_t_ms) do
+    max_theta = @ship_rotation_rad_per_sec * delta_t_ms
+    min_theta = max_theta * -1.0
+    cond do
+      (delta_theta > max_theta) -> max_theta
+      (delta_theta < min_theta) -> min_theta
+      true                      -> delta_theta
+    end
+  end
+
+  def rotate_ship(ship, delta_t_ms) do
+    input_delta_theta = ship.target_theta - ship.theta
+    delta_theta = clip_delta_theta(input_delta_theta, delta_t_ms)
+    theta = Velocity.wrap_angle(ship.theta + delta_theta)
+    %{ship | :theta => theta} 
   end
 
   defp random_tag do

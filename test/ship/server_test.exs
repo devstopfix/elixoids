@@ -54,4 +54,37 @@ defmodule Ship.ServerTest do
     {_pos, _theta, "AAA", false} = Ship.nose_tag(ship)
   end
 
+  test "Stationary" do
+    {:ok, ship} = Ship.start_link(1, "PLY")
+    {_pos, 0.0, "PLY", false} = Ship.nose_tag(ship)
+
+    Ship.new_heading(ship, 0.0)
+    :timer.sleep(10)
+    {_pos, 0.0, "PLY", _} = Ship.nose_tag(ship)
+  end
+
+  test "Rotate clockwise" do
+    {:ok, game} = Game.Server.start_link
+    {:ok, ship} = Ship.start_link(1, "PLY")
+    {_pos, 0.0, "PLY", false} = Ship.nose_tag(ship)
+
+    Ship.new_heading(ship, 0.785)
+    Ship.move(ship, 1000.0, game)
+    {_pos, 0.785, "PLY", _} = Ship.nose_tag(ship)
+  end
+
+  test "Rotate clockwise and then counter-clockwise" do
+    {:ok, game} = Game.Server.start_link
+    {:ok, ship} = Ship.start_link(1, "PLY")
+    {_pos, 0.0, "PLY", false} = Ship.nose_tag(ship)
+
+    Ship.new_heading(ship, 0.785)
+    Ship.move(ship, 1000.0, game)
+    {_pos, 0.785, "PLY", _} = Ship.nose_tag(ship)
+
+    Ship.new_heading(ship, 0.0)
+    Ship.move(ship, 1000.0, game)
+    {_pos, 0.0, "PLY", _} = Ship.nose_tag(ship)
+  end
+
 end

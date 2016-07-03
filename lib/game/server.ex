@@ -122,6 +122,14 @@ defmodule Game.Server do
     GenServer.cast(pid, {:spawn_player, player_tag})
   end
 
+  def player_new_heading(pid, player_tag, theta) do
+    GenServer.cast(pid, {:player_new_heading, player_tag, theta})
+  end
+
+  def player_fires(pid, player_tag) do
+    GenServer.cast(pid, {:player_fires, player_tag})
+  end
+
   def remove_player(pid, player_tag) do
     GenServer.cast(pid, {:remove_player, player_tag})
   end
@@ -338,6 +346,26 @@ defmodule Game.Server do
     else
       {:noreply, game}
     end
+  end
+
+
+  def handle_cast({:player_new_heading, player_tag, theta}, game) do
+    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
+    if (ship_id != nil) && (World.Velocity.valid_theta(theta)) do
+      case Map.get(game.pids.ships, ship_id) do
+        nil -> nil
+        pid -> Ship.new_heading(pid, theta)  
+      end           
+    end
+    {:noreply, game}
+  end
+
+  def handle_cast({:player_fires, player_tag}, game) do
+    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
+    if (ship_id != nil) do
+      Game.Server.ship_fires_bullet(self(), ship_id)
+    end
+    {:noreply, game}
   end
 
   def handle_cast({:remove_player, player_tag}, game) do
