@@ -292,10 +292,14 @@ defmodule Game.Server do
       #     [{'Elixir.GenServer',call,3,[{file,"lib/gen_server.ex"},{line,604}]},
       #      {'Elixir.Game.Server',handle_cast,2,
       #                            [{file,"lib/game/server.ex"},{line,288}]},
-      case Bullet.hit_ship(bullet_pid, elem(victim, 1)) do
-        {:noproc, _} -> {:noreply, game}
-        {shooter_tag, victim_tag} -> {:noreply, put_in(game.kby[victim_tag], shooter_tag)}          
-      end      
+      try do
+        case Bullet.hit_ship(bullet_pid, elem(victim, 1)) do
+          {shooter_tag, victim_tag} -> {:noreply, put_in(game.kby[victim_tag], shooter_tag)}          
+        end      
+      catch
+        :exit, {:noproc, _} ->
+          {:noreply, game}
+      end
     else
       {:noreply, game}
     end
