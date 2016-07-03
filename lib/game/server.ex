@@ -421,7 +421,8 @@ defmodule Game.Server do
       ship_state = %{
         :status => 200,
         :tag => ship_tag,
-        :theta => theta
+        :theta => theta,
+        :ships => ships_relative(game.state.ships, ship_tag, x, y)
       }
       if Map.has_key?(game.kby, ship_tag) do
         {:reply, Map.put(ship_state, :kby, game.kby[ship_tag]) , game}
@@ -487,12 +488,6 @@ defmodule Game.Server do
     put_in(game.pids.asteroids[id], pid)
   end
 
-  # Game state
-
-  defp update_game_clock(game) do
-    Map.put(game, :clock_ms, Clock.now_ms)
-  end
-
   defp maybe_spawn_asteroid(game) do
     if not_enough_asteroids(game.pids.asteroids) do
       new_asteroid_in_game(Asteroid.random_asteroid, game)
@@ -504,6 +499,14 @@ defmodule Game.Server do
   defp not_enough_asteroids(asteroids) do
     length(Map.keys(asteroids)) < @initial_asteroid_count
   end
+
+  # Game state
+
+  defp update_game_clock(game) do
+    Map.put(game, :clock_ms, Clock.now_ms)
+  end
+
+  # Ships
 
   def ship_state_has_tag(ship, expected_tag) do
     {_, tag, _, _, _, _, _} = ship
@@ -530,6 +533,24 @@ defmodule Game.Server do
     ships
     |> Map.values
     |> Enum.reject(fn(s) -> ship_state_has_tag(s, tag) end) 
+  end
+
+  def ship_relative(ship, ox, oy) do
+    {_, tag, sx, sy, _, _, _} = ship
+    theta = World.Velocity.wrap_angle(:math.atan2(sx - ox, sy - oy))
+    [tag, theta]
+  end
+
+  @doc """
+      {:ok, game} = Game.Server.start_link(60)
+      Game.Server.show(game)
+      Game.Server.spawn_player(game, "OUR")
+      Game.Server.state_of_ship(game, "OUR")
+  """
+  def ships_relative(ships, ship_tag, ship_x, ship_y) do
+    ships
+    |> ships_except(ship_tag)
+    |> Enum.map(fn(s)->ship_relative(s, ship_x, ship_y) end)
   end
 
   def id_of_ship_tagged(ships, tag) do
