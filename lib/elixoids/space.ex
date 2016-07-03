@@ -63,7 +63,7 @@ defmodule Elixoids.Space do
 
   # Points on a grid
 
-  @grid_points 8
+  @grid_points 6
   @gx @width / @grid_points
   @gy @height / @grid_points
 
