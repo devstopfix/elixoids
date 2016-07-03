@@ -538,7 +538,7 @@ defmodule Game.Server do
   def ship_relative(ship, ox, oy) do
     {_, tag, sx, sy, _, _, _} = ship
 
-    theta = :math.atan2(sx - ox, sy - oy) + 1.5
+    theta = :math.atan2(sx - ox, sy - oy) + 1.5707963267948966
     |> World.Velocity.wrap_angle()
 
     [tag, theta]

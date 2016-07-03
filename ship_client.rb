@@ -7,7 +7,7 @@ def fire?
 end
 
 def pointing_at(a,b)
-  (a-b).abs < 0.01
+  (a-b).abs < 0.1
 end
 
 def start_ship(tag)
