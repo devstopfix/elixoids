@@ -13,7 +13,7 @@ defmodule Ship.Server do
 
   @ship_radius_m 20.0
   @nose_radius_m (@ship_radius_m * 1.1)
-  @ship_rotation_rad_per_sec (:math.pi * 2 / 10.0)
+  @ship_rotation_rad_per_sec (:math.pi * 2 / 4.0)
 
   @laser_recharge_ms 500
   @laser_recharge_penalty_ms 4000
@@ -132,7 +132,7 @@ defmodule Ship.Server do
   end
 
   defp clip_delta_theta(delta_theta, delta_t_ms) do
-    max_theta = @ship_rotation_rad_per_sec * delta_t_ms
+    max_theta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
     min_theta = max_theta * -1.0
     cond do
       (delta_theta > max_theta) -> max_theta
