@@ -15,8 +15,8 @@ defmodule Ship.Server do
   @nose_radius_m (@ship_radius_m * 1.1)
   @ship_rotation_rad_per_sec (:math.pi * 2 / 10.0)
 
-  @laser_recharge_ms 750
-  @laser_recharge_penalty_ms 2500
+  @laser_recharge_ms 500
+  @laser_recharge_penalty_ms 4000
 
   def start_link(id, tag \\ random_tag()) do
     ship = random_ship() 
