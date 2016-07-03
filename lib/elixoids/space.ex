@@ -68,11 +68,11 @@ defmodule Elixoids.Space do
   @gy @height / @grid_points
 
   def rand_grid_index do
-    :rand.uniform(@grid_points - 2)
+    :rand.uniform(@grid_points - 1)
   end
 
   def rand_grid_position(grid_size_px) do
-    perturb = :rand.normal * (grid_size_px / 32.0)
+    perturb = :rand.normal * (grid_size_px / 16.0)
     (grid_size_px * rand_grid_index) + perturb
   end
 
