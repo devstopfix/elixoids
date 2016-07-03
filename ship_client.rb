@@ -3,7 +3,7 @@ require 'eventmachine'
 require 'json'
 
 def fire?
-  (Time.now.to_i % 3) == 0
+  (rand(10)) == 0
 end
 
 def start_ship(tag)
@@ -16,6 +16,7 @@ def start_ship(tag)
     end
 
     ws.on :message do |event|
+      puts Time.now
       puts event.data
       # frame = JSON.parse(event.data)
       # unless frame['x'].empty?
@@ -24,7 +25,11 @@ def start_ship(tag)
       #     p "Explosion at #{x.to_s}, #{y.to_s}"
       #   end
       # end
+      
       ws.send({:fire=>true}.to_json) if fire?
+
+      t = (Time.now.to_i % 6).to_f
+      ws.send({'theta'=>t}.to_json) if fire?
     end
 
     ws.on :close do |event|
@@ -34,5 +39,9 @@ def start_ship(tag)
   }
 end
 
-$SHIP = ARGV.first || 'PLY'
+def default_tag
+  (0...3).map { (65 + rand(26)).chr }.join
+end
+
+$SHIP = ARGV.first || default_tag
 start_ship($SHIP)
