@@ -118,7 +118,7 @@ defmodule Ship.Server do
   end
 
   def random_ship_point do
-    Space.random_central_point
+    Space.random_grid_point
   end
 
   def rotate_ship(ship, delta_t_ms) do

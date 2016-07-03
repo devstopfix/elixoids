@@ -32,4 +32,17 @@ defmodule Elixoids.SpaceTest do
     assert (p2.x == 0.0) || (p2.y == 0.0)
   end
 	
+  test "Random grid point" do
+    p1 = Space.random_grid_point
+    p2 = Space.random_grid_point
+    assert p1.x != p2.x
+    assert p1.y != p2.y
+
+    assert p1.x > 0
+    assert p1.y > 0
+    assert p2.x > 0
+    assert p2.y > 0
+
+  end
+
 end

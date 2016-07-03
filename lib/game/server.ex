@@ -18,9 +18,9 @@ defmodule Game.Server do
 
       game_state = Game.Server.state(game)
 
-  To start a running Game at 60 fps:
+  To start a running Game at 60 fps with 4 random ships:
 
-      {:ok, game} = Game.Server.start_link(60)
+      {:ok, game} = Game.Server.start_link(60, 4)
       Game.Server.show(game)
 
   To split an asteroid:
