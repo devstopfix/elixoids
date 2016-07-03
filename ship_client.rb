@@ -10,6 +10,12 @@ def pointing_at(a,b)
   (a-b).abs < 0.1
 end
 
+def sort_ships_by_distance(ships)
+  ships.sort do |a,b|
+    a[2] <=> b[2]
+  end
+end
+
 def start_ship(tag)
   url = "ws://localhost:8065/ship/#{tag}"
   EM.run {
@@ -25,7 +31,7 @@ def start_ship(tag)
       puts frame.inspect
       if frame.has_key?('ships')
         unless frame['ships'].empty?
-          target = frame['ships'].first
+          target = sort_ships_by_distance(frame['ships']).first
           tag, theta = target
           puts theta
           ws.send({'theta'=>theta}.to_json)
