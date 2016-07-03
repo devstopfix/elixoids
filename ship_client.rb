@@ -6,6 +6,10 @@ def fire?
   (rand(10)) == 0
 end
 
+def pointing_at(a,b)
+  (a-b).abs < 0.01
+end
+
 def start_ship(tag)
   url = "ws://localhost:8065/ship/#{tag}"
   EM.run {
@@ -16,20 +20,19 @@ def start_ship(tag)
     end
 
     ws.on :message do |event|
-      puts Time.now
-      puts event.data
-      # frame = JSON.parse(event.data)
-      # unless frame['x'].empty?
-      #   frame['x'].each do |xplosion|
-      #     x,y = xplosion
-      #     p "Explosion at #{x.to_s}, #{y.to_s}"
-      #   end
-      # end
-      
-      ws.send({:fire=>true}.to_json) if fire?
+      next unless event.data.start_with? '{'
+      frame = JSON.parse(event.data)
+      puts frame.inspect
+      if frame.has_key?('ships')
+        unless frame['ships'].empty?
+          target = frame['ships'].first
+          tag, theta = target
+          puts theta
+          ws.send({'theta'=>theta}.to_json)
+          ws.send({:fire=>true}.to_json) if pointing_at(theta, frame['theta'])
+        end
+      end
 
-      t = (Time.now.to_i % 6).to_f
-      ws.send({'theta'=>t}.to_json) if fire?
     end
 
     ws.on :close do |event|
