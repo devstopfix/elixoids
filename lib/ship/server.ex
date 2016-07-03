@@ -113,7 +113,8 @@ defmodule Ship.Server do
 
   def random_ship do
     %{:pos => random_ship_point(),
-      :theta => Velocity.random_direction,
+      :theta => 0.0,
+      :target_theta => 0.0,
       :laser_charged_at => Clock.now_ms}
   end
 
@@ -121,9 +122,9 @@ defmodule Ship.Server do
     Space.random_grid_point
   end
 
-  def rotate_ship(ship, delta_t_ms) do
+  def rotate_ship(ship, _delta_t_ms) do
     theta = ship.theta
-    delta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
+    delta = 0.0 #@ship_rotation_rad_per_sec * delta_t_ms / 1000.0
     %{ship | :theta => Velocity.wrap_angle(theta + delta)} 
   end
 

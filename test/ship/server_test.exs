@@ -4,6 +4,11 @@ defmodule Ship.ServerTest do
 
   alias Ship.Server, as: Ship
 
+  test "New player points north" do
+    {:ok, ship} = Ship.start_link(1, "AAA")
+    {_pos, 0.0, "AAA", _} = Ship.nose_tag(ship)    
+  end
+
   test "Retrive nose of ship and its tag" do
     {:ok, ship} = Ship.start_link(1, "AAA")
     {_pos, _theta, tag, _} = Ship.nose_tag(ship)
