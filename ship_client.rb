@@ -7,7 +7,7 @@ def fire?
 end
 
 def pointing_at(a,b)
-  (a-b).abs < 0.1
+  (a-b).abs < 0.05
 end
 
 def sort_ships_by_distance(ships)
@@ -32,8 +32,8 @@ def start_ship(tag)
       if frame.has_key?('ships')
         unless frame['ships'].empty?
           target = sort_ships_by_distance(frame['ships']).first
-          tag, theta = target
-          puts theta
+          tag, theta = target          
+          puts [tag, theta, frame['theta']].inspect
           ws.send({'theta'=>theta}.to_json)
           ws.send({:fire=>true}.to_json) if pointing_at(theta, frame['theta'])
         end

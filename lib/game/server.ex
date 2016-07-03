@@ -556,6 +556,7 @@ defmodule Game.Server do
     ships
     |> ships_except(ship_tag)
     |> Enum.map(fn(s)->ship_relative(s, ship_x, ship_y) end)
+    |> Enum.filter(fn(s)->Bullet.in_range?(List.last(s)) end)
   end
 
   def id_of_ship_tagged(ships, tag) do
