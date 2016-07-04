@@ -48,6 +48,12 @@ defmodule Game.Server do
   def start_link(fps \\ 0, 
                  asteroid_count \\ @initial_asteroid_count,
                  ship_count     \\ @initial_ship_count) do
+    case Process.whereis(:news) do
+      nil -> 
+        {:ok, e} = Game.Events.start_link
+        Process.register(e, :news)
+      _ -> true
+    end
     GenServer.start_link(__MODULE__, {:ok, fps, asteroid_count, ship_count}, [])
   end
 
@@ -333,7 +339,8 @@ defmodule Game.Server do
     case game.state.ships[ship_id] do
       nil -> {:noreply, game}
       {_ship_id, tag, x, y, _, _, _,} ->
-        IO.puts(Enum.join(["ASTEROID", "hit", tag], " "))
+        msg = Enum.join(["ASTEROID", "hit", tag], " ")
+        Game.Events.broadcast(:news, msg)
         Game.Server.explosion(self(), x, y)
         {:noreply, game}
     end

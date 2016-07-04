@@ -98,17 +98,16 @@ defmodule Bullet.Server do
       Bullet.Server.hit_asteroid(:c.pid(0,19,0))
   """
   def handle_cast(:hit_asteroid, b) do
-    [b.shooter, "shot ASTEROID"]
-    |> Enum.join(" ")
-    |> IO.puts
+    msg = Enum.join([b.shooter, "shot", "ASTEROID"], " ")
+    Game.Events.broadcast(:news, msg)
     
     {:noreply, b}
   end
 
   def handle_call({:hit_ship, victim_tag}, _from, b) do
-    [b.shooter, "killed", victim_tag]
-    |> Enum.join(" ")
-    |> IO.puts
+    
+    msg = Enum.join([b.shooter, "killed", victim_tag], " ")
+    Game.Events.broadcast(:news, msg)
     
     {:reply, {b.shooter, victim_tag}, b}
   end
