@@ -27,7 +27,7 @@ defmodule Game.Events do
   end
 
   def player_kills(pid, shooter, victim_tag) do
-    msg = Enum.join([b.shooter, "killed", victim_tag], " ")
+    msg = Enum.join([shooter, "killed", victim_tag], " ")
 
     GenServer.cast(pid, {:broadcast, msg})
   end
