@@ -242,7 +242,7 @@ defmodule Game.Server do
       case Ship.nose_tag(game.pids.ships[ship_id]) do
         {ship_pos, theta, tag, true} -> 
           Ship.fire(ship_pid)
-          Game.Events.broadcast(:news, Enum.join([tag, "shoots"], " "))
+          Game.Events.player_fires(:news, tag)
           fire_bullet_in_game(game, ship_pos, theta, tag)
         _ -> {:noreply, game}
       end

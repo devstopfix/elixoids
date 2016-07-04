@@ -21,6 +21,22 @@ defmodule Game.Events do
     GenServer.cast(pid, {:broadcast, msg})
   end
 
+  def player_shot_asteroid(pid, player_tag) do
+    msg = Enum.join([player_tag, "shot", "ASTEROID"], " ")
+    GenServer.cast(pid, {:broadcast, msg})
+  end
+
+  def player_kills(pid, shooter, victim_tag) do
+    msg = Enum.join([b.shooter, "killed", victim_tag], " ")
+
+    GenServer.cast(pid, {:broadcast, msg})
+  end
+
+  def player_fires(pid, player_tag) do
+    msg = Enum.join([player_tag, "fires"], " ")
+    GenServer.cast(pid, {:broadcast, msg})
+  end
+
   def handle_cast({:broadcast, msg}, messages) do
     {:noreply, MapSet.put(messages, msg)}
   end
