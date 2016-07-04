@@ -540,7 +540,7 @@ defmodule Game.Server do
 
     d = World.Point.distance(ox, oy, sx, sy)
 
-    theta = :math.atan2(sx - ox, sy - oy) + 1.5707963267948966
+    theta = :math.atan2(sy - oy, sx - ox)
     |> World.Velocity.wrap_angle()
 
     [tag, theta, d]
