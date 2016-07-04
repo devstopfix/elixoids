@@ -48,6 +48,18 @@ defmodule Game.ServerTest do
     #assert [1, _, _, 40] = List.first(game_state[:a])
   end
 
+  test "We can retrieve sound state of eXplosions" do
+    {:ok, game} = Game.start_link
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
+
+    game_state = Game.sound_state(game)
+
+    assert 0 == length(game_state[:x])
+    assert 4000.0 == List.first(game_state.dim)
+    assert 2250.0 == List.last(game_state.dim)
+  end
+
   test "We can retrieve viewport dimensions from game state" do
     {:ok, game} = Game.start_link
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)

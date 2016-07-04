@@ -70,6 +70,10 @@ defmodule Game.Server do
     GenServer.call(pid, :state)
   end  
 
+  def sound_state(pid) do
+    GenServer.call(pid, :sound_state)
+  end
+
   def state_of_ship(pid, ship_tag) do
     GenServer.call(pid, {:state_of_ship, ship_tag})
   end
@@ -417,6 +421,15 @@ defmodule Game.Server do
     }
     {:reply, game_state, %{game | :explosions => []}}
   end  
+
+  def handle_call(:sound_state, _from, game) do
+    game_state = %{
+      :dim => Elixoids.Space.dimensions,
+      :x => game.explosions    |> list_of_tuples_to_list,
+      :b => game.state.bullets |> map_of_tuples_to_list
+    }
+    {:reply, game_state, game}    
+  end
 
   def handle_call({:state_of_ship, ship_tag}, _from, game) do
     ship = only_ship(game.state.ships, ship_tag)
