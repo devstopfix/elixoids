@@ -243,6 +243,7 @@ defmodule Game.Server do
         {ship_pos, theta, tag, true} -> 
           Ship.fire(ship_pid)
           fire_bullet_in_game(game, ship_pos, theta, tag)
+          Game.Events.broadcast(:news, Enum.join([tag, "shoots"], " "))
         _ -> {:noreply, game}
       end
     end
