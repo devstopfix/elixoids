@@ -139,4 +139,8 @@ defmodule Bullet.Server do
     Clock.now_ms + fly_time_ms
   end
 
+  def in_range?(d) do
+    d < @bullet_range_m
+  end
+
 end

@@ -63,7 +63,7 @@ defmodule Elixoids.Space do
 
   # Points on a grid
 
-  @grid_points 6
+  @grid_points 7
   @gx @width / @grid_points
   @gy @height / @grid_points
 
@@ -72,7 +72,7 @@ defmodule Elixoids.Space do
   end
 
   def rand_grid_position(grid_size_px) do
-    perturb = :rand.normal * (grid_size_px / 16.0)
+    perturb = :rand.normal * (grid_size_px / 8.0)
     (grid_size_px * rand_grid_index) + perturb
   end
 

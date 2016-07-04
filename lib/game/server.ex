@@ -20,7 +20,7 @@ defmodule Game.Server do
 
   To start a running Game at 60 fps with 4 random ships:
 
-      {:ok, game} = Game.Server.start_link(60, 4)
+      {:ok, game} = Game.Server.start_link(60)
       Game.Server.show(game)
 
   To split an asteroid:
@@ -42,8 +42,8 @@ defmodule Game.Server do
   alias World.Clock, as: Clock
   alias Game.Collision, as: Collision
 
-  @initial_asteroid_count   8
-  @initial_ship_count       8
+  @initial_asteroid_count   4
+  @initial_ship_count       4
 
   def start_link(fps \\ 0, 
                  asteroid_count \\ @initial_asteroid_count,
@@ -120,6 +120,14 @@ defmodule Game.Server do
 
   def spawn_player(pid, player_tag) do
     GenServer.cast(pid, {:spawn_player, player_tag})
+  end
+
+  def player_new_heading(pid, player_tag, theta) do
+    GenServer.cast(pid, {:player_new_heading, player_tag, theta})
+  end
+
+  def player_fires(pid, player_tag) do
+    GenServer.cast(pid, {:player_fires, player_tag})
   end
 
   def remove_player(pid, player_tag) do
@@ -340,6 +348,26 @@ defmodule Game.Server do
     end
   end
 
+
+  def handle_cast({:player_new_heading, player_tag, theta}, game) do
+    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
+    if (ship_id != nil) && (World.Velocity.valid_theta(theta)) do
+      case Map.get(game.pids.ships, ship_id) do
+        nil -> nil
+        pid -> Ship.new_heading(pid, theta)  
+      end           
+    end
+    {:noreply, game}
+  end
+
+  def handle_cast({:player_fires, player_tag}, game) do
+    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
+    if (ship_id != nil) do
+      Game.Server.ship_fires_bullet(self(), ship_id)
+    end
+    {:noreply, game}
+  end
+
   def handle_cast({:remove_player, player_tag}, game) do
     ship_id = id_of_ship_tagged(game.state.ships, player_tag)
     if ship_id != nil do
@@ -365,7 +393,6 @@ defmodule Game.Server do
     move_asteroids(game, elapsed_ms)
     move_ships(game, elapsed_ms)
     move_bullets(game, elapsed_ms)
-    fire_bullets(game)
     Collision.collision_tests(game.collision_pid, game) 
 
     new_game = game
@@ -394,7 +421,8 @@ defmodule Game.Server do
       ship_state = %{
         :status => 200,
         :tag => ship_tag,
-        :theta => theta
+        :theta => theta,
+        :ships => ships_relative(game.state.ships, ship_tag, x, y)
       }
       if Map.has_key?(game.kby, ship_tag) do
         {:reply, Map.put(ship_state, :kby, game.kby[ship_tag]) , game}
@@ -460,12 +488,6 @@ defmodule Game.Server do
     put_in(game.pids.asteroids[id], pid)
   end
 
-  # Game state
-
-  defp update_game_clock(game) do
-    Map.put(game, :clock_ms, Clock.now_ms)
-  end
-
   defp maybe_spawn_asteroid(game) do
     if not_enough_asteroids(game.pids.asteroids) do
       new_asteroid_in_game(Asteroid.random_asteroid, game)
@@ -477,6 +499,14 @@ defmodule Game.Server do
   defp not_enough_asteroids(asteroids) do
     length(Map.keys(asteroids)) < @initial_asteroid_count
   end
+
+  # Game state
+
+  defp update_game_clock(game) do
+    Map.put(game, :clock_ms, Clock.now_ms)
+  end
+
+  # Ships
 
   def ship_state_has_tag(ship, expected_tag) do
     {_, tag, _, _, _, _, _} = ship
@@ -505,6 +535,30 @@ defmodule Game.Server do
     |> Enum.reject(fn(s) -> ship_state_has_tag(s, tag) end) 
   end
 
+  def ship_relative(ship, ox, oy) do
+    {_, tag, sx, sy, _, _, _} = ship
+
+    d = World.Point.distance(ox, oy, sx, sy)
+
+    theta = :math.atan2(sy - oy, sx - ox)
+    |> World.Velocity.wrap_angle()
+
+    [tag, theta, d]
+  end
+
+  @doc """
+      {:ok, game} = Game.Server.start_link(60)
+      Game.Server.show(game)
+      Game.Server.spawn_player(game, "OUR")
+      Game.Server.state_of_ship(game, "OUR")
+  """
+  def ships_relative(ships, ship_tag, ship_x, ship_y) do
+    ships
+    |> ships_except(ship_tag)
+    |> Enum.map(fn(s)->ship_relative(s, ship_x, ship_y) end)
+    |> Enum.filter(fn(s)->Bullet.in_range?(List.last(s)) end)
+  end
+
   def id_of_ship_tagged(ships, tag) do
     case Enum.find(ships, fn {_key, ship_state} -> elem(ship_state, 1) == tag end) do
       {id, _} -> id
@@ -513,16 +567,6 @@ defmodule Game.Server do
   end
 
   # Development
-
-  defp fire_bullets(game) do
-    trigger = rem(World.Clock.now_ms, 16)
-    Enum.each(Map.keys(game.pids.ships), 
-      fn(ship_id) -> 
-        if (ship_id == trigger) do 
-          Game.Server.ship_fires_bullet(self(), ship_id) 
-        end; 
-      end)
-  end
 
   defp fire_bullet_in_game(game, ship_pos, theta, shooter) do
     id = Identifiers.next(game.ids)

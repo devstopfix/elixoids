@@ -13,10 +13,10 @@ defmodule Ship.Server do
 
   @ship_radius_m 20.0
   @nose_radius_m (@ship_radius_m * 1.1)
-  @ship_rotation_rad_per_sec (:math.pi * 2 / 10.0)
+  @ship_rotation_rad_per_sec (:math.pi * 2 / 4.0)
 
-  @laser_recharge_ms 250
-  @laser_recharge_penalty_ms 2500
+  @laser_recharge_ms 500
+  @laser_recharge_penalty_ms 4000
 
   def start_link(id, tag \\ random_tag()) do
     ship = random_ship() 
@@ -39,6 +39,10 @@ defmodule Ship.Server do
 
   def nose_tag(pid) do
     GenServer.call(pid, :nose_tag)
+  end
+
+  def new_heading(pid, theta) do
+    GenServer.cast(pid, {:new_heading, theta})
   end
 
   @doc """
@@ -82,6 +86,11 @@ defmodule Ship.Server do
     {:noreply, recharge_laser(ship)}
   end
 
+  def handle_cast({:new_heading, theta}, ship) do
+    new_ship = %{ship | :target_theta => Velocity.wrap_angle(theta)}
+    {:noreply, new_ship}
+  end
+
   def handle_call(:position, _from, ship) do
     {:reply, state_tuple(ship), ship}
   end
@@ -113,7 +122,8 @@ defmodule Ship.Server do
 
   def random_ship do
     %{:pos => random_ship_point(),
-      :theta => Velocity.random_direction,
+      :theta => 0.0,
+      :target_theta => 0.0,
       :laser_charged_at => Clock.now_ms}
   end
 
@@ -121,10 +131,21 @@ defmodule Ship.Server do
     Space.random_grid_point
   end
 
+  defp clip_delta_theta(delta_theta, delta_t_ms) do
+    max_theta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
+    min_theta = max_theta * -1.0
+    cond do
+      (delta_theta > max_theta) -> max_theta
+      (delta_theta < min_theta) -> min_theta
+      true                      -> delta_theta
+    end
+  end
+
   def rotate_ship(ship, delta_t_ms) do
-    theta = ship.theta
-    delta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
-    %{ship | :theta => Velocity.wrap_angle(theta + delta)} 
+    input_delta_theta = ship.target_theta - ship.theta
+    delta_theta = clip_delta_theta(input_delta_theta, delta_t_ms)
+    theta = Velocity.wrap_angle(ship.theta + delta_theta)
+    %{ship | :theta => theta} 
   end
 
   defp random_tag do

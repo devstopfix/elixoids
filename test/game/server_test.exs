@@ -60,7 +60,7 @@ defmodule Game.ServerTest do
   end
 
   test "We record who shot a player" do
-    {:ok, game} = Game.start_link
+    {:ok, game} = Game.start_link(0,8,8)
     :timer.sleep(10)
 
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
@@ -159,7 +159,7 @@ defmodule Game.ServerTest do
   end
 
   test "We can add and remove ships from game" do
-    {:ok, game} = Game.start_link
+    {:ok, game} = Game.start_link(0,8,8)
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
     :timer.sleep(10)
 
@@ -178,6 +178,28 @@ defmodule Game.ServerTest do
     game_state_3 = Game.state(game)
     assert 8 == game_state_3[:s] |> Enum.count
 
+  end
+
+  test "We can add ship and fire" do
+    {:ok, game} = Game.start_link(0,1,1)
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
+
+    game_state = Game.state(game)
+    assert 1 == game_state[:s] |> Enum.count
+
+    Game.spawn_player(game, "TRG")
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    :timer.sleep(10)
+    game_state_2 = Game.state(game)
+    assert 2 == game_state_2[:s] |> Enum.count
+    assert 0 == game_state_2[:b] |> Enum.count
+
+    Game.player_fires(game, "TRG")
+    :timer.sleep(10)
+    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    game_state_3 = Game.state(game)
+    assert 1 == game_state_3[:b] |> Enum.count
   end
 
 end
