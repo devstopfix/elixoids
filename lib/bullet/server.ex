@@ -98,7 +98,7 @@ defmodule Bullet.Server do
       Bullet.Server.hit_asteroid(:c.pid(0,19,0))
   """
   def handle_cast(:hit_asteroid, b) do
-    Game.Events.player_shoots_asteroid(:news, b.shooter)
+    Game.Events.player_shot_asteroid(:news, b.shooter)
     
     {:noreply, b}
   end
