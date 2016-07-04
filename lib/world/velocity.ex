@@ -60,10 +60,10 @@ defmodule World.Velocity do
   end
 
   @doc """
-  Round angle to 4dp.
+  Round angle to 8dp.
   """
   def round_theta(theta) do
-    Float.round(theta, 4)
+    Float.round(theta, 8)
   end
 
   @doc """

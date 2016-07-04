@@ -153,11 +153,15 @@ defmodule Game.Server do
   identifier to a tuple of their {pid, state}.
   """
   def generate_ships(ids, n) do
-    Enum.reduce(1..n, %{}, fn(_i, ships) ->
-      id = Identifiers.next(ids)
-      {:ok, pid} = Ship.start_link(id)
-      Map.put(ships, id, pid)
-    end)
+    if (n >= 1) do
+      Enum.reduce(1..n, %{}, fn(_i, ships) ->
+        id = Identifiers.next(ids)
+        {:ok, pid} = Ship.start_link(id)
+        Map.put(ships, id, pid)
+      end)
+    else
+      %{}
+    end
   end
 
   ## Server Callbacks
@@ -422,7 +426,8 @@ defmodule Game.Server do
         :status => 200,
         :tag => ship_tag,
         :theta => theta,
-        :ships => ships_relative(game.state.ships, ship_tag, x, y)
+        :ships => ships_relative(game.state.ships, ship_tag, x, y),
+        :rocks => asteroids_relative(game.state.asteroids, x, y)
       }
       if Map.has_key?(game.kby, ship_tag) do
         {:reply, Map.put(ship_state, :kby, game.kby[ship_tag]) , game}
@@ -542,8 +547,9 @@ defmodule Game.Server do
 
     theta = :math.atan2(sy - oy, sx - ox)
     |> World.Velocity.wrap_angle()
+    |> World.Velocity.round_theta()
 
-    [tag, theta, d]
+    [tag, theta, World.Point.round(d)]
   end
 
   @doc """
@@ -565,6 +571,33 @@ defmodule Game.Server do
       nil -> nil      
     end
   end
+
+
+  def asteroid_relative(asteroid, ox, oy) do
+    {id, ax, ay, r} = asteroid
+
+    d = World.Point.distance(ox, oy, ax, ay)
+
+    theta = :math.atan2(ay - oy, ax - ox)
+    |> World.Velocity.wrap_angle()
+    |> World.Velocity.round_theta()
+
+    [id, theta, r, World.Point.round(d)]
+  end
+
+  @doc """
+      {:ok, game} = Game.Server.start_link(60, 4, 4)
+      Game.Server.show(game)
+      Game.Server.spawn_player(game, "OUR")
+      Game.Server.state_of_ship(game, "OUR")
+  """
+  def asteroids_relative(rocks, ship_x, ship_y) do
+    rocks
+    |> Map.values
+    |> Enum.map(fn(a)->asteroid_relative(a, ship_x, ship_y) end)
+    |> Enum.filter(fn(s)->Bullet.in_range?(List.last(s)) end)
+  end
+
 
   # Development
 
