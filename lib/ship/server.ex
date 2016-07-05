@@ -13,10 +13,10 @@ defmodule Ship.Server do
 
   @ship_radius_m 20.0
   @nose_radius_m (@ship_radius_m * 1.1)
-  @ship_rotation_rad_per_sec (:math.pi * 2 / 4.0)
+  @ship_rotation_rad_per_sec (:math.pi * 2 / 3.0)
 
   @laser_recharge_ms 500
-  @laser_recharge_penalty_ms 4000
+  @laser_recharge_penalty_ms 2000
 
   def start_link(id, tag \\ random_tag()) do
     ship = random_ship() 
@@ -141,8 +141,13 @@ defmodule Ship.Server do
     end
   end
 
+  defp shortest_angle(delta_theta) do
+    other = (:math.pi * 2) - abs(delta_theta)
+    Enum.min([delta_theta, other])
+  end
+
   def rotate_ship(ship, delta_t_ms) do
-    input_delta_theta = ship.target_theta - ship.theta
+    input_delta_theta = shortest_angle(ship.target_theta - ship.theta)
     delta_theta = clip_delta_theta(input_delta_theta, delta_t_ms)
     theta = Velocity.wrap_angle(ship.theta + delta_theta)
     %{ship | :theta => theta} 
