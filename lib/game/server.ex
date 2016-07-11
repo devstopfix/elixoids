@@ -582,8 +582,8 @@ defmodule Game.Server do
   def ships_relative(ships, ship_tag, ship_x, ship_y) do
     ships
     |> ships_except(ship_tag)
-    |> Enum.map(fn(s)->ship_relative(s, ship_x, ship_y) end)
-    |> Enum.filter(fn(s)->Bullet.in_range?(List.last(s)) end)
+    |> Enum.map(fn(s) -> ship_relative(s, ship_x, ship_y) end)
+    |> Enum.filter(fn(s) -> Bullet.in_range?(List.last(s)) end)
   end
 
   def id_of_ship_tagged(ships, tag) do
@@ -617,8 +617,8 @@ defmodule Game.Server do
   def asteroids_relative(rocks, ship_x, ship_y) do
     rocks
     |> Map.values
-    |> Enum.map(fn(a)->asteroid_relative(a, ship_x, ship_y) end)
-    |> Enum.filter(fn(s)->Bullet.in_range?(List.last(s)) end)
+    |> Enum.map(fn(a) -> asteroid_relative(a, ship_x, ship_y) end)
+    |> Enum.filter(fn(s) -> Bullet.in_range?(List.last(s)) end)
   end
 
 
