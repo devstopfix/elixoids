@@ -190,6 +190,7 @@ defmodule Game.Server do
                           :ships => %{}},
               :explosions => [],
               :collision_pid => collision_pid,
+              :min_asteroid_count => asteroid_count,
               :clock_ms => Clock.now_ms,
               :kby => %{}}
     start_ticker(self(), fps)
@@ -508,22 +509,19 @@ defmodule Game.Server do
 
   # Asteroids
 
-  defp new_asteroid_in_game(a, game) do
+  def new_asteroid_in_game(a, game) do
     id = Identifiers.next(game.ids)
     {:ok, pid} = Asteroid.start_link(id, a)
     put_in(game.pids.asteroids[id], pid)
   end
 
   defp maybe_spawn_asteroid(game) do
-    if not_enough_asteroids(game.pids.asteroids) do
+    active_asteroid_count = length(Map.keys(game.pids.asteroids))
+    if active_asteroid_count < game.min_asteroid_count do
       new_asteroid_in_game(Asteroid.random_asteroid, game)
     else
       game
     end
-  end
-
-  defp not_enough_asteroids(asteroids) do
-    length(Map.keys(asteroids)) < @initial_asteroid_count
   end
 
   # Game state
@@ -567,6 +565,8 @@ defmodule Game.Server do
     d = World.Point.distance(ox, oy, sx, sy)
 
     theta = :math.atan2(sy - oy, sx - ox)
+
+    theta
     |> World.Velocity.wrap_angle()
     |> World.Velocity.round_theta()
 
@@ -600,6 +600,8 @@ defmodule Game.Server do
     d = World.Point.distance(ox, oy, ax, ay)
 
     theta = :math.atan2(ay - oy, ax - ox)
+
+    theta
     |> World.Velocity.wrap_angle()
     |> World.Velocity.round_theta()
 
