@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
 
-The UI is rendered by [asteroids-ui](https://github.com/lachok/asteroids).
+The UI is rendered by [asteroids-ui](https://github.com/lachok/asteroids). Audio provided by [SonicAsteroids](https://github.com/jrothwell/sonic-asteroids)
 
 [Asteroids Video](https://www.youtube.com/watch?v=WYSupJ5r2zo)
 
