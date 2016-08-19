@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ASTEROIDS_RENDERER=../asteroids-ui/asteroids-renderer/bin
+
+if [ -d "$ASTEROIDS_RENDERER" ]; then
+  cp -v "$ASTEROIDS_RENDERER/*" ./priv/
+fi
