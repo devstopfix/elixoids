@@ -11,4 +11,11 @@ defmodule World.Clock do
     :os.system_time(:milli_seconds)
   end
 
+  @doc """
+  Return true if t is in the past, otherwise false
+  """
+  def past?(t) do
+  	t < now_ms
+  end
+
 end
