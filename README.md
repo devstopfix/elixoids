@@ -36,6 +36,23 @@ Play the sound effects, download, build and run [SonicAsteroids.app][4] and set 
 
     ws://localhost:8065/sound
 
+## Clients
+
+There are some sample clients, written in Ruby, in the [clients](clients) folder. They require two libraries (which may require *sudo* depending on your Ruby installation):
+
+    gem install eventmachine
+    gem install faye-websocket
+
+    gem list --local
+
+To run a simple client that instructs a ship to [shoot the nearest asteroid](clients/client_shoot_nearest_rock.rb):
+
+    ruby clients/client_shoot_nearest_rock.rb
+
+If you are running the game other than at localhost, specify the websocket in the environment:
+
+    export ELIXOIDS_SERVER=rocks.example.com:8065
+
 ## Refresh UI
 
 In order to get the latest version of the UI:
