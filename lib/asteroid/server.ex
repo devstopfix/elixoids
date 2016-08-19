@@ -91,6 +91,11 @@ defmodule Asteroid.Server do
      {:reply, {a.id, a.pos.x, a.pos.y, a.radius}, a}
    end
 
+   @doc """
+   Split a single asteroid into two smaller asteroids heading
+   in different directions and return a list of the new rocks,
+   or return an empty list if the rock is too small to split.
+   """
    def handle_call(:split, _game_pid, a) do
      if a.radius >= @splittable_radius_m do
        directions = [@quarter_pi_radians, -1 * @quarter_pi_radians]
@@ -141,16 +146,25 @@ defmodule Asteroid.Server do
      Map.delete(a, :id)
    end
 
+   @doc """
+   Halve the radius of the asteroid.
+   """
    def halve(a) do
      r = a.radius / 2.0
      %{a | radius: r}
    end
 
-   def fork(a, delta_theta) do
+   @doc """
+   Change the direction of the asteroid by given angle
+   """
+   def redirect(a, delta_theta) do
      update_in(a.velocity, &Velocity.fork(&1, delta_theta))
    end
 
-   def explode(a) do
+   @doc """
+   Double the speed of the asteroid.
+   """
+   def speedup(a) do
      update_in(a.velocity, &Velocity.double(&1))
    end
 
@@ -158,8 +172,8 @@ defmodule Asteroid.Server do
      a 
      |> anonymous
      |> halve
-     |> fork(delta_theta)
-     |> explode
+     |> redirect(delta_theta)
+     |> speedup
    end
 
 end
