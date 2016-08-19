@@ -26,13 +26,13 @@ To start a game:
 
     iex -S mix
 
-To open the UI:
+Open the UI in your browser:
 
     open http://localhost:8065/game/index.html
 
 The game runs well in full screen, on Chrome this can be enabled with `[cmd]-[↩]`
 
-Play the sound effects, download, build and run [SonicAsteroids.app][4] and set the address to listen to as:
+To hear the sound effects on a Mac, download and run [SonicAsteroids.app](https://github.com/jrothwell/sonic-asteroids/releases) and set the address to listen to as:
 
     ws://localhost:8065/sound
 
