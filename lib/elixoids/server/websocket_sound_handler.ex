@@ -25,7 +25,7 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
     :ok
   end
 
-  def websocket_handle({:text, content}, req, state) do
+  def websocket_handle({:text, _content}, req, state) do
     {:reply, {:text, "Ignored"}, req, state}
   end
   

@@ -20,7 +20,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   # 3-tuple with :upgrade as shown below.  This is essentially following
   # the specification of websocket, in which a plain HTTP request is made
   # first, which requests an upgrade to the websocket protocol.
-  def init({_tcp, _http}, req, _opts) do
+  def init({_tcp, _http}, _req, _opts) do
     {:upgrade, :protocol, :cowboy_websocket}
   end
 
