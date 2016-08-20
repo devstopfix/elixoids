@@ -10,11 +10,13 @@ The UI is rendered by [asteroids-ui][3]. Audio provided by [SonicAsteroids][4]
 
 # Build
 
+There are two versions of this game. Branch *v1* contains the version compatible with the UI and Sonic repositories. Switch to that branch until they are modified to be compatible with master.
+
 Check out this repository and run:
 
     mix deps.get
 
-You may need to install Elixir first:
+You may need to install Elixir first, on a Mac you can use homebrew:
 
     brew install elixir
 
@@ -60,8 +62,10 @@ In order to get the latest version of the UI:
 * checkout [asteroids-ui][3] in a sibling folder to this project
 * rebuild:
 
-    cd asteroids-ui/asteroids-renderer
-    npm run build
+```
+cd asteroids-ui/asteroids-renderer
+npm run build
+````
 
 Copy the artefacts into the local folder which is served by the game webserver:
 
@@ -84,6 +88,7 @@ How to install to an Ubuntu 14.04 LTS server:
 
 ## Packages
 
+```
 sudo apt-get -y update
 wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb 
 sudo dpkg -i erlang-solutions_1.0_all.deb
@@ -92,7 +97,7 @@ sudo apt-get -y install esl-erlang
 sudo apt-get -y install elixir
 sudo apt-get -y install git
 sudo apt-get -y install nginx
-
+```
 
 ## Reverse proxy websocket
 
@@ -145,6 +150,10 @@ Run:
 
     mix run --no-halt
 
+
+# Licence
+
+This software is published under the [MIT License](LICENSE) and copyright [devstopfix](https://github.com/devstopfix). UI is copyright [lachok](https://github.com/lachok). Audio code is copyright [jrothwell](https://github.com/jrothwell).
 
 
 [1]: https://en.wikipedia.org/wiki/Asteroids_(video_game)
