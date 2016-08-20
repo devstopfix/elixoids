@@ -14,7 +14,9 @@ def start()
     end
 
     ws.on :message do |event|
-      puts JSON.parse(event.data).inspect
+      state = JSON.parse(event.data)
+      explosions = state['x']
+      puts explosions.inspect unless explosions.empty?
     end
 
     ws.on :close do |event|
