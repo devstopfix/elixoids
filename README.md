@@ -62,8 +62,10 @@ In order to get the latest version of the UI:
 * checkout [asteroids-ui][3] in a sibling folder to this project
 * rebuild:
 
-    cd asteroids-ui/asteroids-renderer
-    npm run build
+```
+cd asteroids-ui/asteroids-renderer
+npm run build
+````
 
 Copy the artefacts into the local folder which is served by the game webserver:
 
