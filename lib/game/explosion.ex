@@ -5,6 +5,20 @@ defmodule Game.Explosion do
     @moduledoc """
     An explosion has a unique identifier and time of detonation,
     and a point in space.
+
+    Explosions remain in state for 1s:
+
+        {:ok, game} = Game.Server.start_link()
+        Game.Server.tick(game)
+        Game.Server.show(game)
+        Game.Server.sound_state(game)
+
+        Game.Server.explosion(game, 1.0, 1.0)
+
+        Game.Server.tick(game)
+        Game.Server.show(game)
+        Game.Server.sound_state(game)
+
     """
     
     defstruct id: -1, x: 0.0, y: 0.0, at: World.Clock.now_ms 
@@ -17,11 +31,10 @@ defmodule Game.Explosion do
     end
 
     @doc """
-    Return true if the time of the explosion is before
-    the given cut-off time.
+    Return true if the explosion should still be animated.
     """
-    def expired?(ex, t) do
-       ex.at < t
+    def active?(ex, t) do
+       ex.at >= t
     end
 
     @doc """
@@ -29,7 +42,7 @@ defmodule Game.Explosion do
     """
     def filter_expired_explosions(explosions) do
       t = World.Clock.now_ms - @fade_out_ms
-      Enum.reject(explosions, &expired?(&1, t))
+      Enum.filter(explosions, &active?(&1, t))
     end
 
     @doc """
