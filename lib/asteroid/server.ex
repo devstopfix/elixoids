@@ -168,12 +168,22 @@ defmodule Asteroid.Server do
      update_in(a.velocity, &Velocity.double(&1))
    end
 
+   @doc """
+   Bump the asteroid in the direction it is facing,
+   by half its radius
+   """
+   def bump(a) do
+     t_ms = (a.radius / a.velocity.speed) * 1000 / 2
+     update_in(a.pos, &Point.apply_velocity(&1, a.velocity, t_ms))
+   end
+
    def cleave(delta_theta, a) do
      a 
      |> anonymous
      |> halve
      |> redirect(delta_theta)
      |> speedup
+     |> bump
    end
 
 end
