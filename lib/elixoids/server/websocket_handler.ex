@@ -30,17 +30,18 @@ defmodule Elixoids.Server.WebsocketHandler do
   # Useful to know: a new process will be spawned for each connection
   # to the websocket.
   def websocket_init(_TransportName, req, _opts) do
-    IO.puts "Starting game with PID is #{inspect(self())}"
+    IO.puts "UI connected with PID #{inspect(self())}"
 
     # Here I'm starting a standard erlang timer that will send
     # an empty message [] to this process in one second. If your handler
     # can handle more that one kind of message that wouldn't be empty.
     :erlang.start_timer(1000, self(), [])
-    {:ok, req, :undefined_state}
+    {:ok, req, Game.State.initial}
   end
 
   # Required callback.  Put any essential clean-up here.
   def websocket_terminate(_reason, _req, _state) do
+    IO.puts "UI disconnected from PID #{inspect(self())}"
     :ok
   end
 
@@ -78,22 +79,15 @@ defmodule Elixoids.Server.WebsocketHandler do
   #
   # In a larger app various clauses of websocket_info might handle all kinds
   # of messages and pass information out the websocket to the client.
-  def websocket_info({_timeout, _ref, _foo}, req, state) do
-
-    game_state = Game.Server.state(:game)
-
-    {:ok, message} = JSEX.encode(game_state)
-
-    
-    # set a new timer to send a :timeout message back to this process a second
-    # from now.
+  def websocket_info({_timeout, _ref, _foo}, req, prev_state) do
+    # set a new timer to send a :timeout message back to this process 
     :erlang.start_timer(@ms_between_frames, self(), [])
 
-    # send the new message to the client. Note that even though there was no
-    # incoming message from the client, we still call the outbound message 
-    # a 'reply'.  That makes the format for outbound websocket messages 
-    # exactly the same as websocket_handle()
-    {:reply, {:text, message}, req, state}
+    game_state = Game.Server.state(:game)
+    transmit = Game.State.deduplicate(game_state, prev_state)
+    {:ok, message} = JSEX.encode(transmit)
+   
+    {:reply, {:text, message}, req, game_state}
   end
 
   # fallback message handler 

@@ -5,6 +5,14 @@ defmodule Game.State do
   """
 
   @doc """
+  Empty initial state for processes that track differences
+  between frames
+  """
+  def initial do
+    %{x: []}
+  end
+
+  @doc """
   Deduplicate events in current state that were
   transmitted in previous state.
 
@@ -13,7 +21,8 @@ defmodule Game.State do
   Returns 'current' state with events removed
   """
   def deduplicate(current, prev) do
-    %{}
+    current
+    |> Map.update!(:x, &deduplicate_list(&1, prev.x))
   end
 
   @doc """
@@ -21,6 +30,9 @@ defmodule Game.State do
   """
   def deduplicate_list(current, prev) do
     current
+    |> MapSet.new
+    |> MapSet.difference(MapSet.new(prev))
+    |> MapSet.to_list
   end
 
 end

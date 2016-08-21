@@ -65,7 +65,7 @@
 /******/ 	}
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "0fcae21c0ec461bb15c3"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "7664abac53fbf728ee07"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -586,7 +586,7 @@
   \******************/
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(/*! /Users/jaev/Projects/2016/asteroids-ui/asteroids-renderer/src */1);
+	module.exports = __webpack_require__(/*! /Users/devstopfix/Projects/2016/asteroids-ui/asteroids-renderer/src */1);
 
 
 /***/ },
@@ -658,19 +658,9 @@
 	    HEIGHT: serverDimensions.HEIGHT / clientDimensions.HEIGHT
 	};
 	
-	window.onblur = function () {
-	    console.log('window.onblur: pausing renderer');
-	    renderer.pause();
-	};
-	window.onfocus = function () {
-	    console.log('window.onfocus: resuming renderer');
-	    renderer.resume();
-	};
-	
 	renderer.start();
-	server.connect('ws://localhost:8065/websocket');
 	//server.connect('ws://ec2-52-58-193-54.eu-central-1.compute.amazonaws.com/websocket')
-	//server.connect('ws://ec2-52-28-1-127.eu-central-1.compute.amazonaws.com/websocket')
+	server.connect('ws://localhost:8065/websocket');
 
 /***/ },
 /* 4 */
@@ -27965,31 +27955,6 @@
 	// shim for using process in browser
 	
 	var process = module.exports = {};
-	
-	// cached from whatever global is present so that test runners that stub it
-	// don't break things.  But we need to wrap it in a try catch in case it is
-	// wrapped in strict mode code which doesn't define any globals.  It's inside a
-	// function because try/catches deoptimize in certain engines.
-	
-	var cachedSetTimeout;
-	var cachedClearTimeout;
-	
-	(function () {
-	  try {
-	    cachedSetTimeout = setTimeout;
-	  } catch (e) {
-	    cachedSetTimeout = function () {
-	      throw new Error('setTimeout is not defined');
-	    }
-	  }
-	  try {
-	    cachedClearTimeout = clearTimeout;
-	  } catch (e) {
-	    cachedClearTimeout = function () {
-	      throw new Error('clearTimeout is not defined');
-	    }
-	  }
-	} ())
 	var queue = [];
 	var draining = false;
 	var currentQueue;
@@ -28014,7 +27979,7 @@
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = cachedSetTimeout(cleanUpNextTick);
+	    var timeout = setTimeout(cleanUpNextTick);
 	    draining = true;
 	
 	    var len = queue.length;
@@ -28031,7 +27996,7 @@
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    cachedClearTimeout(timeout);
+	    clearTimeout(timeout);
 	}
 	
 	process.nextTick = function (fun) {
@@ -28043,7 +28008,7 @@
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        cachedSetTimeout(drainQueue, 0);
+	        setTimeout(drainQueue, 0);
 	    }
 	};
 	
@@ -29777,12 +29742,8 @@
 	      er = arguments[1];
 	      if (er instanceof Error) {
 	        throw er; // Unhandled 'error' event
-	      } else {
-	        // At least give some kind of context to the user
-	        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
-	        err.context = er;
-	        throw err;
 	      }
+	      throw TypeError('Uncaught, unspecified "error" event.');
 	    }
 	  }
 	
