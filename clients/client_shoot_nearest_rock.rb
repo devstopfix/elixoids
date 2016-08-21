@@ -11,12 +11,20 @@ def fire?
 end
 
 def pointing_at(a,b)
-  (a-b).abs < 0.50
+  (a-b).abs < 0.5
 end
 
 def sort_ships_by_distance(ships)
   ships.sort do |a,b|
     a.last <=> b.last
+  end
+end
+
+def round(theta)
+  if (theta < 0.0)
+    theta + (2 * Math::PI)
+  else
+    theta
   end
 end
 
@@ -53,7 +61,7 @@ def start_ship(tag)
       end
 
       shoot = pointing_at(theta, frame['theta'])
-      ws.send({'theta'=>theta, 'fire'=>shoot}.to_json)
+      ws.send({'theta'=>round(theta), 'fire'=>shoot}.to_json)
 
     end
 
