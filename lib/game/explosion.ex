@@ -21,13 +21,13 @@ defmodule Game.Explosion do
 
     """
     
-    defstruct id: -1, x: 0.0, y: 0.0, at: World.Clock.now_ms 
+    defstruct id: -1, x: 0.0, y: 0.0, at: 0 
 
     @doc """
     Create Explosion at given x,y
     """
     def at_xy(x, y) do
-        %Game.Explosion{x: x, y: y}
+        %Game.Explosion{x: x, y: y, at: World.Clock.now_ms}
     end
 
     @doc """

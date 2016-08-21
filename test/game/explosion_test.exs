@@ -12,8 +12,6 @@ defmodule Game.ExplosionTest do
 
     assert 0.0 = ex.x
     assert 0.0 = ex.y
-
-    assert ex.at > @t_past 
   end
 
   test "Explosion at" do
@@ -21,14 +19,17 @@ defmodule Game.ExplosionTest do
 
     assert 1.0 = ex.x
     assert 2.0 = ex.y
+    
+    assert ex.at > @t_past 
   end
 
   test "Filter expired explosions" do
     ex1 = %Explosion{at: @t_past}
-    ex2 = %Explosion{}
-  	ex3 = %Explosion{at: @t_future}
+    ex2 = %Explosion{at: World.Clock.now_ms - 1001}
+    ex3 = %Explosion{at: World.Clock.now_ms}
+  	ex4 = %Explosion{at: @t_future}
 
-    assert [ex2, ex3] == Explosion.filter_expired_explosions([ex1, ex2, ex3])
+    assert [ex3, ex4] == Explosion.filter_expired_explosions([ex1, ex2, ex3, ex4])
   end
 
   test "Convert struct to state sent to client" do
