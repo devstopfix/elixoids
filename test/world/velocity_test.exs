@@ -1,6 +1,6 @@
 defmodule World.VelocityTest do
   use ExUnit.Case, async: true
-  use ExCheck
+  #use ExCheck
   doctest World.Velocity
 
   alias World.Velocity, as: Velocity
@@ -30,17 +30,17 @@ defmodule World.VelocityTest do
     assert :math.pi == Velocity.wrap_angle( 3 * :math.pi)
   end
 
-  property :double_velocity_doubles_speed do
-    for_all {speed} in {real} do
-      v1 = Velocity.random_direction_with_speed(speed)
-      assert v1.speed == speed
+  # property :double_velocity_doubles_speed do
+  #   for_all {speed} in {real} do
+  #     v1 = Velocity.random_direction_with_speed(speed)
+  #     assert v1.speed == speed
 
-      v2 = Velocity.double(v1)
+  #     v2 = Velocity.double(v1)
 
-      assert v2.speed == speed * 2
-      assert v1.theta == v2.theta
-    end
-  end
+  #     assert v2.speed == speed * 2
+  #     assert v1.theta == v2.theta
+  #   end
+  # end
 
   test :fork_velocity do
       v = Velocity.north

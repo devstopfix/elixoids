@@ -1,6 +1,6 @@
 defmodule Game.CollisionTest do
   use ExUnit.Case, async: true
-  use ExCheck
+  #use ExCheck
 
   doctest Game.Collision
 
@@ -75,10 +75,10 @@ defmodule Game.CollisionTest do
     assert [3, 4, 5] == Collision.unique_targets([{1,3},{2,4},{1,5}]) 
   end
 
-  property :square_number_with_macro do
-    for_all {x, y} in {int, int} do
-      assert ((x - y) * (x - y)) == Collision.sq(x - y)
-    end
-  end  
+  # property :square_number_with_macro do
+  #   for_all {x, y} in {int, int} do
+  #     assert ((x - y) * (x - y)) == Collision.sq(x - y)
+  #   end
+  # end  
 
 end
