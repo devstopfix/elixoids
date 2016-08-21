@@ -41,6 +41,7 @@ defmodule Game.Server do
   alias Game.Identifiers, as: Identifiers
   alias World.Clock, as: Clock
   alias Game.Collision, as: Collision
+  alias Game.Explosion, as: Explosion
 
   @initial_asteroid_count   4
   @initial_ship_count       4
@@ -348,9 +349,13 @@ defmodule Game.Server do
     end
   end
 
+  @doc """
+  Append an Explosion to the game state at given co-ordinates.
+  """
   def handle_cast({:explosion, x, y}, game) do
-    new_game = update_in(game.explosions, &[{x,y} | &1])
-    {:noreply, new_game}
+    e = Explosion.at_xy(x, y)
+    next_game_state = update_in(game.explosions, &[e | &1])
+    {:noreply, next_game_state}
   end
 
   def handle_cast({:spawn_player, player_tag}, game) do
@@ -412,11 +417,12 @@ defmodule Game.Server do
     move_bullets(game, elapsed_ms)
     Collision.collision_tests(game.collision_pid, game) 
 
-    new_game = game
-    |> maybe_spawn_asteroid
+    next_game_state = game
     |> update_game_clock
+    |> maybe_spawn_asteroid
+    |> filter_explosions
 
-    {:reply, {:elapsed_ms, elapsed_ms}, new_game}
+    {:reply, {:elapsed_ms, elapsed_ms}, next_game_state}
   end
 
   def handle_call(:state, _from, game) do
@@ -424,17 +430,17 @@ defmodule Game.Server do
       :dim => Elixoids.Space.dimensions,
       :a => game.state.asteroids |> map_of_tuples_to_list,
       :s => game.state.ships |> map_of_tuples_to_list |> map_rest,
-      :x => game.explosions |> list_of_tuples_to_list,
+      :x => game.explosions |> explosions_to_list,
       :b => game.state.bullets |> map_of_tuples_to_list,
       :kby => game.kby
     }
-    {:reply, game_state, %{game | :explosions => []}}
+    {:reply, game_state, game}
   end  
 
   def handle_call(:sound_state, _from, game) do
     game_state = %{
       :dim => Elixoids.Space.dimensions,
-      :x => game.explosions    |> list_of_tuples_to_list,
+      :x => game.explosions    |> explosions_to_list,
       :b => game.state.bullets |> map_of_tuples_to_list
     }
     {:reply, game_state, game}    
@@ -530,6 +536,10 @@ defmodule Game.Server do
     Map.put(game, :clock_ms, Clock.now_ms)
   end
 
+  def filter_explosions(game) do
+    update_in(game.explosions, &Explosion.filter_expired_explosions(&1))
+  end
+
   # Ships
 
   def ship_state_has_tag(ship, expected_tag) do
@@ -621,6 +631,13 @@ defmodule Game.Server do
     |> Enum.filter(fn(s) -> Bullet.in_range?(List.last(s)) end)
   end
 
+  @doc """
+  Convert our game state containing a list of explosion structs,
+  to a list of lists
+  """
+  def explosions_to_list(explosions) do
+    Enum.map(explosions, &Explosion.to_state(&1))
+  end
 
   # Development
 

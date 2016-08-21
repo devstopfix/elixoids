@@ -40,8 +40,9 @@ def start_ship(tag)
     end
 
     ws.on :close do |event|
-      p [:close, event.code, event.reason]
+      p ["GAME OVER!", :close, event.code, event.reason]
       ws = nil
+      exit(1)
     end
   }
 end

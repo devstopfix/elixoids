@@ -5,7 +5,7 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
   and publishes it over the websocket.
   """
  
-  # 24 FPS
+  # 12 FPS
   @ms_between_frames div(1000, 12)
 
   @behaviour :cowboy_websocket_handler
@@ -14,14 +14,17 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
     {:upgrade, :protocol, :cowboy_websocket}
   end
 
+  @doc """
+  Client connects here. State is the set of explosions sent to the client recently.
+  """
   def websocket_init(_TransportName, req, _opts) do
-    IO.puts "Sending SOUND from PID #{inspect(self())}"
+    IO.puts "Audio client connected as PID #{inspect(self())}"
     :erlang.start_timer(@ms_between_frames, self(), [])
-    {:ok, req, :undefined_state}
+    {:ok, req, MapSet.new}
   end
 
-  # Required callback.  Put any essential clean-up here.
   def websocket_terminate(_reason, _req, _state) do
+    IO.puts "Audio client disconnected from PID #{inspect(self())}"
     :ok
   end
 
@@ -33,13 +36,19 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
     {:ok, req, state}
   end
 
-  def websocket_info({_timeout, _ref, _foo}, req, state) do
-    game_state = Game.Server.sound_state(:game)
-
-    {:ok, message} = JSEX.encode(game_state)
+  @doc """
+  Perodically query the game state, deduplicate explosions,
+  and push to the client.
+  """
+  def websocket_info({_timeout, _ref, _foo}, req, seen) do
     :erlang.start_timer(@ms_between_frames, self(), [])
 
-    {:reply, {:text, message}, req, state}
+    game_state = Game.Server.sound_state(:game)
+    {explosions, new_seen} = Channels.DeliverOnce.deduplicate(game_state.x, seen)
+    new_game_state = %{game_state | :x => explosions}
+    {:ok, message} = JSEX.encode(new_game_state)
+    
+    {:reply, {:text, message}, req, new_seen}
   end
 
   # fallback message handler 

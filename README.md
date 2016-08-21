@@ -2,7 +2,9 @@
 
 [Asteroids][1] game engine written in [Elixir][2].
 
-[![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
+Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
+
+Stable v1: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=v1)](https://travis-ci.org/devstopfix/elixoids)
 
 The UI is rendered by [asteroids-ui][3]. Audio provided by [SonicAsteroids][4]
 
@@ -14,6 +16,7 @@ There are two versions of this game. Branch *v1* contains the version compatible
 
 Check out this repository and run:
 
+    git checkout v1
     mix deps.get
 
 You may need to install Elixir first, on a Mac you can use homebrew:

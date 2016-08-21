@@ -11,7 +11,7 @@ def fire?
 end
 
 def pointing_at(a,b)
-  (a-b).abs < 0.25
+  (a-b).abs < 0.50
 end
 
 def sort_ships_by_distance(ships)
@@ -22,7 +22,9 @@ end
 
 def start_ship(tag)
   url = "ws://#{$SERVER}/ship/#{tag}"
-  puts url
+  puts sprintf("Piloting ship %s at %s", tag, url)
+  target_id = nil
+
   EM.run {
     ws = Faye::WebSocket::Client.new(url)
 
@@ -33,20 +35,32 @@ def start_ship(tag)
     ws.on :message do |event|
       frame = JSON.parse(event.data)
 
-      if frame.has_key?('rocks')
-        unless frame['rocks'].empty?
-          target = sort_ships_by_distance(frame['rocks']).first
-          id, theta, radius, dist = target          
-          ws.send({'theta'=>theta}.to_json)
-          ws.send({:fire=>true}.to_json) if pointing_at(theta, frame['theta'])
-        end
+      return unless frame.has_key?('rocks')
+
+      rocks = frame['rocks']
+
+      if rocks.empty?
+        puts "Awaiting target..."
+        return
       end
+
+      candidates = sort_ships_by_distance(rocks)
+
+      id, theta, radius, dist = candidates.first
+
+      if (id != target_id)
+        puts sprintf("%s Targeting %d at %f (of %d targets)", tag, id, theta, candidates.size)
+      end
+
+      shoot = pointing_at(theta, frame['theta'])
+      ws.send({'theta'=>theta, 'fire'=>shoot}.to_json)
 
     end
 
     ws.on :close do |event|
       p [:close, event.code, event.reason]
       ws = nil
+      exit(1)
     end
   }
 end
@@ -55,5 +69,4 @@ def default_tag
   (0...3).map { (65 + rand(26)).chr }.join
 end
 
-$SHIP = ARGV.first || default_tag
-start_ship($SHIP)
+start_ship(ARGV.first || default_tag)
