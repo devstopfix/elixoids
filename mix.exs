@@ -29,8 +29,11 @@ defmodule Elixoids.Mixfile do
 
   defp deps do
     [
+     #Compiling src/triq_dom.erl failed:
+     #src/triq_dom.erl:290: random:uniform/1: the 'random' module is deprecated; use the 'rand' module instead
      #{:excheck, "~> 0.4.1", only: :test},
      #{:triq, github: "krestenkrab/triq", only: :test},
+     
      {:credo, "~> 0.3", only: [:dev, :test]},
      {:mix_test_watch, "~> 0.2", only: :dev},
      {:cowboy, "1.0.4" },
