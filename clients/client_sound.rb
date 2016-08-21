@@ -1,29 +1,35 @@
-require 'faye/websocket'
-require 'eventmachine'
+require 'websocket-client-simple'
 require 'json'
 
 $SERVER = ENV['ELIXOIDS_SERVER'] || 'localhost:8065'
 $SOCKET = "ws://#{$SERVER}/sound"
 
-def start()
-  EM.run {
-    ws = Faye::WebSocket::Client.new($SOCKET)
+$finished = false
 
-    ws.on :open do |event|
-      p [:open]
-    end
+WebSocket::Client::Simple.connect $SOCKET do |ws|
 
-    ws.on :message do |event|
-      state = JSON.parse(event.data)
-      explosions = state['x']
-      puts explosions.inspect unless explosions.empty?
-    end
+  ws.on :open do
+    puts "Connected to " << $SOCKET
+  end
 
-    ws.on :close do |event|
-      p [:close, event.code, event.reason]
-      ws = nil
-    end
-  }
+  ws.on :message do |msg|
+    state = JSON.parse(msg.data)
+    explosions = state['x']
+    puts explosions.inspect unless explosions.empty?
+  end
+
+  ws.on :error do |e|
+    p e
+    $finished = true
+  end
+
+  ws.on :close do |e|
+    p e
+    puts "GAME OVER!"
+    $finished = true
+  end
+
 end
 
-start()
+while not $finished do
+end

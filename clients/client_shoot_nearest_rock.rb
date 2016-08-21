@@ -47,6 +47,7 @@ def start_ship(tag)
     ws.on :close do |event|
       p [:close, event.code, event.reason]
       ws = nil
+      exit(1)
     end
   }
 end
@@ -55,5 +56,4 @@ def default_tag
   (0...3).map { (65 + rand(26)).chr }.join
 end
 
-$SHIP = ARGV.first || default_tag
-start_ship($SHIP)
+start_ship(ARGV.first || default_tag)
