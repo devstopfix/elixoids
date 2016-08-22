@@ -21,6 +21,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   # the specification of websocket, in which a plain HTTP request is made
   # first, which requests an upgrade to the websocket protocol.
   def init({_tcp, _http}, _req, _opts) do
+    IO.puts("Incoming connect...")
     {:upgrade, :protocol, :cowboy_websocket}
   end
 
