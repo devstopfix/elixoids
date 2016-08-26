@@ -10,7 +10,9 @@
 (defn sub [& vectors]
   "Subtract two or more vectors of equal size, right to left"
   {:pre [(apply == (map count vectors))]}
-  (apply map - vectors))
+  (->
+    (apply map - vectors)
+    vec))
 
 (defn dot-product [& matrix]
   "Calculate the dot-product of two or more equal size vectors"
@@ -34,6 +36,9 @@
 
 ; API
 
+(defn save-time-received [state]
+  (assoc state :t_ms (System/currentTimeMillis)))
+
 (defn asteroid-records [state]
   (->> state
        (:rocks)
@@ -46,16 +51,32 @@
     {}
     xs))
 
+; Asteroids
 
 (defn calculate-velocity [a1 a2]
   "Calculate the velocity of an asteroid given two points
    along it's direction of travel"
   (let [{theta1 :theta
-         d1     :d} a1
+         d1     :distance} a1
         {theta2 :theta
-         d2     :d} a2]
+         d2     :distance} a2]
     (sub (polar-to-cartesian theta1 d1)
          (polar-to-cartesian theta2 d2))))
+
+(defn watch [as1 as2]
+  "Watch asteroids that appear in both states,
+   and return a list of them.
+   Input is two maps of id -> asteroid"
+  (reduce-kv
+    (fn [results id a1]
+      (if-let [a2 (get as2 id)]
+        (->>
+          (calculate-velocity a1 a2)
+          (assoc a2 :velocity)
+          (conj results))
+        results))
+    []
+    as1))
 
 ; Does vector intersect a circle?
 ; http://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
@@ -74,3 +95,13 @@
   "Return true if vector d intersects a circle of radius r
    whose centre is given by vector f"
   (>= (discriminant d f r) 0))
+
+
+; Frames
+
+(def extract (comp map-asteroids asteroid-records))
+
+(defn frame-delta [frame1 frame2]
+  (let [as1 (extract frame1)
+        as2 (extract frame2)]
+    (watch as1 as2)))
