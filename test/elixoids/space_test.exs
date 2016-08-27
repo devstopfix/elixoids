@@ -1,19 +1,19 @@
 defmodule Elixoids.SpaceTest do
   use ExUnit.Case, async: true
-  #use ExCheck
+  use ExCheck
   doctest Elixoids.Space
 
   alias Elixoids.Space, as: Space
   alias World.Point, as: Point
 
-  # property :wrap_any_point_into_screen do
-  #   for_all {x, y} in {real, real} do
-  #     p = %Point{x: x, y: y}
-  #     p2 = Space.wrap(p)
-  #     assert p2.x >= p.x
-  #     assert p2.y >= 0.0
-  #   end
-  # end
+  property :wrap_any_point_into_screen do
+    for_all {x, y} in {real, real} do
+      p = %Point{x: x, y: y}
+      p2 = Space.wrap(p)
+      assert p2.x >= p.x
+      assert p2.y >= 0.0
+    end
+  end
 
   test "Random point" do
     p1 = Space.random_point
@@ -42,7 +42,6 @@ defmodule Elixoids.SpaceTest do
     assert p1.y > 0
     assert p2.x > 0
     assert p2.y > 0
-
   end
 
 end
