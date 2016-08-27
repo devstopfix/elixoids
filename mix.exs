@@ -5,8 +5,8 @@ defmodule Elixoids.Mixfile do
     [app: :elixoids,
      description: "Asteroids game and server",
      name: "Elixoids",
-     version: "2.0.4",
-     elixir: "~> 1.3.1",
+     version: "2.0.5",
+     elixir: "~> 1.3.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps,
@@ -23,14 +23,12 @@ defmodule Elixoids.Mixfile do
   end
 
   def application do
-    [ mod: { Elixoids.Server, [] },
+    [ #mod: { Elixoids.Server, [] },
       applications: [:cowboy, :ranch, :logger] ]
   end
 
   defp deps do
     [
-     #Compiling src/triq_dom.erl failed:
-     #src/triq_dom.erl:290: random:uniform/1: the 'random' module is deprecated; use the 'rand' module instead
      {:excheck, "~> 0.4.1", only: :test},
      {:triq, github: "krestenkrab/triq", only: :test},
      
