@@ -56,7 +56,7 @@ defmodule Ship.ServerTest do
 
   test "Stationary" do
     {:ok, ship} = Ship.start_link(1, "PLY")
-    {_pos, 0.0, "PLY", false} = Ship.nose_tag(ship)
+    {_pos, 0.0, "PLY", _} = Ship.nose_tag(ship)
 
     Ship.new_heading(ship, 0.0)
     :timer.sleep(10)
