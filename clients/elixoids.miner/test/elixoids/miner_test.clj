@@ -33,12 +33,27 @@
     (is
       (= [12.5979843814589
           16.298695921285685]
-         (calculate-velocity
-           {:theta 0.4822331855160187 :distance 1867.3}
-           {:theta 0.4775823032592002 :distance 1848.6}
-           ))))
+           (calculate-velocity
+            {:theta 0.4822331855160187 :distance 1867.3}
+            {:theta 0.4775823032592002 :distance 1848.6}))))
   (testing "Watching asteroids that appear in two states"
-    (is (= [] (frame-delta state_1 state_2)))))
+    (is (=
+          [12.5979843814589
+           16.298695921285685]
+          (->>
+            (frame-delta state_1 state_2)
+            (first)
+            (:velocity)
+            )))))
+  ;(testing "Project target of rock given current position, velocity and time interval"
+  ;  (let [a {:distance 1848.6
+  ;           :id       3
+  ;           :radius   120.0
+  ;           :theta    0.4775823032592002
+  ;           :velocity [12.5979843814589
+  ;                      16.298695921285685]}]
+  ;        (is (= [750 375]
+  ;          (project-position a 750))))))
 
 (deftest test-vectors
   (testing "Subtract two vectors"

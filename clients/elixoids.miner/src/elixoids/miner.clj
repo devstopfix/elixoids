@@ -34,34 +34,11 @@
   [(* d (Math/cos theta))
    (* d (Math/sin theta))])
 
-; API
-
-(defn save-time-received [state]
-  (assoc state :t_ms (System/currentTimeMillis)))
-
-(defn asteroid-records [state]
-  (->> state
-       (:rocks)
-       (map #(apply struct AsteroidRecord %))))
-
-(defn map-asteroids [xs]
-  "Convert a list of Asteroid records into a map of id to record"
-  (reduce
-    (fn [m a] (assoc m (:id a) a))
-    {}
-    xs))
-
 ; Asteroids
 
-(defn calculate-velocity [a1 a2]
-  "Calculate the velocity of an asteroid given two points
-   along it's direction of travel"
-  (let [{theta1 :theta
-         d1     :distance} a1
-        {theta2 :theta
-         d2     :distance} a2]
-    (sub (polar-to-cartesian theta1 d1)
-         (polar-to-cartesian theta2 d2))))
+(defn asteroid-position [a]
+  (let [pos (polar-to-cartesian (:theta a) (:distance a))]
+    (assoc a :position pos)))
 
 (defn watch [as1 as2]
   "Watch asteroids that appear in both states,
@@ -71,7 +48,7 @@
     (fn [results id a1]
       (if-let [a2 (get as2 id)]
         (->>
-          (calculate-velocity a1 a2)
+          (sub (:position a1) (:position a2))
           (assoc a2 :velocity)
           (conj results))
         results))
@@ -79,7 +56,7 @@
     as1))
 
 ; Does vector intersect a circle?
-; http://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
+; http://stackoverflow.com/a/1084899
 
 (defn discriminant [d f r]
   "Calculate the discriminant of vector d to vector f,
@@ -91,17 +68,39 @@
         c (- (dot-product f f) (* r r))]
     (- (* b b) (* 4 a c))))
 
+; TODO test the ray f in one direction only
 (defn intersects? [d f r]
   "Return true if vector d intersects a circle of radius r
    whose centre is given by vector f"
   (>= (discriminant d f r) 0))
 
+(defn vector-intersects? [d as]
+  "Return true if there is an asteroid in list as which lies along the vector d"
+  (some
+    (fn [a] (intersects? d (:position a) (:radius a)))
+    as ))
 
 ; Frames
 
-(def extract (comp map-asteroids asteroid-records))
+; API
+
+(defn asteroid-records [state]
+  "Convert the asteroid game state into a list of asteroid records"
+  (->> state
+       (:rocks)
+       (map #(apply struct AsteroidRecord %))
+       (map asteroid-position)))
+
+(defn map-asteroids [xs]
+  "Convert a list of Asteroid records into a map of id to record"
+  (reduce
+    (fn [m a] (assoc m (:id a) a))
+    {}
+    xs))
+
+(def asteroids-state (comp map-asteroids asteroid-records))
 
 (defn frame-delta [frame1 frame2]
-  (let [as1 (extract frame1)
-        as2 (extract frame2)]
+  (let [as1 (asteroids-state frame1)
+        as2 (asteroids-state frame2)]
     (watch as1 as2)))

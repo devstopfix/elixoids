@@ -78,7 +78,7 @@ defmodule World.Velocity do
   end
 
   def valid_theta(theta) do
-    (theta >= 0.0) && (theta < @two_pi_radians)
+    (theta > (- @two_pi_radians)) && (theta < @two_pi_radians)
   end
 
 end

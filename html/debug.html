@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Asteroids MMP</title>
+  <!--script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script-->
+
+  <style type="text/css">
+    #viewport {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    html, body {
+      width:  100%;
+      height: 100%;
+      margin: 0px;
+    }
+
+    body {
+      background-color: #111;
+      color: #eee;
+      font-family: sans-serif;
+    }
+
+    h1 {
+      font-size: 300%;
+    }
+  </style>
+</head>
+<body>
+  <h1>Asteroids</h1>
+        <canvas id='viewport' width="1600" height="900"></canvas>
+
+  <script type="text/javascript">
+
+    /* return float from 0.0 - 1.0 based on clock */
+    function nowFrac() {
+       var s = Math.floor(Date.now() / 1000);
+       return (s % 60) / 60.0;
+    }
+
+    /* colour of object - http://stackoverflow.com/a/5137964*/
+    function rainbowColorRGB(f)
+    {
+        var i = 240 * f;
+        var r = Math.round(Math.sin(0.024 * i + 0) * 127 + 128);
+        var g = Math.round(Math.sin(0.024 * i + 2) * 127 + 128);
+        var b = Math.round(Math.sin(0.024 * i + 4) * 127 + 128);
+        return 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
+
+    function rainbowColor() {
+        return rainbowColorRGB(nowFrac());
+    }
+
+    function rainbowColorComplement() {
+        return rainbowColorRGB(1.0 - nowFrac());
+    }
+
+    function scaleContext(context, dim) {
+      var [sx, sy] = dim;
+      context.scale(1600/sx, 1.0 * (900 / sy))
+    };
+
+    /* space is black */
+    function blackCanvas(context) {
+      context.beginPath();
+      context.rect(0,0,4000,2250);
+      context.fillStyle='#222';
+      context.fill();
+    }
+
+    var canvas = document.getElementById('viewport');
+    var context = canvas.getContext('2d');
+    scaleContext(context, [4000.0, 2250.0]);
+    blackCanvas(context);
+
+  </script>
+
+  <script>
+
+var SocketHandler = (function(){
+  var my = {},
+    websocket,
+    messages = 0;
+
+  my.init = function(){
+    //$('#send').click(sendMessage);
+    connect();
+  }  
+  function connect() {
+    websocket = new WebSocket('ws://localhost:8065/websocket');
+    websocket.onopen = function(evt) { onOpen(evt) }; 
+    websocket.onclose = function(evt) { onClose(evt) }; 
+    websocket.onmessage = function(evt) { onMessage(evt) }; 
+  };  
+
+  function drawAsteroid(asteroid, context) {
+    var [id, x, y, r] = asteroid;
+    context.beginPath();
+    context.arc(x, y, r, 0, 2 * Math.PI, false);
+    context.lineWidth = 2;
+    context.strokeStyle = rainbowColor();
+    context.stroke();
+  }
+
+  function drawAsteroids(asteroids, context) {
+    for(var i=0; i<asteroids.length; i++) {
+      drawAsteroid(asteroids[i], context)
+    }
+  }
+
+  function drawShip(ship, context) {
+    var [id, x, y, r, theta, col] = ship;
+    context.beginPath();
+    context.arc(x, y, r, 0, 2 * Math.PI, false);
+    context.lineWidth = 2;
+    context.strokeStyle = '#' + col;
+    context.stroke();
+    context.beginPath();
+    context.moveTo(x,y);
+    context.lineTo(x + (r * 1.2 * Math.cos(theta)),
+                   y + (r * 1.2 * Math.sin(theta)))
+    context.stroke();
+  }
+
+  function drawShips(ships, context) {
+    for(var i=0; i<ships.length; i++) {
+      drawShip(ships[i], context)
+    }
+  }
+
+  function drawBullet(bullet, context) {
+    var [id, x, y] = bullet;
+    context.beginPath();
+    context.arc(x, y, 2, 0, 2 * Math.PI, false);
+    context.lineWidth = 2;
+    context.strokeStyle = rainbowColorComplement();
+    context.stroke();
+  }
+  
+  function drawBullets(bullets, context) {
+    for(var i=0; i<bullets.length; i++) {
+      drawBullet(bullets[i], context)
+    }
+  }
+
+  function drawExplosion(explosion, context) {
+    var [x, y] = explosion;
+    context.beginPath();
+    context.arc(x, y, 240, 0, 2 * Math.PI, false);
+    context.lineWidth = 16;
+    context.strokeStyle = '#FFFF99';
+    context.stroke();
+  }
+
+  function drawExplosions(explosions, context) {
+    for(var i=0; i<explosions.length; i++) {
+      drawExplosion(explosions[i], context)
+    }
+  }  
+
+  function onMessage(evt) { 
+    message = JSON.parse(evt.data);
+    if ( message.a !== undefined) {
+      var canvas = document.getElementById('viewport');
+      var context = canvas.getContext('2d');
+      if ((Date.now() % 4) == 0) { blackCanvas(context) };
+      drawAsteroids(message.a, context);
+      drawShips(message.s, context);
+      drawBullets(message.b, context);
+      drawExplosions(message.x, context);
+    }
+  };  
+
+  function sendMessage(){
+    value = $('#message_string').val();
+    message = { 'message': value};
+    websocket.send(JSON.stringify(message));
+  };
+
+  function disconnect() {
+    websocket.close();
+  }; 
+
+  function onOpen(evt) { 
+    //updateStatus('<span style="color: green;">CONNECTED </span>'); 
+  };  
+
+  function onClose(evt) { 
+    //updateStatus('<span style="color: red;">DISCONNECTED </span>');
+  };  
+
+  function updateStatus(txt) { 
+    //$('#status').html(txt);
+  };
+
+  return my;
+}());
+SocketHandler.init();
+  </script>
+</body>
+</html>
