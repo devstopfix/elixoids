@@ -9,7 +9,8 @@ def fire?
 end
 
 def pointing_at(a,b)
-  (a-b).abs < 0.05
+  delta = (a-b).abs
+  (delta <= 0.1) || (delta >= 6.2)
 end
 
 def sort_ships_by_distance(ships)

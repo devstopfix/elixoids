@@ -11,12 +11,18 @@ defmodule Ship.Server do
   alias World.Velocity, as: Velocity
   alias Elixoids.Space, as: Space
 
+  # Ship radius (m)
   @ship_radius_m 20.0
+
+  # The spawn point of a bullet
   @nose_radius_m (@ship_radius_m * 1.1)
+
+  # Rotation rate (radians/sec)
   @ship_rotation_rad_per_sec (:math.pi * 2 / 3.0)
 
+  # Minimum time between shots
   @laser_recharge_ms 500
-  @laser_recharge_penalty_ms 2000
+  @laser_recharge_penalty_ms (@laser_recharge_ms * 2)
 
   def start_link(id, tag \\ random_tag()) do
     ship = random_ship() 

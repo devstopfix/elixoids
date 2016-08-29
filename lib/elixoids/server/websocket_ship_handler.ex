@@ -7,7 +7,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   alias Elixoids.Server.PlayerInput, as: PlayerInput
  
-  @ms_between_frames 1000
+  @ms_between_frames 250
 
   @behaviour :cowboy_websocket_handler
 

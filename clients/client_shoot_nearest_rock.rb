@@ -10,8 +10,9 @@ def fire?
   (rand(10)) == 0
 end
 
-def pointing_at(a,b)
-  (a-b).abs < 0.5
+def pointing_at(rock_theta, ship_theta)
+  delta = (rock_theta-ship_theta).abs
+  (delta <= 0.1) || (delta >= 6.2)
 end
 
 def sort_ships_by_distance(ships)
@@ -27,6 +28,7 @@ def round(theta)
     theta
   end
 end
+
 
 def start_ship(tag)
   url = "ws://#{$SERVER}/ship/#{tag}"
@@ -60,9 +62,8 @@ def start_ship(tag)
         puts sprintf("%s Targeting %d at %f (of %d targets)", tag, id, theta, candidates.size)
       end
 
-      shoot = pointing_at(theta, frame['theta'])
+      shoot = rocks.any? { |a| pointing_at(a[1], frame['theta'])} 
       ws.send({'theta'=>round(theta), 'fire'=>shoot}.to_json)
-
     end
 
     ws.on :close do |event|
