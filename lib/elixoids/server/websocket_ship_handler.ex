@@ -7,7 +7,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   alias Elixoids.Server.PlayerInput, as: PlayerInput
  
-  @ms_between_frames 1000
+  @ms_between_frames 250
 
   @behaviour :cowboy_websocket_handler
 
@@ -21,7 +21,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   # the specification of websocket, in which a plain HTTP request is made
   # first, which requests an upgrade to the websocket protocol.
   def init({_tcp, _http}, _req, _opts) do
-    IO.puts("Incoming connect...")
+    IO.puts("Upgrading HTTP connection")
     {:upgrade, :protocol, :cowboy_websocket}
   end
 
@@ -32,7 +32,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   # Useful to know: a new process will be spawned for each connection
   # to the websocket.
   def websocket_init(_TransportName, req, _opts) do
-    IO.puts("Incoming connect...")
+    IO.puts("Incoming websocket connection...")
     try do
       {path, req} = :cowboy_req.path_info(req)
       tag = :erlang.iolist_to_binary(path)
@@ -43,12 +43,12 @@ defmodule Elixoids.Server.WebsocketShipHandler do
         {:ok, req, tag}
       else
         IO.puts("Bad client name!")
-        {:shutdown, req, :undefined_state}
+        {:shutdown, req}
       end
     rescue
       e in RuntimeError -> 
         IO.puts(Exception.message(e))
-        {:shutdown, req, :undefined_state}
+        {:shutdown, req}
     end
   end
 

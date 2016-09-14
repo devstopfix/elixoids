@@ -20,8 +20,11 @@ defmodule Channels.DeliverOnce do
       else
         data_set = MapSet.new(data)
         keep = MapSet.union(seen, data_set)
-        transmit = MapSet.difference(data_set, seen)
-        {MapSet.to_list(transmit), keep}
+        transmit = data_set
+        |> MapSet.difference(seen)
+        |> MapSet.to_list
+        |> Enum.slice(0,8)
+        {transmit, keep}
       end
     end
 
