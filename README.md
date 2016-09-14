@@ -46,6 +46,12 @@ To hear the sound effects on a Mac, download and run [SonicAsteroids.app](https:
 
 ## Clients
 
+### Java Client
+
+See [Elixoids Java Client](https://github.com/jrothwell/asteroids-client) by [J Rothwell][5].
+
+### Ruby Clients
+
 There are some sample clients, written in Ruby, in the [clients](clients) folder. They require two libraries (which may require *sudo* depending on your Ruby installation):
 
     gem install eventmachine
@@ -159,10 +165,11 @@ Run:
 
 # Licence
 
-This software is published under the [MIT License](LICENSE) and copyright [devstopfix](https://github.com/devstopfix). UI is copyright [lachok](https://github.com/lachok). Audio code is copyright [jrothwell](https://github.com/jrothwell).
+This software is published under the [MIT License](LICENSE) and copyright [devstopfix](https://github.com/devstopfix). UI is copyright [lachok](https://github.com/lachok). Audio code is copyright [jrothwell][5].
 
 
 [1]: https://en.wikipedia.org/wiki/Asteroids_(video_game)
 [2]: http://elixir-lang.org/
 [3]: https://github.com/lachok/asteroids
 [4]: https://github.com/jrothwell/sonic-asteroids
+[5]: https://github.com/jrothwell
