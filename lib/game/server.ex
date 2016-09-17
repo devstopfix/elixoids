@@ -219,7 +219,7 @@ defmodule Game.Server do
 
   def handle_cast({:update_asteroid, asteroid_state}, game) do
     id = elem(asteroid_state, 0)
-    if (Map.has_key?(game.pids.asteroids, id)) do 
+    if Map.has_key?(game.pids.asteroids,id) do 
       new_game = put_in(game.state.asteroids[id], asteroid_state)
       {:noreply, new_game}
     else
@@ -227,12 +227,18 @@ defmodule Game.Server do
     end
   end
 
+  @doc """
+  Update game state with ship state.
+  """
   def handle_cast({:update_ship, ship_state}, game) do
-    id = elem(ship_state, 0)
-    new_game = put_in(game.state.ships[id], ship_state)
-    {:noreply, new_game}
+    {id,_,_ ,_ ,_ ,_ ,_} = ship_state
+    if Map.has_key?(game.pids.ships,id) do
+      new_game = put_in(game.state.ships[id], ship_state)
+      {:noreply, new_game}
+    else
+      {:noreply, game}
+    end
   end
-
 
   @doc """
   Ship fires a bullet in the direction it is facing.
