@@ -125,12 +125,20 @@ defmodule Game.Server do
     GenServer.cast(pid, {:say_player_shot_ship, bullet_id, victim_id})
   end
 
+  def player_shot_player(pid, bullet_id, shooter_tag, victim_tag) do
+    GenServer.cast(pid, {:player_shot_player, bullet_id, shooter_tag, victim_tag})
+  end
+
   def hyperspace_ship(pid, ship_id) do
     GenServer.cast(pid, {:hyperspace_ship, ship_id})
   end
 
   def say_ship_hit_by_asteroid(pid, ship_id) do
     GenServer.cast(pid, {:say_ship_hit_by_asteroid, ship_id})
+  end
+
+  def broadcast(pid, id, msg) do
+    GenServer.cast(pid, {:broadcast, id, msg})
   end
 
   def spawn_player(pid, player_tag) do
@@ -255,7 +263,6 @@ defmodule Game.Server do
       case Ship.nose_tag(game.pids.ships[ship_id]) do
         {ship_pos, theta, tag, true} -> 
           Ship.fire(ship_pid)
-          Game.Events.player_fires(:news, tag)
           fire_bullet_in_game(game, ship_pos, theta, tag, self())
         _ -> {:noreply, game}
       end
@@ -280,7 +287,7 @@ defmodule Game.Server do
   Remove bullet from Game.
   """
   def handle_cast({:bullet_missed, id, shooter}, game) do
-    IO.puts("#{shooter} MISSED!")
+    broadcast(self(), id, [shooter, "misses"])
     {:noreply, remove_bullet_from_game(game, id)}
   end
 
@@ -333,24 +340,15 @@ defmodule Game.Server do
     bullet_pid = game.pids.bullets[bullet_id]
     victim = game.state.ships[victim_id]
     if (bullet_pid != nil) && (victim != nil) do
-      # ** Reason for termination == 
-      # ** {{noproc,{'Elixir.GenServer',call,[<0.1152.0>,{hit_ship,<<"ZPU">>},5000]}},
-      #     [{'Elixir.GenServer',call,3,[{file,"lib/gen_server.ex"},{line,604}]},
-      #      {'Elixir.Game.Server',handle_cast,2,
-      #                            [{file,"lib/game/server.ex"},{line,288}]},
-
-      # TODO tidy and make async
-      try do
-        case Bullet.hit_ship(bullet_pid, elem(victim, 1)) do
-          {shooter_tag, victim_tag} -> {:noreply, put_in(game.kby[victim_tag], shooter_tag)}          
-        end      
-      catch
-        :exit, {:noproc, _} ->
-          {:noreply, game}
-      end
-    else
-      {:noreply, game}
+      victim_tag = elem(victim, 1)
+      Bullet.hit_ship(bullet_pid, victim_tag, self())
     end
+    {:noreply, game}
+  end
+
+  def handle_cast({:player_shot_player, bullet_id, shooter_tag, victim_tag}, game) do
+    broadcast(self(), bullet_id, [shooter_tag, "kills", victim_tag])
+    {:noreply, put_in(game.kby[victim_tag], shooter_tag)}
   end
 
   def handle_cast({:hyperspace_ship, ship_id}, game) do
@@ -365,11 +363,16 @@ defmodule Game.Server do
     case game.state.ships[ship_id] do
       nil -> {:noreply, game}
       {_ship_id, tag, x, y, _, _, _,} ->
-        msg = Enum.join(["ASTEROID", "hit", tag], " ")
-        Game.Events.broadcast(:news, msg)
+        broadcast(self(), ship_id, ["ASTEROID", "hit", tag])
         Game.Server.explosion(self(), x, y)
         {:noreply, game}
     end
+  end
+
+  def handle_cast({:broadcast, id, msg}, game) do
+    txt = Enum.join([id] ++ msg, " ")
+    Game.Events.broadcast(:news, txt)
+    {:noreply, game}
   end
 
   @doc """
@@ -671,6 +674,7 @@ defmodule Game.Server do
   defp fire_bullet_in_game(game, ship_pos, theta, shooter, game_pid) do
     id = Identifiers.next(game.ids)
     {:ok, b} = Bullet.start_link(id, ship_pos, theta, shooter, game_pid)
+    broadcast(self(), id, [shooter, "fires"])
     new_game = put_in(game.pids.bullets[id], b)
     {:noreply, new_game}
   end

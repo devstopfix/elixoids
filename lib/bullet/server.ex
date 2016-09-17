@@ -3,8 +3,7 @@ defmodule Bullet.Server do
   Bullets are spawned by a game. They fly in the direction
   in which the are spawned and then expire. They report their
   position at a given FPS to the game.
-  Bullets have a position and velocity, a TTL,
-  and the tag of their firer.
+  Bullets have a position and velocity, a TTL, and the tag of their firer.
   """
 
   use GenServer
@@ -20,11 +19,8 @@ defmodule Bullet.Server do
   Fire a bullet with:
 
       {:ok, game} = Game.Server.start_link()
-      {:ok, b} = Bullet.Server.start_link(999, %World.Point{:x=>0.0, :y=>0.0}, 1.0, "XXX", game
+      {:ok, b} = Bullet.Server.start_link(999, %World.Point{:x=>0.0, :y=>0.0}, 1.0, "XXX", game)
       Process.alive?(b)
-      GenServer.call(b, :position)
-
-      receive do {:update_bullet, b} -> b after 500 -> nil end
   """
   def start_link(id, pos, theta, shooter, game_pid) do
     v = %World.Velocity{:theta=>theta, :speed=>@bullet_speed_m_per_s}
@@ -40,21 +36,7 @@ defmodule Bullet.Server do
   end
 
   @doc """
-  Return the state of the process as a tuple
-  """
-  def position(pid) do
-    GenServer.call(pid, :position)
-  end
-
-  @doc """
   The bullet has expired and should be removed from the game.
-
-      {:ok, b} = Bullet.Server.start_link(999, 
-        %World.Point{:x=>0.0, :y=>0.0},
-        1.0)
-      Process.alive?(b)
-      Bullet.Server.stop(b)
-      Process.alive?(b)
   """
   def stop(pid) do
     GenServer.cast(pid, :stop)
@@ -64,8 +46,11 @@ defmodule Bullet.Server do
     GenServer.cast(pid, :hit_asteroid)
   end
 
-  def hit_ship(pid, victim_tag) do
-    GenServer.call(pid, {:hit_ship, victim_tag})
+  @doc """
+  Stop the bullet, and tell the game who fired the bullet.
+  """
+  def hit_ship(pid, victim_tag, game_pid) do
+    GenServer.cast(pid, {:hit_ship, victim_tag, game_pid})
   end
 
   # GenServer callbacks
@@ -113,13 +98,9 @@ defmodule Bullet.Server do
     {:noreply, b}
   end
 
-  @doc """
-  Broadcast game event that player kills player
-  """
-  def handle_call({:hit_ship, victim_tag}, _from, b) do
-    Game.Events.player_kills(:news, b.shooter, victim_tag)
-    
-    {:reply, {b.shooter, victim_tag}, b}
+  def handle_cast({:hit_ship, victim_tag, game_pid}, bullet) do
+    Game.Server.player_shot_player(game_pid, bullet.id, bullet.shooter, victim_tag)
+    {:stop, :normal, bullet}
   end
 
   @doc """
