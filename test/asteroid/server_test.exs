@@ -8,7 +8,7 @@ defmodule Asteroid.ServerTest do
     init = %{ pos: %World.Point{},
               velocity: World.Velocity.north(10.0),
               radius: 100.0 }
-    {:ok, a } = Asteroid.start_link(1, init)
+    {:ok, a } = Asteroid.start_link(1, self(), init)
 
     [f1, f2] = Asteroid.split(a)
 

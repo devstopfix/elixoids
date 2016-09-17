@@ -8,9 +8,9 @@ defmodule Bullet.Server do
 
   use GenServer
 
-  alias World.Point, as: Point
   alias Elixoids.Space, as: Space
   alias World.Clock, as: Clock
+  alias World.Point, as: Point
 
   @bullet_range_m        2000.0
   @bullet_speed_m_per_s   750.0
