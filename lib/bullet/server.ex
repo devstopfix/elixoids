@@ -1,6 +1,9 @@
 defmodule Bullet.Server do
   @moduledoc """
-  Bullet Process. Bullets have a position and velocity, a TTL,
+  Bullets are spawned by a game. They fly in the direction
+  in which the are spawned and then expire. They report their
+  position at a given FPS to the game.
+  Bullets have a position and velocity, a TTL,
   and the tag of their firer.
   """
 
@@ -16,18 +19,23 @@ defmodule Bullet.Server do
   @doc """
   Fire a bullet with:
 
-      {:ok, b} = Bullet.Server.start_link(999, 
-        %World.Point{:x=>0.0, :y=>0.0},
-        1.0)
-      Bullet.Server.move(b, 100, self())
+      {:ok, game} = Game.Server.start_link()
+      {:ok, b} = Bullet.Server.start_link(999, %World.Point{:x=>0.0, :y=>0.0}, 1.0, "XXX", game
+      Process.alive?(b)
+      GenServer.call(b, :position)
+
+      receive do {:update_bullet, b} -> b after 500 -> nil end
   """
-  def start_link(id, pos, theta, shooter) do
+  def start_link(id, pos, theta, shooter, game_pid) do
     v = %World.Velocity{:theta=>theta, :speed=>@bullet_speed_m_per_s}
     b = %{:id=>id,
           :pos=>pos,
           :velocity=>v,
           :shooter=>shooter,
-          :expire_at=>calculate_ttl()}
+          :game_pid => game_pid,
+          :expire_at=>calculate_ttl(),
+          :clock_ms => Clock.now_ms,
+          :tick_ms=>16}
     GenServer.start_link(__MODULE__, b, [])
   end
 
@@ -36,13 +44,6 @@ defmodule Bullet.Server do
   """
   def position(pid) do
     GenServer.call(pid, :position)
-  end
-
-  @doc """
-  Move bullet with pid, using time slice, report state back to Game.
-  """
-  def move(pid, delta_t_ms, game_pid) do
-    GenServer.cast(pid, {:move, delta_t_ms, game_pid})
   end
 
   @doc """
@@ -69,21 +70,30 @@ defmodule Bullet.Server do
 
   # GenServer callbacks
 
-  def init(b) do
-     {:ok, b}
+  def init(state) do
+    Process.send(self(), :tick, [])
+    {:ok, state}
   end
 
-  def handle_cast({:move, delta_t_ms, game_pid}, b) do
-    if (b.expire_at > Clock.now_ms) do
-      moved_bullet = move_bullet(b, delta_t_ms)
-      Game.Server.update_bullet(game_pid, state_tuple(moved_bullet))
-      {:noreply, moved_bullet}
-    else
-      Game.Server.stop_bullet(game_pid, b.id)
-      {:stop, :normal, b}
-    end
+  @doc """
+  Update the position of the bullet and broadcast to the game
+  """
+  def handle_cast(:move, bullet) do
+    delta_t_ms = Clock.since(bullet.clock_ms)
+
+    moved_bullet = bullet
+    |> move_bullet(delta_t_ms)
+    |> Map.put(:clock_ms, Clock.now_ms)
+
+    Game.Server.update_bullet(bullet.game_pid, state_tuple(moved_bullet))
+    {:noreply, moved_bullet}
   end
 
+  @doc """
+  Game tells the bullet to stop. Maybe it hit something.
+  The game will receive the exit message and remove the bullet
+  from it's list of active bullets.
+  """
   def handle_cast(:stop, b) do
     {:stop, :normal, b}
   end
@@ -103,17 +113,42 @@ defmodule Bullet.Server do
     {:noreply, b}
   end
 
+  @doc """
+  Broadcast game event that player kills player
+  """
   def handle_call({:hit_ship, victim_tag}, _from, b) do
     Game.Events.player_kills(:news, b.shooter, victim_tag)
     
     {:reply, {b.shooter, victim_tag}, b}
   end
 
+  @doc """
+  Tick event occurs at approximately 60fps until the bullet expires.
+  If the bullet is still travelling, tell it to move, and enque the next tick. 
+  Otherwise stop.
+  """
+  def handle_info(:tick, bullet) do
+    if Clock.past?(bullet.expire_at) do
+      Game.Server.bullet_missed(bullet.game_pid, {bullet.id, bullet.shooter})
+      {:stop, :normal, bullet}
+    else
+      GenServer.cast(self(), :move)  
+      Process.send_after(self(), :tick, bullet.tick_ms)
+      {:noreply, bullet}
+    end
+  end
+
   # Functions
 
+  @doc """
+  Apply velocity of bullet b to it's position,
+  in given time slice.
+  """
   def move_bullet(b, delta_t_ms) do
-    p1 = Point.apply_velocity(b.pos, b.velocity, delta_t_ms)
-    p2 = Space.wrap(p1)
+    p2 = b.pos
+    |> Point.apply_velocity(b.velocity, delta_t_ms)
+    |> Space.wrap()
+
     %{b | :pos => p2}
   end
 
@@ -131,10 +166,14 @@ defmodule Bullet.Server do
   from the distance it can cover and it's velocity.
   """
   def calculate_ttl do
-    fly_time_ms = trunc(@bullet_range_m / (@bullet_speed_m_per_s / 1000.0))
+    bullet_speed_m_per_ms = (@bullet_speed_m_per_s / 1000.0)
+    fly_time_ms = trunc(@bullet_range_m / bullet_speed_m_per_ms)
     Clock.now_ms + fly_time_ms
   end
 
+  @doc """
+  Is distance d in metres within the range of a bullet?
+  """
   def in_range?(d) do
     d < @bullet_range_m
   end
