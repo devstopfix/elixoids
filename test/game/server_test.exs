@@ -5,9 +5,7 @@ defmodule Game.ServerTest do
   alias Game.Server, as: Game
 
   test "Can start a game" do
-    {:ok, game} = Game.start_link
-
-    Game.show(game)
+    {:ok, _game} = Game.start_link
   end
 
   test "The clock can update a game" do
