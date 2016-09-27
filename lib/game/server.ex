@@ -47,15 +47,14 @@ defmodule Game.Server do
   @initial_ship_count       4
 
   def start_link(fps \\ 0, 
-                 asteroid_count \\ @initial_asteroid_count,
-                 ship_count     \\ @initial_ship_count) do
+                 asteroid_count \\ @initial_asteroid_count) do
     case Process.whereis(:news) do
       nil -> 
         {:ok, e} = Game.Events.start_link
         Process.register(e, :news)
       _ -> true
     end
-    GenServer.start_link(__MODULE__, {:ok, fps, asteroid_count, ship_count}, [])
+    GenServer.start_link(__MODULE__, {:ok, fps, asteroid_count}, [])
   end
 
   def show(pid) do
@@ -171,25 +170,9 @@ defmodule Game.Server do
     end)
   end
 
-  @doc """
-  Generate n new ships and store as a map of their
-  identifier to a tuple of their {pid, state}.
-  """
-  def generate_ships(ids, n) do
-    if (n >= 1) do
-      Enum.reduce(1..n, %{}, fn(_i, ships) ->
-        id = Identifiers.next(ids)
-        {:ok, pid} = Ship.start_link(id, self())
-        Map.put(ships, id, pid)
-      end)
-    else
-      %{}
-    end
-  end
-
   ## Server Callbacks
 
-  def init({:ok, fps, asteroid_count, ship_count}) do
+  def init({:ok, fps, asteroid_count}) do
     Process.flag(:trap_exit, true)
     {:ok, ids} = Identifiers.start_link
     {:ok, collision_pid} = Game.Collision.start_link(self())
@@ -197,7 +180,7 @@ defmodule Game.Server do
         :ids => ids, 
         :pids =>  %{:asteroids => generate_asteroids(ids, asteroid_count),
                     :bullets => %{}, 
-                    :ships => generate_ships(ids, ship_count)},
+                    :ships => %{}},
         :state => %{:asteroids => %{},
                     :bullets => %{},
                     :ships => %{}},

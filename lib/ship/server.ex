@@ -3,6 +3,9 @@ defmodule Ship.Server do
   @moduledoc """
   Space ship controlled by a player or bot over a websocker. 
   Ships have position and size.
+  Ships are identified by a unique integer.
+  Players are identified by a 3-char string (AAA..ZZZ)
+  Players control ships - the game maintains a map of Player to Ship
   """
   
   use GenServer
