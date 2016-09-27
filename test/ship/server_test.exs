@@ -1,8 +1,35 @@
 defmodule Ship.ServerTest do
   use ExUnit.Case, async: false
+  use ExCheck
   doctest Ship.Server
 
   alias Ship.Server, as: Ship
+
+  # Test that we can rotate from any starting angle to any finishing angle
+  # within the maximum turn duration of a Ship (3 seconds)
+  property :rotate_ship_completely do
+    for_all {theta, target_theta} in {int(-6,6), int(0,6)} do
+      ship = %{theta: theta, target_theta: target_theta}
+
+      rotated_ship = Ship.rotate_ship(ship, 3 * 1000)
+
+      assert rotated_ship.theta == target_theta
+    end
+  end
+
+  # Test that any rotation within a single frame takes the shortest path
+  property :rotate_ship_takes_shortest_path do
+    for_all {theta, target_theta} in {int(-6,6), int(0,6)} do
+      ship = %{theta: theta, target_theta: target_theta}
+
+      rotated_ship = Ship.rotate_ship(ship, 16)
+
+      original_delta = abs(theta-target_theta)
+      final_delta = abs(rotated_ship.theta-target_theta)
+
+      assert final_delta < original_delta
+    end
+  end
 
   test "New player points north" do
     {:ok, ship} = Ship.start_link(1, "AAA")

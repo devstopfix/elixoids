@@ -17,7 +17,7 @@ defmodule Ship.Server do
   # The spawn point of a bullet
   @nose_radius_m (@ship_radius_m * 1.1)
 
-  # Rotation rate (radians/sec)
+  # Rotation rate (radians/sec). Three seconds to turn a complete circle.
   @ship_rotation_rad_per_sec (:math.pi * 2 / 3.0)
 
   # Minimum time between shots
