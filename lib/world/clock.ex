@@ -5,7 +5,7 @@ defmodule World.Clock do
   """
 
   # 60 FPS
-  @default_ms_between_frames div(1000, 60)
+  @default_fps 60
 
   @doc """
   Current OS time in milliseconds since 1970.
@@ -31,8 +31,8 @@ defmodule World.Clock do
   @doc """
   Sleep time between frames required to run at standard frame rate.
   """
-  def ms_between_frames() do
-    @default_ms_between_frames
+  def ms_between_frames(fps \\ @default_fps) do
+    div(1000, fps)
   end
 
 end

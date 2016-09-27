@@ -63,14 +63,6 @@ defmodule Game.Server do
   end
 
   @doc """
-  Update the game state. Called by external process running at 
-  known FPS (frame-per-second)
-  """
-  def tick(pid) do
-    GenServer.call(pid, :tick)
-  end  
-
-  @doc """
   Retrieve the game state as a Map.
   """
   def state(pid) do
@@ -175,9 +167,17 @@ defmodule Game.Server do
 
   def init({:ok, fps, asteroid_count}) do
     Process.flag(:trap_exit, true)
+    game_state = initial_game_state(fps, asteroid_count)
+    if (fps > 0) do
+       Process.send(self(), :tick, [])
+    end
+    {:ok, game_state}
+  end
+
+  defp initial_game_state(fps, asteroid_count) do
     {:ok, ids} = Identifiers.start_link
     {:ok, collision_pid} = Game.Collision.start_link(self())
-    game_state = %{
+    %{
         :ids => ids, 
         :pids =>  %{:asteroids => generate_asteroids(ids, asteroid_count),
                     :bullets => %{}, 
@@ -189,10 +189,9 @@ defmodule Game.Server do
         :explosions => [],
         :collision_pid => collision_pid,
         :min_asteroid_count => asteroid_count,
-        :clock_ms => Clock.now_ms,
-        :kby => %{}}
-    start_ticker(self(), fps)
-    {:ok, game_state}
+        :tick_ms => Clock.ms_between_frames(fps),
+        :kby => %{}
+      }
   end
 
   @doc """
@@ -419,7 +418,27 @@ defmodule Game.Server do
     end
   end
 
+  @doc """
+  Update the game state and check for collisions.
+  """
+  def handle_cast(:next_frame, game) do
+
+    Collision.collision_tests(game.collision_pid, game) 
+
+    next_game_state = game
+    |> maybe_spawn_asteroid(self())
+    |> filter_explosions
+
+    {:noreply, next_game_state}
+  end
+
   # Information
+
+  def handle_info(:tick, state) do
+    GenServer.cast(self(), :next_frame)
+    Process.send_after(self(), :tick, state.tick_ms)
+    {:noreply, state}
+  end
 
   @doc """
   Echo any unsual messages to the console. 
@@ -434,26 +453,8 @@ defmodule Game.Server do
   end
 
   @doc """
-  Update the game state and return the number of ms elpased since last tick.
-
-      {:ok, game} = Game.Server.start_link
-      Game.Server.show(game)
-      Game.Server.tick(game)
-      Game.Server.show(game)
+  Return the current state of the game to the UI websocket.
   """
-  def handle_call(:tick, _from, game) do
-    elapsed_ms = Clock.since(game.clock_ms)
-
-    Collision.collision_tests(game.collision_pid, game) 
-
-    next_game_state = game
-    |> update_game_clock
-    |> maybe_spawn_asteroid(self())
-    |> filter_explosions
-
-    {:reply, {:elapsed_ms, elapsed_ms}, next_game_state}
-  end
-
   def handle_call(:state, _from, game) do
     game_state = %{
       :dim => Elixoids.Space.dimensions,
@@ -519,12 +520,6 @@ defmodule Game.Server do
     Enum.map(m, fn([_h|t]) -> t end)
   end
 
-  defp start_ticker(pid, fps) do
-    if (fps > 0) && (fps <= 60) do
-      Game.Ticker.start_link(pid, fps)
-    end
-  end
-
   # Asteroids
 
   def new_asteroid_in_game(a, game, game_pid) do
@@ -543,10 +538,6 @@ defmodule Game.Server do
   end
 
   # Game state
-
-  defp update_game_clock(game) do
-    Map.put(game, :clock_ms, Clock.now_ms)
-  end
 
   def filter_explosions(game) do
     update_in(game.explosions, &Explosion.filter_expired_explosions(&1))
@@ -657,12 +648,12 @@ defmodule Game.Server do
 
   defp remove_bullet_from_game(game, id) do
     game2 = update_in(game.pids.bullets, &Map.delete(&1, id))
-    update_in(game2.state.bullets, &Map.delete(&1, id))
+    update_in(game2.state.bullets,       &Map.delete(&1, id))
   end
 
   defp remove_asteroid_from_game(game, id) do
     game2 = update_in(game.pids.asteroids, &Map.delete(&1, id))
-    update_in(game2.state.asteroids, &Map.delete(&1, id))
+    update_in(game2.state.asteroids,       &Map.delete(&1, id))
   end
 
   defp remove_ship_from_game(game, id) do

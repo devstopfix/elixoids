@@ -5,19 +5,11 @@ defmodule Game.ServerTest do
   alias Game.Server, as: Game
 
   test "Can start a game" do
-    {:ok, _game} = Game.start_link
-  end
-
-  test "The clock can update a game" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, elapsed_ms} = Game.tick(game)
-
-    assert elapsed_ms >= 0
+    {:ok, _game} = Game.start_link(1)
   end
 
   test "We can retrieve game state of Asteroids" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    {:ok, game} = Game.start_link(1)
     :timer.sleep(10)
 
     game_state = Game.state(game)
@@ -26,20 +18,17 @@ defmodule Game.ServerTest do
   end
 
   test "We can retrieve game state of Ships" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    {:ok, game} = Game.start_link(1)
     Game.spawn_player(game, "AST")
     :timer.sleep(200)
 
     game_state = Game.state(game)
-
     assert [_, _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
   end
 
   test "We can retrieve game state of eXplosions" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
+    {:ok, game} = Game.start_link(1)
+    :timer.sleep(20)
 
     game_state = Game.state(game)
 
@@ -48,24 +37,19 @@ defmodule Game.ServerTest do
   end
 
   test "We can retrieve sound state of eXplosions" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    {:ok, game} = Game.start_link(1)
     :timer.sleep(10)
 
     game_state = Game.sound_state(game)
-
     assert 0 == length(game_state[:x])
     assert 4000.0 == List.first(game_state.dim)
     assert 2250.0 == List.last(game_state.dim)
   end
 
   test "We can retrieve viewport dimensions from game state" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    {:ok, game} = Game.start_link(1)
     :timer.sleep(10)
-
     game_state = Game.state(game)
-
     assert 4000.0 == List.first(game_state.dim)
     assert 2250.0 == List.last(game_state.dim)
   end
@@ -103,9 +87,8 @@ defmodule Game.ServerTest do
   # end
 
   test "We can retrieve game state of a player by their ID" do
-    {:ok, game} = Game.start_link
+    {:ok, game} = Game.start_link(60)
     :timer.sleep(10)
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
     Game.spawn_player(game, "AST")
     :timer.sleep(200)
     game_state = Game.state(game)
