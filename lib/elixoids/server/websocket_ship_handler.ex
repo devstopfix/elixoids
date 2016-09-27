@@ -5,6 +5,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   and publishes it over the websocket.
   """
 
+  alias Elixoids.Player, as: Player
   alias Elixoids.Server.PlayerInput, as: PlayerInput
  
   @ms_between_frames 250
@@ -36,7 +37,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     try do
       {path, req} = :cowboy_req.path_info(req)
       tag = :erlang.iolist_to_binary(path)
-      if valid_player_tag?(tag) do
+      if Player.valid_player_tag?(tag) do
         Game.Server.spawn_player(:game, tag)
         IO.puts(["Welcome", " ", tag])
         :erlang.start_timer(1000, self(), [])
@@ -122,10 +123,6 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   # fallback message handler 
   def websocket_info(_info, req, state) do
     {:ok, req, state}
-  end
-
-  defp valid_player_tag?(tag) do
-    Ship.Server.valid_player_tag?(tag)
   end
 
 end

@@ -2,7 +2,6 @@ defmodule Elixoids.Server do
 
   @fps        60 # Game frame rate
   @asteroids   8 # Initial and minimum number of asteroids
-  @ships       0 
 
   @moduledoc """
   Asteroids Server. Starts a game and opens websocket.
@@ -10,7 +9,7 @@ defmodule Elixoids.Server do
   """
 
   defp start_game() do
-    {:ok, game} = Game.Server.start_link(@fps, @asteroids, @ships)
+    {:ok, game} = Game.Server.start_link(@fps, @asteroids)
     Process.register(game, :game)
   end
 

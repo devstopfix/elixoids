@@ -3,8 +3,9 @@ defmodule Game.Server do
   @moduledoc """
   Game process. One process per running Game.
   Each object in the game is represented by a Process.
-  The game tells the processes to update themselves,
-  and they report their new state to the Game.
+  The processes update themselves and they report their new state to the Game.
+
+  Players are identified by a name (AAA..ZZZ) and control a Ship process.
 
   To use, start a Game, and periodically send it tick messages:
 
@@ -47,28 +48,19 @@ defmodule Game.Server do
   @initial_ship_count       4
 
   def start_link(fps \\ 0, 
-                 asteroid_count \\ @initial_asteroid_count,
-                 ship_count     \\ @initial_ship_count) do
+                 asteroid_count \\ @initial_asteroid_count) do
     case Process.whereis(:news) do
       nil -> 
         {:ok, e} = Game.Events.start_link
         Process.register(e, :news)
       _ -> true
     end
-    GenServer.start_link(__MODULE__, {:ok, fps, asteroid_count, ship_count}, [])
+    GenServer.start_link(__MODULE__, {:ok, fps, asteroid_count}, [])
   end
 
   def show(pid) do
     GenServer.cast(pid, :show)
   end
-
-  @doc """
-  Update the game state. Called by external process running at 
-  known FPS (frame-per-second)
-  """
-  def tick(pid) do
-    GenServer.call(pid, :tick)
-  end  
 
   @doc """
   Retrieve the game state as a Map.
@@ -171,44 +163,35 @@ defmodule Game.Server do
     end)
   end
 
-  @doc """
-  Generate n new ships and store as a map of their
-  identifier to a tuple of their {pid, state}.
-  """
-  def generate_ships(ids, n) do
-    if (n >= 1) do
-      Enum.reduce(1..n, %{}, fn(_i, ships) ->
-        id = Identifiers.next(ids)
-        {:ok, pid} = Ship.start_link(id)
-        Map.put(ships, id, pid)
-      end)
-    else
-      %{}
-    end
-  end
-
   ## Server Callbacks
 
-  def init({:ok, fps, asteroid_count, ship_count}) do
+  def init({:ok, fps, asteroid_count}) do
     Process.flag(:trap_exit, true)
+    game_state = initial_game_state(fps, asteroid_count)
+    if fps > 0 do
+       Process.send(self(), :tick, [])
+    end
+    {:ok, game_state}
+  end
+
+  defp initial_game_state(fps, asteroid_count) do
     {:ok, ids} = Identifiers.start_link
     {:ok, collision_pid} = Game.Collision.start_link(self())
-    rocks = generate_asteroids(ids, asteroid_count)
-    ships = generate_ships(ids, ship_count)
-    game_state = %{:ids => ids, 
-              :pids =>  %{:asteroids => rocks,
-                          :bullets => %{}, 
-                          :ships => ships},
-              :state => %{:asteroids => %{},
-                          :bullets => %{},
-                          :ships => %{}},
-              :explosions => [],
-              :collision_pid => collision_pid,
-              :min_asteroid_count => asteroid_count,
-              :clock_ms => Clock.now_ms,
-              :kby => %{}}
-    start_ticker(self(), fps)
-    {:ok, game_state}
+    %{
+        :ids => ids, 
+        :pids =>  %{:asteroids => generate_asteroids(ids, asteroid_count),
+                    :bullets => %{}, 
+                    :ships => %{}},
+        :state => %{:asteroids => %{},
+                    :bullets => %{},
+                    :ships => %{}},
+        :players => %{},
+        :explosions => [],
+        :collision_pid => collision_pid,
+        :min_asteroid_count => asteroid_count,
+        :tick_ms => Clock.ms_between_frames(fps),
+        :kby => %{}
+      }
   end
 
   @doc """
@@ -259,7 +242,7 @@ defmodule Game.Server do
   """
   def handle_cast({:ship_fires_bullet, ship_id}, game) do
     ship_pid = game.pids.ships[ship_id]
-    if ((ship_pid != nil) && Process.alive?(ship_pid)) do
+    if (ship_pid != nil) && Process.alive?(ship_pid) do
       case Ship.nose_tag(game.pids.ships[ship_id]) do
         {ship_pos, theta, tag, true} -> 
           Ship.fire(ship_pid)
@@ -383,22 +366,28 @@ defmodule Game.Server do
     {:noreply, next_game_state}
   end
 
+  @doc """
+  Spawn a new ship controlled by player with given tag
+  (unless that ship already exists)
+  """
   def handle_cast({:spawn_player, player_tag}, game) do
-    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
-    if ship_id == nil do
+    if ship_id_of_player(game, player_tag) == nil do
       id = Identifiers.next(game.ids)
-      {:ok, pid} = Ship.start_link(id, player_tag)
-      new_game = put_in(game.pids.ships[id], pid)
+      {:ok, ship_pid} = Ship.start_link(id, self(), player_tag)
+
+      new_game = game
+      |> put_ship_pid(id, ship_pid)
+      |> put_player_tag_ship(player_tag, id)
+
       {:noreply, new_game}
     else
       {:noreply, game}
     end
   end
 
-
   def handle_cast({:player_new_heading, player_tag, theta}, game) do
-    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
-    if (ship_id != nil) && (World.Velocity.valid_theta(theta)) do
+    ship_id = ship_id_of_player(game, player_tag)
+    if (ship_id != nil) && World.Velocity.valid_theta(theta) do
       case Map.get(game.pids.ships, ship_id) do
         nil -> nil
         pid -> Ship.new_heading(pid, theta)  
@@ -408,26 +397,53 @@ defmodule Game.Server do
   end
 
   def handle_cast({:player_fires, player_tag}, game) do
-    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
-    if ship_id != nil do
-      Game.Server.ship_fires_bullet(self(), ship_id)
+    case ship_id_of_player(game, player_tag) do
+      nil     -> nil
+      ship_id -> Game.Server.ship_fires_bullet(self(), ship_id)
     end
     {:noreply, game}
   end
 
+  @doc """
+  Stop the ship process and remove it from the game state.
+  """
   def handle_cast({:remove_player, player_tag}, game) do
-    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
-    if ship_id != nil do
-      new_game  = update_in(game.state.ships,     &Map.delete(&1, ship_id))
-      new_game2 = update_in(new_game.pids.ships, &Map.delete(&1, ship_id))
-      {:noreply, new_game2}
-    else
-      {:noreply, game}
+    case ship_pid_of_player(game, player_tag) do
+      nil -> nil
+      pid -> Ship.stop(pid)
     end
+    case ship_id_of_player(game, player_tag) do
+      nil -> {:noreply, game}
+      id  -> {:noreply, remove_ship_from_game(game, id)}
+    end
+  end
+
+  @doc """
+  Update the game state and check for collisions.
+  """
+  def handle_cast(:next_frame, game) do
+
+    Collision.collision_tests(game.collision_pid, game) 
+
+    next_game_state = game
+    |> maybe_spawn_asteroid(self())
+    |> filter_explosions
+
+    {:noreply, next_game_state}
   end
 
   # Information
 
+  def handle_info(:tick, state) do
+    GenServer.cast(self(), :next_frame)
+    Process.send_after(self(), :tick, state.tick_ms)
+    {:noreply, state}
+  end
+
+  @doc """
+  Echo any unsual messages to the console. 
+  Ignore processes that stop normally.
+  """
   def handle_info(msg, state) do
     case msg do
       {:EXIT, _pid, :normal} -> nil
@@ -437,27 +453,8 @@ defmodule Game.Server do
   end
 
   @doc """
-  Update the game state and return the number of ms elpased since last tick.
-
-      {:ok, game} = Game.Server.start_link
-      Game.Server.show(game)
-      Game.Server.tick(game)
-      Game.Server.show(game)
+  Return the current state of the game to the UI websocket.
   """
-  def handle_call(:tick, _from, game) do
-    elapsed_ms = Clock.now_ms - game.clock_ms
-
-    move_ships(game, elapsed_ms)
-    Collision.collision_tests(game.collision_pid, game) 
-
-    next_game_state = game
-    |> update_game_clock
-    |> maybe_spawn_asteroid(self())
-    |> filter_explosions
-
-    {:reply, {:elapsed_ms, elapsed_ms}, next_game_state}
-  end
-
   def handle_call(:state, _from, game) do
     game_state = %{
       :dim => Elixoids.Space.dimensions,
@@ -504,8 +501,7 @@ defmodule Game.Server do
   Convert a list of tuples into a list of lists
   """
   def list_of_tuples_to_list(m) do
-    m 
-    |> Enum.map(fn(t) -> Tuple.to_list(t) end)
+    Enum.map(m, fn(t) -> Tuple.to_list(t) end)
   end
 
   @doc """
@@ -522,17 +518,6 @@ defmodule Game.Server do
   """
   def map_rest(m) do
     Enum.map(m, fn([_h|t]) -> t end)
-  end
-
-  defp start_ticker(pid, fps) do
-    if (fps > 0) && (fps <= 60) do
-      Game.Ticker.start_link(pid, fps)
-    end
-  end
-
-  defp move_ships(game, elapsed_ms) do
-    Enum.each(Map.values(game.pids.ships), 
-      fn(s) -> Ship.move(s, elapsed_ms, self()) end)
   end
 
   # Asteroids
@@ -553,10 +538,6 @@ defmodule Game.Server do
   end
 
   # Game state
-
-  defp update_game_clock(game) do
-    Map.put(game, :clock_ms, Clock.now_ms)
-  end
 
   def filter_explosions(game) do
     update_in(game.explosions, &Explosion.filter_expired_explosions(&1))
@@ -618,14 +599,6 @@ defmodule Game.Server do
     |> Enum.filter(fn(s) -> Bullet.in_range?(List.last(s)) end)
   end
 
-  def id_of_ship_tagged(ships, tag) do
-    case Enum.find(ships, fn {_key, ship_state} -> elem(ship_state, 1) == tag end) do
-      {id, _} -> id
-      nil -> nil      
-    end
-  end
-
-
   def asteroid_relative(asteroid, ox, oy) do
     {id, ax, ay, r} = asteroid
 
@@ -675,12 +648,45 @@ defmodule Game.Server do
 
   defp remove_bullet_from_game(game, id) do
     game2 = update_in(game.pids.bullets, &Map.delete(&1, id))
-    update_in(game2.state.bullets, &Map.delete(&1, id))
+    update_in(game2.state.bullets,       &Map.delete(&1, id))
   end
 
   defp remove_asteroid_from_game(game, id) do
     game2 = update_in(game.pids.asteroids, &Map.delete(&1, id))
-    update_in(game2.state.asteroids, &Map.delete(&1, id))
+    update_in(game2.state.asteroids,       &Map.delete(&1, id))
+  end
+
+  defp remove_ship_from_game(game, id) do
+    game2 = update_in(game.pids.ships, &Map.delete(&1, id))
+    update_in(game2.state.ships,       &Map.delete(&1, id))
+  end
+
+  # Update game pids with new new ship
+  defp put_ship_pid(game, id, pid) do
+    put_in(game.pids.ships[id], pid)
+  end
+
+  # Update player tag to ship id mapping
+  defp put_player_tag_ship(game, player_tag, id) do
+    put_in(game.players[player_tag], id)
+  end
+
+  @doc """
+  Return the id of the Ship contolled by Player with given tag, or nil.
+  """
+  def ship_id_of_player(game, tag) do
+    get_in(game, [:players, tag])
+  end
+
+  @doc """
+  Get the PID of the Ship controlled by the Player with given tag,
+  or nil.
+  """
+  def ship_pid_of_player(game, tag) do
+    case ship_id_of_player(game, tag) do
+      nil -> nil
+      id  -> get_in(game, [:pids, :ships, id])
+    end
   end
 
 end
