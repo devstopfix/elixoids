@@ -1,7 +1,8 @@
 defmodule Ship.Server do
 
   @moduledoc """
-  Players ship. Ships have position and size.
+  Space ship controlled by a player or bot over a websocker. 
+  Ships have position and size.
   """
   
   use GenServer
@@ -9,6 +10,7 @@ defmodule Ship.Server do
   alias World.Clock, as: Clock
   alias World.Point, as: Point
   alias World.Velocity, as: Velocity
+  alias Elixoids.Player, as: Player
   alias Elixoids.Space, as: Space
 
   # Ship radius (m)
@@ -24,29 +26,35 @@ defmodule Ship.Server do
   @laser_recharge_ms 500
   @laser_recharge_penalty_ms (@laser_recharge_ms * 2)
 
-  def start_link(id, tag \\ random_tag()) do
-    ship = random_ship() 
-           |> Map.put(:id, id)
-           |> Map.put(:tag, tag)
+  def start_link(id, game_pid, tag \\ Player.random_tag()) do
+    ship = Map.merge(random_ship(), %{
+           :id=>id,
+           :tag=>tag,
+           :game_pid=>game_pid,
+           :clock_ms=>Clock.now_ms,
+           :tick_ms=>Clock.ms_between_frames})
 
     GenServer.start_link(__MODULE__, ship, [])
   end
 
   @doc """
-  Move ship with pid, using time slice, report state back to Game.
+  Return position of ship.
   """
-  def move(pid, delta_t_ms, game_pid) do
-    GenServer.cast(pid, {:move, delta_t_ms, game_pid})
-  end
-
   def position(pid) do
     GenServer.call(pid, :position)
   end
 
+  @doc """
+  Return a point just ahead of the nose of the ship.
+  Bullets are spawned at this point.
+  """
   def nose_tag(pid) do
     GenServer.call(pid, :nose_tag)
   end
 
+  @doc """
+  Player requests turn to given theta.
+  """
   def new_heading(pid, theta) do
     GenServer.cast(pid, {:new_heading, theta})
   end
@@ -69,12 +77,21 @@ defmodule Ship.Server do
   # GenServer callbacks
 
   def init(ship) do
+    Process.send(self(), :tick, [])
     {:ok, ship}
   end
 
-  def handle_cast({:move, delta_t_ms, game_pid}, ship) do
-    new_ship = rotate_ship(ship, delta_t_ms)
-    Game.Server.update_ship(game_pid, state_tuple(new_ship))
+  @doc """
+  Rotate the ship and broadcast new state to the game.
+  """
+  def handle_cast(:move, ship) do
+    delta_t_ms = Clock.since(ship.clock_ms)
+
+    new_ship = ship
+    |> rotate_ship(delta_t_ms)
+    |> Map.put(:clock_ms, Clock.now_ms)
+
+    Game.Server.update_ship(ship.game_pid, state_tuple(new_ship))
     {:noreply, new_ship}
   end
 
@@ -95,6 +112,15 @@ defmodule Ship.Server do
   def handle_cast({:new_heading, theta}, ship) do
     new_ship = %{ship | :target_theta => Velocity.wrap_angle(theta)}
     {:noreply, new_ship}
+  end
+
+  @doc """
+  Heartbeat. Causes ship to update itself at given interval.
+  """
+  def handle_info(:tick, a) do
+    GenServer.cast(self(), :move)
+    Process.send_after(self(), :tick, a.tick_ms)
+    {:noreply, a}
   end
 
   def handle_call(:position, _from, ship) do
@@ -159,18 +185,10 @@ defmodule Ship.Server do
     %{ship | :theta => theta} 
   end
 
-  defp random_tag do
-    ?A..?Z |> Enum.to_list |> Enum.take_random(3) |> to_string
-  end
- 
   defp calculate_nose(ship) do
     ship_centre = ship.pos
     v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
     Point.apply_velocity(ship_centre, v, 1000.0)
-  end
-
-  def valid_player_tag?(tag) do
-    Regex.match?(~r/^[A-Z]{3}$/, tag)
   end
 
   def recharge_laser(ship) do

@@ -178,16 +178,15 @@ defmodule Game.ServerTest do
 
     Game.spawn_player(game, "AST")
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
+    :timer.sleep(200)
     game_state_2 = Game.state(game)
     assert 9 == game_state_2[:s] |> Enum.count
 
     Game.remove_player(game, "AST")
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
+    :timer.sleep(200)
     game_state_3 = Game.state(game)
     assert 8 == game_state_3[:s] |> Enum.count
-
   end
 
   test "We can add ship and fire" do
@@ -200,13 +199,13 @@ defmodule Game.ServerTest do
 
     Game.spawn_player(game, "TRG")
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
+    :timer.sleep(200)
     game_state_2 = Game.state(game)
     assert 2 == game_state_2[:s] |> Enum.count
     assert 0 == game_state_2[:b] |> Enum.count
 
     Game.player_fires(game, "TRG")
-    :timer.sleep(10)
+    :timer.sleep(200)
     {:elapsed_ms, _elapsed_ms} = Game.tick(game)
     game_state_3 = Game.state(game)
     assert 1 == game_state_3[:b] |> Enum.count
