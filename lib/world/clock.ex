@@ -4,6 +4,9 @@ defmodule World.Clock do
   Functions that deal with time.
   """
 
+  # 60 FPS
+  @default_ms_between_frames div(1000, 60)
+
   @doc """
   Current OS time in milliseconds since 1970.
   """
@@ -15,7 +18,7 @@ defmodule World.Clock do
   Return number of milliseconds between given time t and now
   """
   def since(t) do
-    now_ms - t
+    now_ms() - t
   end
 
   @doc """
@@ -23,6 +26,13 @@ defmodule World.Clock do
   """
   def past?(t) do
   	t < now_ms
+  end
+
+  @doc """
+  Sleep time between frames required to run at standard frame rate.
+  """
+  def ms_between_frames() do
+    @default_ms_between_frames
   end
 
 end

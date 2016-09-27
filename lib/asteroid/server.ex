@@ -29,7 +29,7 @@ defmodule Asteroid.Server do
       :id=>id,
       :game_pid=>game_pid,
       :clock_ms=>Clock.now_ms,
-      :tick_ms=>16})
+      :tick_ms=>Clock.ms_between_frames})
 
      GenServer.start_link(__MODULE__, a, [])
    end
