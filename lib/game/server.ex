@@ -179,7 +179,7 @@ defmodule Game.Server do
     if (n >= 1) do
       Enum.reduce(1..n, %{}, fn(_i, ships) ->
         id = Identifiers.next(ids)
-        {:ok, pid} = Ship.start_link(id)
+        {:ok, pid} = Ship.start_link(id, self())
         Map.put(ships, id, pid)
       end)
     else
@@ -259,7 +259,7 @@ defmodule Game.Server do
   """
   def handle_cast({:ship_fires_bullet, ship_id}, game) do
     ship_pid = game.pids.ships[ship_id]
-    if ((ship_pid != nil) && Process.alive?(ship_pid)) do
+    if (ship_pid != nil) && Process.alive?(ship_pid) do
       case Ship.nose_tag(game.pids.ships[ship_id]) do
         {ship_pos, theta, tag, true} -> 
           Ship.fire(ship_pid)
@@ -387,7 +387,7 @@ defmodule Game.Server do
     ship_id = id_of_ship_tagged(game.state.ships, player_tag)
     if ship_id == nil do
       id = Identifiers.next(game.ids)
-      {:ok, pid} = Ship.start_link(id, player_tag)
+      {:ok, pid} = Ship.start_link(id, self(), player_tag)
       new_game = put_in(game.pids.ships[id], pid)
       {:noreply, new_game}
     else
@@ -447,7 +447,6 @@ defmodule Game.Server do
   def handle_call(:tick, _from, game) do
     elapsed_ms = Clock.now_ms - game.clock_ms
 
-    move_ships(game, elapsed_ms)
     Collision.collision_tests(game.collision_pid, game) 
 
     next_game_state = game
@@ -528,11 +527,6 @@ defmodule Game.Server do
     if (fps > 0) && (fps <= 60) do
       Game.Ticker.start_link(pid, fps)
     end
-  end
-
-  defp move_ships(game, elapsed_ms) do
-    Enum.each(Map.values(game.pids.ships), 
-      fn(s) -> Ship.move(s, elapsed_ms, self()) end)
   end
 
   # Asteroids
