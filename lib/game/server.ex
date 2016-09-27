@@ -3,8 +3,9 @@ defmodule Game.Server do
   @moduledoc """
   Game process. One process per running Game.
   Each object in the game is represented by a Process.
-  The game tells the processes to update themselves,
-  and they report their new state to the Game.
+  The processes update themselves and they report their new state to the Game.
+
+  Players are identified by a name (AAA..ZZZ) and control a Ship process.
 
   To use, start a Game, and periodically send it tick messages:
 
@@ -184,6 +185,7 @@ defmodule Game.Server do
         :state => %{:asteroids => %{},
                     :bullets => %{},
                     :ships => %{}},
+        :players => %{},
         :explosions => [],
         :collision_pid => collision_pid,
         :min_asteroid_count => asteroid_count,
@@ -365,21 +367,27 @@ defmodule Game.Server do
     {:noreply, next_game_state}
   end
 
+  @doc """
+  Spawn a new ship controlled by player with given tag
+  (unless that ship already exists)
+  """
   def handle_cast({:spawn_player, player_tag}, game) do
-    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
-    if ship_id == nil do
+    if ship_id_of_player(game, player_tag) == nil do
       id = Identifiers.next(game.ids)
-      {:ok, pid} = Ship.start_link(id, self(), player_tag)
-      new_game = put_in(game.pids.ships[id], pid)
+      {:ok, ship_pid} = Ship.start_link(id, self(), player_tag)
+
+      new_game = game
+      |> put_ship_pid(id, ship_pid)
+      |> put_player_tag_ship(player_tag, id)
+
       {:noreply, new_game}
     else
       {:noreply, game}
     end
   end
 
-
   def handle_cast({:player_new_heading, player_tag, theta}, game) do
-    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
+    ship_id = ship_id_of_player(game, player_tag)
     if (ship_id != nil) && (World.Velocity.valid_theta(theta)) do
       case Map.get(game.pids.ships, ship_id) do
         nil -> nil
@@ -390,9 +398,9 @@ defmodule Game.Server do
   end
 
   def handle_cast({:player_fires, player_tag}, game) do
-    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
-    if ship_id != nil do
-      Game.Server.ship_fires_bullet(self(), ship_id)
+    case ship_id_of_player(game, player_tag) do
+      nil     -> nil
+      ship_id -> Game.Server.ship_fires_bullet(self(), ship_id)
     end
     {:noreply, game}
   end
@@ -401,7 +409,11 @@ defmodule Game.Server do
   Stop the ship process and remove it from the game state.
   """
   def handle_cast({:remove_player, player_tag}, game) do
-    case id_of_ship_tagged(game.state.ships, player_tag) do
+    case ship_pid_of_player(game, player_tag) do
+      nil -> nil
+      pid -> Ship.stop(pid)
+    end
+    case ship_id_of_player(game, player_tag) do
       nil -> {:noreply, game}
       id  -> {:noreply, remove_ship_from_game(game, id)}
     end
@@ -409,6 +421,10 @@ defmodule Game.Server do
 
   # Information
 
+  @doc """
+  Echo any unsual messages to the console. 
+  Ignore processes that stop normally.
+  """
   def handle_info(msg, state) do
     case msg do
       {:EXIT, _pid, :normal} -> nil
@@ -426,7 +442,7 @@ defmodule Game.Server do
       Game.Server.show(game)
   """
   def handle_call(:tick, _from, game) do
-    elapsed_ms = Clock.now_ms - game.clock_ms
+    elapsed_ms = Clock.since(game.clock_ms)
 
     Collision.collision_tests(game.collision_pid, game) 
 
@@ -484,8 +500,7 @@ defmodule Game.Server do
   Convert a list of tuples into a list of lists
   """
   def list_of_tuples_to_list(m) do
-    m 
-    |> Enum.map(fn(t) -> Tuple.to_list(t) end)
+    Enum.map(m, fn(t) -> Tuple.to_list(t) end)
   end
 
   @doc """
@@ -593,14 +608,6 @@ defmodule Game.Server do
     |> Enum.filter(fn(s) -> Bullet.in_range?(List.last(s)) end)
   end
 
-  def id_of_ship_tagged(ships, tag) do
-    case Enum.find(ships, fn {_key, ship_state} -> elem(ship_state, 1) == tag end) do
-      {id, _} -> id
-      nil -> nil      
-    end
-  end
-
-
   def asteroid_relative(asteroid, ox, oy) do
     {id, ax, ay, r} = asteroid
 
@@ -661,6 +668,34 @@ defmodule Game.Server do
   defp remove_ship_from_game(game, id) do
     game2 = update_in(game.pids.ships, &Map.delete(&1, id))
     update_in(game2.state.ships,       &Map.delete(&1, id))
+  end
+
+  # Update game pids with new new ship
+  defp put_ship_pid(game, id, pid) do
+    put_in(game.pids.ships[id], pid)
+  end
+
+  # Update player tag to ship id mapping
+  defp put_player_tag_ship(game, player_tag, id) do
+    put_in(game.players[player_tag], id)
+  end
+
+  @doc """
+  Return the id of the Ship contolled by Player with given tag, or nil.
+  """
+  def ship_id_of_player(game, tag) do
+    get_in(game, [:players, tag])
+  end
+
+  @doc """
+  Get the PID of the Ship controlled by the Player with given tag,
+  or nil.
+  """
+  def ship_pid_of_player(game, tag) do
+    case ship_id_of_player(game, tag) do
+      nil -> nil
+      id  -> get_in(game, [:pids, :ships, id])
+    end
   end
 
 end

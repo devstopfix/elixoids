@@ -139,17 +139,6 @@ defmodule Game.ServerTest do
     assert nil == Game.only_ship(ships, "UKN")
   end
 
-  test "We can find ship by it's ID" do
-    ships = %{
-       9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
-      10 => {10, "CXN", 1704.0, 1555.0, 20.0, 1.3603, "FFFFFF"},
-      15 => {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
-      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}}
-
-    assert 15 == Game.id_of_ship_tagged(ships, "SYX")
-    #assert nil == Game.id_of_ship_tagged(ships, "UKN")
-  end
-
   test "We can filter out ship id" do
     ships = %{9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
       14 => {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},

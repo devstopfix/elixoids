@@ -77,11 +77,22 @@ defmodule Ship.Server do
     GenServer.cast(pid, :fire)
   end
 
+  @doc """
+  Stop the process.
+  """
+  def stop(pid) do
+    GenServer.cast(pid, :stop)
+  end
+
   # GenServer callbacks
 
   def init(ship) do
     Process.send(self(), :tick, [])
     {:ok, ship}
+  end
+
+  def handle_cast(:stop, ship) do
+    {:stop, :normal, ship}
   end
 
   @doc """

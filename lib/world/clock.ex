@@ -18,7 +18,7 @@ defmodule World.Clock do
   Return number of milliseconds between given time t and now
   """
   def since(t) do
-    now_ms - t
+    now_ms() - t
   end
 
   @doc """
