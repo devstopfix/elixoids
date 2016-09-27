@@ -193,20 +193,19 @@ defmodule Game.Server do
     Process.flag(:trap_exit, true)
     {:ok, ids} = Identifiers.start_link
     {:ok, collision_pid} = Game.Collision.start_link(self())
-    rocks = generate_asteroids(ids, asteroid_count)
-    ships = generate_ships(ids, ship_count)
-    game_state = %{:ids => ids, 
-              :pids =>  %{:asteroids => rocks,
-                          :bullets => %{}, 
-                          :ships => ships},
-              :state => %{:asteroids => %{},
-                          :bullets => %{},
-                          :ships => %{}},
-              :explosions => [],
-              :collision_pid => collision_pid,
-              :min_asteroid_count => asteroid_count,
-              :clock_ms => Clock.now_ms,
-              :kby => %{}}
+    game_state = %{
+        :ids => ids, 
+        :pids =>  %{:asteroids => generate_asteroids(ids, asteroid_count),
+                    :bullets => %{}, 
+                    :ships => generate_ships(ids, ship_count)},
+        :state => %{:asteroids => %{},
+                    :bullets => %{},
+                    :ships => %{}},
+        :explosions => [],
+        :collision_pid => collision_pid,
+        :min_asteroid_count => asteroid_count,
+        :clock_ms => Clock.now_ms,
+        :kby => %{}}
     start_ticker(self(), fps)
     {:ok, game_state}
   end
@@ -415,14 +414,13 @@ defmodule Game.Server do
     {:noreply, game}
   end
 
+  @doc """
+  Stop the ship process and remove it from the game state.
+  """
   def handle_cast({:remove_player, player_tag}, game) do
-    ship_id = id_of_ship_tagged(game.state.ships, player_tag)
-    if ship_id != nil do
-      new_game  = update_in(game.state.ships,     &Map.delete(&1, ship_id))
-      new_game2 = update_in(new_game.pids.ships, &Map.delete(&1, ship_id))
-      {:noreply, new_game2}
-    else
-      {:noreply, game}
+    case id_of_ship_tagged(game.state.ships, player_tag) do
+      nil -> {:noreply, game}
+      id  -> {:noreply, remove_ship_from_game(game, id)}
     end
   end
 
@@ -675,6 +673,11 @@ defmodule Game.Server do
   defp remove_asteroid_from_game(game, id) do
     game2 = update_in(game.pids.asteroids, &Map.delete(&1, id))
     update_in(game2.state.asteroids, &Map.delete(&1, id))
+  end
+
+  defp remove_ship_from_game(game, id) do
+    game2 = update_in(game.pids.ships, &Map.delete(&1, id))
+    update_in(game2.state.ships,       &Map.delete(&1, id))
   end
 
 end
