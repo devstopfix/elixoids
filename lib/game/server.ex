@@ -168,7 +168,7 @@ defmodule Game.Server do
   def init({:ok, fps, asteroid_count}) do
     Process.flag(:trap_exit, true)
     game_state = initial_game_state(fps, asteroid_count)
-    if (fps > 0) do
+    if fps > 0 do
        Process.send(self(), :tick, [])
     end
     {:ok, game_state}
@@ -387,7 +387,7 @@ defmodule Game.Server do
 
   def handle_cast({:player_new_heading, player_tag, theta}, game) do
     ship_id = ship_id_of_player(game, player_tag)
-    if (ship_id != nil) && (World.Velocity.valid_theta(theta)) do
+    if (ship_id != nil) && World.Velocity.valid_theta(theta) do
       case Map.get(game.pids.ships, ship_id) do
         nil -> nil
         pid -> Ship.new_heading(pid, theta)  
