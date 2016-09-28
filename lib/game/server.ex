@@ -105,6 +105,10 @@ defmodule Game.Server do
     GenServer.cast(pid, {:update_bullet, new_state})
   end
 
+  def bullet_missed(pid, {id, shooter}) do
+    GenServer.cast(pid, {:bullet_missed, id, shooter})
+  end
+
   def stop_bullet(pid, id) do
     GenServer.cast(pid, {:stop_bullet, id})
   end
@@ -121,12 +125,20 @@ defmodule Game.Server do
     GenServer.cast(pid, {:say_player_shot_ship, bullet_id, victim_id})
   end
 
+  def player_shot_player(pid, bullet_id, shooter_tag, victim_tag) do
+    GenServer.cast(pid, {:player_shot_player, bullet_id, shooter_tag, victim_tag})
+  end
+
   def hyperspace_ship(pid, ship_id) do
     GenServer.cast(pid, {:hyperspace_ship, ship_id})
   end
 
   def say_ship_hit_by_asteroid(pid, ship_id) do
     GenServer.cast(pid, {:say_ship_hit_by_asteroid, ship_id})
+  end
+
+  def broadcast(pid, id, msg) do
+    GenServer.cast(pid, {:broadcast, id, msg})
   end
 
   def spawn_player(pid, player_tag) do
@@ -154,7 +166,7 @@ defmodule Game.Server do
   def generate_asteroids(ids, n) do
     Enum.reduce(1..n, %{}, fn(_i, rocks) ->
       id = Identifiers.next(ids)
-      {:ok, pid} = Asteroid.start_link(id)
+      {:ok, pid} = Asteroid.start_link(id, self())
       Map.put(rocks, id, pid)
     end)
   end
@@ -178,13 +190,14 @@ defmodule Game.Server do
   ## Server Callbacks
 
   def init({:ok, fps, asteroid_count, ship_count}) do
+    Process.flag(:trap_exit, true)
     {:ok, ids} = Identifiers.start_link
     {:ok, collision_pid} = Game.Collision.start_link(self())
     rocks = generate_asteroids(ids, asteroid_count)
     ships = generate_ships(ids, ship_count)
     game_state = %{:ids => ids, 
-              :pids =>  %{:asteroids => rocks, 
-                          :bullets => %{},
+              :pids =>  %{:asteroids => rocks,
+                          :bullets => %{}, 
                           :ships => ships},
               :state => %{:asteroids => %{},
                           :bullets => %{},
@@ -214,7 +227,7 @@ defmodule Game.Server do
 
   def handle_cast({:update_asteroid, asteroid_state}, game) do
     id = elem(asteroid_state, 0)
-    if (Map.has_key?(game.pids.asteroids, id)) do 
+    if Map.has_key?(game.pids.asteroids,id) do 
       new_game = put_in(game.state.asteroids[id], asteroid_state)
       {:noreply, new_game}
     else
@@ -222,12 +235,18 @@ defmodule Game.Server do
     end
   end
 
+  @doc """
+  Update game state with ship state.
+  """
   def handle_cast({:update_ship, ship_state}, game) do
-    id = elem(ship_state, 0)
-    new_game = put_in(game.state.ships[id], ship_state)
-    {:noreply, new_game}
+    {id,_,_ ,_ ,_ ,_ ,_} = ship_state
+    if Map.has_key?(game.pids.ships,id) do
+      new_game = put_in(game.state.ships[id], ship_state)
+      {:noreply, new_game}
+    else
+      {:noreply, game}
+    end
   end
-
 
   @doc """
   Ship fires a bullet in the direction it is facing.
@@ -244,16 +263,19 @@ defmodule Game.Server do
       case Ship.nose_tag(game.pids.ships[ship_id]) do
         {ship_pos, theta, tag, true} -> 
           Ship.fire(ship_pid)
-          Game.Events.player_fires(:news, tag)
-          fire_bullet_in_game(game, ship_pos, theta, tag)
+          fire_bullet_in_game(game, ship_pos, theta, tag, self())
         _ -> {:noreply, game}
       end
     end
   end
 
+  @doc """
+  Update the game state with the position of a bullet.
+  The bullet broadcasts its state at a given fps.
+  """
   def handle_cast({:update_bullet, b}, game) do
-    id = elem(b, 0)
-    if (Map.has_key?(game.pids.bullets, id)) do
+    {id, _, _} = b
+    if Map.has_key?(game.pids.bullets, id) do
       new_game = put_in(game.state.bullets[id], b)
       {:noreply, new_game}
     else
@@ -261,14 +283,20 @@ defmodule Game.Server do
     end
   end
 
+  @doc """
+  Remove bullet from Game.
+  """
+  def handle_cast({:bullet_missed, id, shooter}, game) do
+    broadcast(self(), id, [shooter, "misses"])
+    {:noreply, remove_bullet_from_game(game, id)}
+  end
+
   def handle_cast({:stop_bullet, id}, game) do
     pid = game.pids.bullets[id]
     if pid != nil do
       Bullet.stop(pid)
     end
-    new_game = update_in(game.state.bullets, &Map.delete(&1, id))
-    new_game2 = update_in(new_game.pids.bullets, &Map.delete(&1, id))
-    {:noreply, new_game2}
+    {:noreply, remove_bullet_from_game(game, id)}
   end
 
   @doc """
@@ -284,12 +312,11 @@ defmodule Game.Server do
     pid = game.pids.asteroids[id]
     if pid != nil do
       fragments = Asteroid.split(pid)
+      new_game = Enum.reduce(fragments, game, fn(f, game) -> new_asteroid_in_game(f, game, self()) end)
+
       Asteroid.stop(pid)
-      new_game = Enum.reduce(fragments, game, fn(f, game) ->
-       new_asteroid_in_game(f, game) end)
-      new_game2 = update_in(new_game.state.asteroids, &Map.delete(&1, id))
-      new_game3 = update_in(new_game2.pids.asteroids, &Map.delete(&1, id))
-      {:noreply, new_game3}
+
+      {:noreply, remove_asteroid_from_game(new_game, id)}
     else
       {:noreply, game}
     end
@@ -301,9 +328,9 @@ defmodule Game.Server do
       Game.Server.say_player_shot_asteroid(game, 55)
   """
   def handle_cast({:say_player_shot_asteroid, bullet_id}, game) do
-    bullet_pid = game.pids.bullets[bullet_id]
-    if bullet_pid != nil do
-      Bullet.hit_asteroid(bullet_pid)
+    case game.pids.bullets[bullet_id] do
+      nil -> nil
+      bullet_pid -> Bullet.hit_asteroid(bullet_pid)
     end
     {:noreply, game}
   end
@@ -312,22 +339,15 @@ defmodule Game.Server do
     bullet_pid = game.pids.bullets[bullet_id]
     victim = game.state.ships[victim_id]
     if (bullet_pid != nil) && (victim != nil) do
-      # ** Reason for termination == 
-      # ** {{noproc,{'Elixir.GenServer',call,[<0.1152.0>,{hit_ship,<<"ZPU">>},5000]}},
-      #     [{'Elixir.GenServer',call,3,[{file,"lib/gen_server.ex"},{line,604}]},
-      #      {'Elixir.Game.Server',handle_cast,2,
-      #                            [{file,"lib/game/server.ex"},{line,288}]},
-      try do
-        case Bullet.hit_ship(bullet_pid, elem(victim, 1)) do
-          {shooter_tag, victim_tag} -> {:noreply, put_in(game.kby[victim_tag], shooter_tag)}          
-        end      
-      catch
-        :exit, {:noproc, _} ->
-          {:noreply, game}
-      end
-    else
-      {:noreply, game}
+      victim_tag = elem(victim, 1)
+      Bullet.hit_ship(bullet_pid, victim_tag, self())
     end
+    {:noreply, game}
+  end
+
+  def handle_cast({:player_shot_player, bullet_id, shooter_tag, victim_tag}, game) do
+    broadcast(self(), bullet_id, [shooter_tag, "kills", victim_tag])
+    {:noreply, put_in(game.kby[victim_tag], shooter_tag)}
   end
 
   def handle_cast({:hyperspace_ship, ship_id}, game) do
@@ -342,11 +362,16 @@ defmodule Game.Server do
     case game.state.ships[ship_id] do
       nil -> {:noreply, game}
       {_ship_id, tag, x, y, _, _, _,} ->
-        msg = Enum.join(["ASTEROID", "hit", tag], " ")
-        Game.Events.broadcast(:news, msg)
+        broadcast(self(), ship_id, ["ASTEROID", "hit", tag])
         Game.Server.explosion(self(), x, y)
         {:noreply, game}
     end
+  end
+
+  def handle_cast({:broadcast, id, msg}, game) do
+    txt = Enum.join([id] ++ msg, " ")
+    Game.Events.broadcast(:news, txt)
+    {:noreply, game}
   end
 
   @doc """
@@ -384,7 +409,7 @@ defmodule Game.Server do
 
   def handle_cast({:player_fires, player_tag}, game) do
     ship_id = id_of_ship_tagged(game.state.ships, player_tag)
-    if (ship_id != nil) do
+    if ship_id != nil do
       Game.Server.ship_fires_bullet(self(), ship_id)
     end
     {:noreply, game}
@@ -401,6 +426,16 @@ defmodule Game.Server do
     end
   end
 
+  # Information
+
+  def handle_info(msg, state) do
+    case msg do
+      {:EXIT, _pid, :normal} -> nil
+      _ -> IO.puts(inspect(msg))
+    end
+    {:noreply, state}
+  end
+
   @doc """
   Update the game state and return the number of ms elpased since last tick.
 
@@ -412,14 +447,12 @@ defmodule Game.Server do
   def handle_call(:tick, _from, game) do
     elapsed_ms = Clock.now_ms - game.clock_ms
 
-    move_asteroids(game, elapsed_ms)
     move_ships(game, elapsed_ms)
-    move_bullets(game, elapsed_ms)
     Collision.collision_tests(game.collision_pid, game) 
 
     next_game_state = game
     |> update_game_clock
-    |> maybe_spawn_asteroid
+    |> maybe_spawn_asteroid(self())
     |> filter_explosions
 
     {:reply, {:elapsed_ms, elapsed_ms}, next_game_state}
@@ -488,19 +521,13 @@ defmodule Game.Server do
   Drop the head of each list in the given list.
   """
   def map_rest(m) do
-    m
-    |> Enum.map(fn([_h|t]) -> t end)
+    Enum.map(m, fn([_h|t]) -> t end)
   end
 
   defp start_ticker(pid, fps) do
-    if ((fps > 0) && (fps <= 60)) do
+    if (fps > 0) && (fps <= 60) do
       Game.Ticker.start_link(pid, fps)
     end
-  end
-
-  defp move_asteroids(game, elapsed_ms) do
-    Enum.each(Map.values(game.pids.asteroids), 
-      fn(a) -> Asteroid.move(a, elapsed_ms, self()) end)
   end
 
   defp move_ships(game, elapsed_ms) do
@@ -508,23 +535,18 @@ defmodule Game.Server do
       fn(s) -> Ship.move(s, elapsed_ms, self()) end)
   end
 
-  defp move_bullets(game, elapsed_ms) do
-    Enum.each(Map.values(game.pids.bullets), 
-      fn(b) -> Bullet.move(b, elapsed_ms, self()) end)
-  end
-
   # Asteroids
 
-  def new_asteroid_in_game(a, game) do
+  def new_asteroid_in_game(a, game, game_pid) do
     id = Identifiers.next(game.ids)
-    {:ok, pid} = Asteroid.start_link(id, a)
+    {:ok, pid} = Asteroid.start_link(id, game_pid, a)
     put_in(game.pids.asteroids[id], pid)
   end
 
-  defp maybe_spawn_asteroid(game) do
+  defp maybe_spawn_asteroid(game, game_pid) do
     active_asteroid_count = length(Map.keys(game.pids.asteroids))
     if active_asteroid_count < game.min_asteroid_count do
-      new_asteroid_in_game(Asteroid.random_asteroid, game)
+      new_asteroid_in_game(Asteroid.random_asteroid, game, game_pid)
     else
       game
     end
@@ -641,11 +663,24 @@ defmodule Game.Server do
 
   # Development
 
-  defp fire_bullet_in_game(game, ship_pos, theta, shooter) do
+  defp fire_bullet_in_game(game, ship_pos, theta, shooter, game_pid) do
     id = Identifiers.next(game.ids)
-    {:ok, b} = Bullet.start_link(id, ship_pos, theta, shooter)
+    {:ok, b} = Bullet.start_link(id, ship_pos, theta, shooter, game_pid)
+    broadcast(self(), id, [shooter, "fires"])
     new_game = put_in(game.pids.bullets[id], b)
     {:noreply, new_game}
+  end
+
+  # Game state
+
+  defp remove_bullet_from_game(game, id) do
+    game2 = update_in(game.pids.bullets, &Map.delete(&1, id))
+    update_in(game2.state.bullets, &Map.delete(&1, id))
+  end
+
+  defp remove_asteroid_from_game(game, id) do
+    game2 = update_in(game.pids.asteroids, &Map.delete(&1, id))
+    update_in(game2.state.asteroids, &Map.delete(&1, id))
   end
 
 end

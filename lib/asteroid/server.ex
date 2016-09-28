@@ -7,6 +7,7 @@ defmodule Asteroid.Server do
 
    use GenServer
 
+   alias World.Clock,    as: Clock
    alias World.Point,    as: Point
    alias World.Velocity, as: Velocity
    alias Elixoids.Space, as: Space
@@ -23,16 +24,14 @@ defmodule Asteroid.Server do
    # Initial speed of asteroid
    @asteroid_speed_m_per_s 20.0
 
-   def start_link(id, asteroid \\ random_asteroid()) do
-     a = Map.put(asteroid, :id, id)
-     GenServer.start_link(__MODULE__, a, [])
-   end
+   def start_link(id, game_pid, asteroid \\ random_asteroid()) do
+     a = Map.merge(asteroid, %{
+      :id=>id,
+      :game_pid=>game_pid,
+      :clock_ms=>Clock.now_ms,
+      :tick_ms=>16})
 
-   @doc """
-   Move asteroid with pid, using time slice, report state back to Game.
-   """
-   def move(pid, delta_t_ms, game_pid) do
-     GenServer.cast(pid, {:move, delta_t_ms, game_pid})
+     GenServer.start_link(__MODULE__, a, [])
    end
 
    @doc """
@@ -74,17 +73,29 @@ defmodule Asteroid.Server do
    # GenServer callbacks
 
    def init(a) do
+     Process.send(self(), :tick, [])
      {:ok, a}
    end
 
-   def handle_cast({:move, delta_t_ms, game_pid}, a) do
-     moved_asteroid = move_asteroid(a, delta_t_ms)
-     Game.Server.update_asteroid(game_pid, state_tuple(moved_asteroid))
+   def handle_cast(:move, a) do
+     delta_t_ms = Clock.since(a.clock_ms)
+
+     moved_asteroid = a 
+     |> move_asteroid(delta_t_ms)
+     |> Map.put(:clock_ms, Clock.now_ms)
+
+     Game.Server.update_asteroid(a.game_pid, state_tuple(moved_asteroid))
      {:noreply, moved_asteroid}
    end
 
    def handle_cast(:stop, b) do
      {:stop, :normal, b}
+   end
+
+   def handle_info(:tick, a) do
+     GenServer.cast(self(), :move)
+     Process.send_after(self(), :tick, a.tick_ms)
+     {:noreply, a}
    end
 
    def handle_call(:position, _from, a) do

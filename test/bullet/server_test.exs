@@ -25,7 +25,8 @@ defmodule Bullet.ServerTest do
       {:ok, b} = Bullet.start_link(999, 
                    %World.Point{:x=>0.0, :y=>0.0}, 
                    1.0,
-                   0)
+                   0,
+                   self())
       assert Process.alive?(b)
 
       #ref  = Process.monitor(b)
