@@ -46,13 +46,6 @@ defmodule Ship.Server do
   end
 
   @doc """
-  Return position of ship.
-  """
-  def position(pid) do
-    GenServer.call(pid, :position)
-  end
-
-  @doc """
   Player requests turn to given theta.
   """
   def new_heading(pid, theta) do
@@ -153,10 +146,6 @@ defmodule Ship.Server do
     GenServer.cast(self(), :move)
     Process.send_after(self(), :tick, a.tick_ms)
     {:noreply, a}
-  end
-
-  def handle_call(:position, _from, ship) do
-    {:reply, state_tuple(ship), ship}
   end
 
   # Data
