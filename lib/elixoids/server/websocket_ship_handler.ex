@@ -59,8 +59,8 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     :ok
   end
 
-  def player_fires(tag) do
-    Game.Server.player_fires(:game, tag)
+  def player_pulls_trigger(tag) do
+    Game.Server.player_pulls_trigger(:game, tag)
     :ok
   end
 
@@ -71,7 +71,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   def handle_input(player_input, tag) do
     cond do
-      (player_input.fire == true)  -> player_fires(tag)
+      (player_input.fire == true)  -> player_pulls_trigger(tag)
       is_float(player_input.theta) -> player_turns(tag, player_input.theta)
       is_integer(player_input.theta) -> player_turns(tag, player_input.theta * 1.0)
       true -> :ok

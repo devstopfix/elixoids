@@ -10,11 +10,14 @@ defmodule Ship.Server do
   
   use GenServer
 
+  alias Bullet.Server, as: Bullet
+  alias Elixoids.Player, as: Player
+  alias Elixoids.Space, as: Space
+  alias Game.Identifiers, as: Identifiers
+  alias Game.Server, as: Game
   alias World.Clock, as: Clock
   alias World.Point, as: Point
   alias World.Velocity, as: Velocity
-  alias Elixoids.Player, as: Player
-  alias Elixoids.Space, as: Space
 
   # Ship radius (m)
   @ship_radius_m 20.0
@@ -37,22 +40,9 @@ defmodule Ship.Server do
            :clock_ms=>Clock.now_ms,
            :tick_ms=>Clock.ms_between_frames})
 
-    GenServer.start_link(__MODULE__, ship, [])
-  end
+    name = String.to_atom(tag <> Integer.to_string(id))
 
-  @doc """
-  Return position of ship.
-  """
-  def position(pid) do
-    GenServer.call(pid, :position)
-  end
-
-  @doc """
-  Return a point just ahead of the nose of the ship.
-  Bullets are spawned at this point.
-  """
-  def nose_tag(pid) do
-    GenServer.call(pid, :nose_tag)
+    GenServer.start_link(__MODULE__, ship, [name: name])
   end
 
   @doc """
@@ -84,6 +74,14 @@ defmodule Ship.Server do
     GenServer.cast(pid, :stop)
   end
 
+  @doc """
+  Player pulls trigger, which may fire a bullet
+  if the ship is recharged.
+  """
+  def player_pulls_trigger(pid, ids) do
+    GenServer.cast(pid, {:player_pulls_trigger, ids})
+  end
+
   # GenServer callbacks
 
   def init(ship) do
@@ -105,7 +103,7 @@ defmodule Ship.Server do
     |> rotate_ship(delta_t_ms)
     |> Map.put(:clock_ms, Clock.now_ms)
 
-    Game.Server.update_ship(ship.game_pid, state_tuple(new_ship))
+    Game.update_ship(ship.game_pid, state_tuple(new_ship))
     {:noreply, new_ship}
   end
 
@@ -128,6 +126,19 @@ defmodule Ship.Server do
     {:noreply, new_ship}
   end
 
+  def handle_cast({:player_pulls_trigger, ids}, ship) do
+    if Clock.past?(ship.laser_charged_at) do
+      id = Identifiers.next(ids) 
+      pos = calculate_nose(ship)
+      {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, ship.game_pid)
+      Game.bullet_fired(ship.game_pid, id, bullet_pid)
+      Game.broadcast(ship.game_pid, id, [ship.tag, "fires"])
+      {:noreply, recharge_laser(ship)}
+    else
+      {:noreply, ship}
+    end
+  end
+
   @doc """
   Heartbeat. Causes ship to update itself at given interval.
   """
@@ -135,20 +146,6 @@ defmodule Ship.Server do
     GenServer.cast(self(), :move)
     Process.send_after(self(), :tick, a.tick_ms)
     {:noreply, a}
-  end
-
-  def handle_call(:position, _from, ship) do
-    {:reply, state_tuple(ship), ship}
-  end
-
-  @doc """
-  The nose of the ship is defined as the centre offset by 
-  half of the radius, in the direction the ship is pointing.
-  """
-  def handle_call(:nose_tag, _from, ship) do
-    p = calculate_nose(ship)
-    can_fire = (Clock.now_ms > ship.laser_charged_at)
-    {:reply, {p, ship.theta, ship.tag, can_fire}, ship}
   end
 
   # Data
@@ -176,7 +173,7 @@ defmodule Ship.Server do
   def random_ship_point do
     Space.random_grid_point
   end
-
+  
   defp clip_delta_theta(delta_theta, delta_t_ms) do
     max_theta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
     min_theta = max_theta * -1.0
@@ -202,9 +199,12 @@ defmodule Ship.Server do
   defp calculate_nose(ship) do
     ship_centre = ship.pos
     v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
-    Point.apply_velocity(ship_centre, v, 1000.0)
+    Point.apply_velocity(ship_centre, v, 500.0)
   end
 
+  @doc """
+  Update game state with time at which they can fire again
+  """
   def recharge_laser(ship) do
     %{ship | :laser_charged_at => (Clock.now_ms + @laser_recharge_ms)}
   end

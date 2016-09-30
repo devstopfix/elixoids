@@ -89,8 +89,8 @@ defmodule Game.Server do
     GenServer.cast(pid, {:update_ship, new_state})
   end
 
-  def ship_fires_bullet(pid, ship_id) do
-    GenServer.cast(pid, {:ship_fires_bullet, ship_id})
+  def bullet_fired(pid, bullet_id, bullet_pid) do
+    GenServer.cast(pid, {:bullet_fired, bullet_id, bullet_pid})
   end
 
   def update_bullet(pid, new_state) do
@@ -141,8 +141,8 @@ defmodule Game.Server do
     GenServer.cast(pid, {:player_new_heading, player_tag, theta})
   end
 
-  def player_fires(pid, player_tag) do
-    GenServer.cast(pid, {:player_fires, player_tag})
+  def player_pulls_trigger(pid, player_tag) do
+    GenServer.cast(pid, {:player_pulls_trigger, player_tag})
   end
 
   def remove_player(pid, player_tag) do
@@ -232,24 +232,10 @@ defmodule Game.Server do
   end
 
   @doc """
-  Ship fires a bullet in the direction it is facing.
-
-      {:ok, game} = Game.Server.start_link(4)
-      Game.Server.tick(game)
-      Game.Server.show(game)
-      Game.Server.ship_fires_bullet(game, 1)
-
+  Put the bullet into the game.
   """
-  def handle_cast({:ship_fires_bullet, ship_id}, game) do
-    ship_pid = game.pids.ships[ship_id]
-    if (ship_pid != nil) && Process.alive?(ship_pid) do
-      case Ship.nose_tag(game.pids.ships[ship_id]) do
-        {ship_pos, theta, tag, true} -> 
-          Ship.fire(ship_pid)
-          fire_bullet_in_game(game, ship_pos, theta, tag, self())
-        _ -> {:noreply, game}
-      end
-    end
+  def handle_cast({:bullet_fired, bullet_id, bullet_pid}, game) do
+    {:noreply, put_in(game.pids.bullets[bullet_id], bullet_pid)}
   end
 
   @doc """
@@ -396,10 +382,10 @@ defmodule Game.Server do
     {:noreply, game}
   end
 
-  def handle_cast({:player_fires, player_tag}, game) do
-    case ship_id_of_player(game, player_tag) do
-      nil     -> nil
-      ship_id -> Game.Server.ship_fires_bullet(self(), ship_id)
+  def handle_cast({:player_pulls_trigger, player_tag}, game) do
+    case ship_pid_of_player(game, player_tag) do
+      nil -> nil
+      pid -> Ship.player_pulls_trigger(pid, game.ids)
     end
     {:noreply, game}
   end
@@ -632,16 +618,6 @@ defmodule Game.Server do
   """
   def explosions_to_list(explosions) do
     Enum.map(explosions, &Explosion.to_state(&1))
-  end
-
-  # Development
-
-  defp fire_bullet_in_game(game, ship_pos, theta, shooter, game_pid) do
-    id = Identifiers.next(game.ids)
-    {:ok, b} = Bullet.start_link(id, ship_pos, theta, shooter, game_pid)
-    broadcast(self(), id, [shooter, "fires"])
-    new_game = put_in(game.pids.bullets[id], b)
-    {:noreply, new_game}
   end
 
   # Game state
