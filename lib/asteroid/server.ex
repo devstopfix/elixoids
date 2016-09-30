@@ -124,8 +124,10 @@ defmodule Asteroid.Server do
    # Functions
 
    def move_asteroid(a, delta_t_ms) do
-     p1 = Point.apply_velocity(a.pos, a.velocity, delta_t_ms)
-     p2 = Space.wrap(p1)
+     p2 = a.pos 
+     |> Point.apply_velocity(a.velocity, delta_t_ms)
+     |> Space.wrap
+
      %{a | :pos => p2}
    end
 
