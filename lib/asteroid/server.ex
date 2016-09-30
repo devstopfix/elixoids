@@ -35,13 +35,6 @@ defmodule Asteroid.Server do
    end
 
    @doc """
-   Return the state of the process as a tuple
-   """
-   def position(pid) do
-     GenServer.call(pid, :position)
-   end
-
-   @doc """
    The asteroid has been destroyed.
 
       {:ok, a} = Asteroid.Server.start_link(9999)
@@ -96,10 +89,6 @@ defmodule Asteroid.Server do
      GenServer.cast(self(), :move)
      Process.send_after(self(), :tick, a.tick_ms)
      {:noreply, a}
-   end
-
-   def handle_call(:position, _from, a) do
-     {:reply, {a.id, a.pos.x, a.pos.y, a.radius}, a}
    end
 
    @doc """
