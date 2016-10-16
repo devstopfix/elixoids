@@ -184,15 +184,19 @@ defmodule Ship.Server do
     end
   end
 
-  defp shortest_angle(delta_theta) do
-    other = (:math.pi * 2) - abs(delta_theta)
-    Enum.min([delta_theta, other])
-  end
-
+  @doc """
+  Rotate the ship from it's current theta towards it's 
+  intended delta_theta - but clip the rate of rotation
+  by the time elapsed since the last frame.
+  """
   def rotate_ship(ship, delta_t_ms) do
-    input_delta_theta = shortest_angle(ship.target_theta - ship.theta)
-    delta_theta = clip_delta_theta(input_delta_theta, delta_t_ms)
-    theta = Velocity.wrap_angle(ship.theta + delta_theta)
+    delta_theta = ship.target_theta - ship.theta
+    turn = if delta_theta > :math.pi do
+      clip_delta_theta((2 * :math.pi) - delta_theta, delta_t_ms)
+    else
+      clip_delta_theta(delta_theta, delta_t_ms)
+    end
+    theta = Velocity.wrap_angle(ship.theta + turn)
     %{ship | :theta => theta} 
   end
 
