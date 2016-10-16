@@ -31,7 +31,7 @@ defmodule Bullet.Server do
           :game_pid => game_pid,
           :expire_at=>calculate_ttl(),
           :clock_ms => Clock.now_ms,
-          :tick_ms=>16}
+          :tick_ms=>Clock.ms_between_frames}
     GenServer.start_link(__MODULE__, b, [])
   end
 

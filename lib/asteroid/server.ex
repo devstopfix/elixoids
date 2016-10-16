@@ -29,16 +29,9 @@ defmodule Asteroid.Server do
       :id=>id,
       :game_pid=>game_pid,
       :clock_ms=>Clock.now_ms,
-      :tick_ms=>16})
+      :tick_ms=>Clock.ms_between_frames})
 
      GenServer.start_link(__MODULE__, a, [])
-   end
-
-   @doc """
-   Return the state of the process as a tuple
-   """
-   def position(pid) do
-     GenServer.call(pid, :position)
    end
 
    @doc """
@@ -98,10 +91,6 @@ defmodule Asteroid.Server do
      {:noreply, a}
    end
 
-   def handle_call(:position, _from, a) do
-     {:reply, {a.id, a.pos.x, a.pos.y, a.radius}, a}
-   end
-
    @doc """
    Split a single asteroid into two smaller asteroids heading
    in different directions and return a list of the new rocks,
@@ -135,8 +124,10 @@ defmodule Asteroid.Server do
    # Functions
 
    def move_asteroid(a, delta_t_ms) do
-     p1 = Point.apply_velocity(a.pos, a.velocity, delta_t_ms)
-     p2 = Space.wrap(p1)
+     p2 = a.pos 
+     |> Point.apply_velocity(a.velocity, delta_t_ms)
+     |> Space.wrap
+
      %{a | :pos => p2}
    end
 

@@ -5,19 +5,11 @@ defmodule Game.ServerTest do
   alias Game.Server, as: Game
 
   test "Can start a game" do
-    {:ok, _game} = Game.start_link
-  end
-
-  test "The clock can update a game" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, elapsed_ms} = Game.tick(game)
-
-    assert elapsed_ms >= 0
+    {:ok, _game} = Game.start_link(1)
   end
 
   test "We can retrieve game state of Asteroids" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    {:ok, game} = Game.start_link(1)
     :timer.sleep(10)
 
     game_state = Game.state(game)
@@ -26,19 +18,17 @@ defmodule Game.ServerTest do
   end
 
   test "We can retrieve game state of Ships" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
+    {:ok, game} = Game.start_link(1)
+    Game.spawn_player(game, "AST")
+    :timer.sleep(200)
 
     game_state = Game.state(game)
-
     assert [_, _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
   end
 
   test "We can retrieve game state of eXplosions" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
+    {:ok, game} = Game.start_link(1)
+    :timer.sleep(20)
 
     game_state = Game.state(game)
 
@@ -47,66 +37,60 @@ defmodule Game.ServerTest do
   end
 
   test "We can retrieve sound state of eXplosions" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    {:ok, game} = Game.start_link(1)
     :timer.sleep(10)
 
     game_state = Game.sound_state(game)
-
     assert 0 == length(game_state[:x])
     assert 4000.0 == List.first(game_state.dim)
     assert 2250.0 == List.last(game_state.dim)
   end
 
   test "We can retrieve viewport dimensions from game state" do
-    {:ok, game} = Game.start_link
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+    {:ok, game} = Game.start_link(1)
     :timer.sleep(10)
-
     game_state = Game.state(game)
-
     assert 4000.0 == List.first(game_state.dim)
     assert 2250.0 == List.last(game_state.dim)
   end
 
-  test "We record who shot a player" do
-    {:ok, game} = Game.start_link(0,8,8)
-    :timer.sleep(10)
+  # test "We record who shot a player" do
+  #   {:ok, game} = Game.start_link(0,8)
+  #   :timer.sleep(10)
 
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
+  #   {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+  #   :timer.sleep(10)
 
-    Game.ship_fires_bullet(game, 9)
-    :timer.sleep(10)
+  #   Game.ship_fires_bullet(game, 9)
+  #   :timer.sleep(10)
 
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
+  #   {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+  #   :timer.sleep(10)
     
-    :timer.sleep(10)
+  #   :timer.sleep(10)
 
-    Game.say_player_shot_ship(game, 17, 10)
-    :timer.sleep(10)
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+  #   Game.say_player_shot_ship(game, 17, 10)
+  #   :timer.sleep(10)
+  #   {:elapsed_ms, _elapsed_ms} = Game.tick(game)
 
-    :timer.sleep(10)
+  #   :timer.sleep(10)
 
-    state = Game.state(game)
+  #   state = Game.state(game)
 
-    [player_9_tag,_,_,_,_,_] = hd(state.s)
-    [player_10_tag,_,_,_,_,_] = hd(tl(state.s))
+  #   [player_9_tag,_,_,_,_,_] = hd(state.s)
+  #   [player_10_tag,_,_,_,_,_] = hd(tl(state.s))
 
-    assert player_9_tag == state.kby[player_10_tag]
+  #   assert player_9_tag == state.kby[player_10_tag]
 
-    ship_state = Game.state_of_ship(game, player_10_tag)
-    assert player_9_tag == ship_state.kby
-  end
+  #   ship_state = Game.state_of_ship(game, player_10_tag)
+  #   assert player_9_tag == ship_state.kby
+  # end
 
   test "We can retrieve game state of a player by their ID" do
-    {:ok, game} = Game.start_link
+    {:ok, game} = Game.start_link(60)
     :timer.sleep(10)
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
-
+    Game.spawn_player(game, "AST")
+    :timer.sleep(200)
     game_state = Game.state(game)
 
     [player_tag, _, _, 20.0, theta,_] = List.first(game_state[:s])
@@ -138,17 +122,6 @@ defmodule Game.ServerTest do
     assert nil == Game.only_ship(ships, "UKN")
   end
 
-  test "We can find ship by it's ID" do
-    ships = %{
-       9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
-      10 => {10, "CXN", 1704.0, 1555.0, 20.0, 1.3603, "FFFFFF"},
-      15 => {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
-      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}}
-
-    assert 15 == Game.id_of_ship_tagged(ships, "SYX")
-    #assert nil == Game.id_of_ship_tagged(ships, "UKN")
-  end
-
   test "We can filter out ship id" do
     ships = %{9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
       14 => {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
@@ -166,50 +139,6 @@ defmodule Game.ServerTest do
 
   test "We do not find missing ship state by tag" do
     refute Game.ship_state_has_tag({9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"}, "XXX")
-  end
-
-  test "We can add and remove ships from game" do
-    {:ok, game} = Game.start_link(0,8,8)
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
-
-    game_state = Game.state(game)
-    assert 8 == game_state[:s] |> Enum.count
-
-    Game.spawn_player(game, "AST")
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
-    game_state_2 = Game.state(game)
-    assert 9 == game_state_2[:s] |> Enum.count
-
-    Game.remove_player(game, "AST")
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
-    game_state_3 = Game.state(game)
-    assert 8 == game_state_3[:s] |> Enum.count
-
-  end
-
-  test "We can add ship and fire" do
-    {:ok, game} = Game.start_link(0,1,1)
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
-
-    game_state = Game.state(game)
-    assert 1 == game_state[:s] |> Enum.count
-
-    Game.spawn_player(game, "TRG")
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    :timer.sleep(10)
-    game_state_2 = Game.state(game)
-    assert 2 == game_state_2[:s] |> Enum.count
-    assert 0 == game_state_2[:b] |> Enum.count
-
-    Game.player_fires(game, "TRG")
-    :timer.sleep(10)
-    {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-    game_state_3 = Game.state(game)
-    assert 1 == game_state_3[:b] |> Enum.count
   end
 
 end
