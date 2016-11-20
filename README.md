@@ -19,12 +19,9 @@ Check out this repository and run:
     git checkout v1
     mix deps.get
 
-You may need to install Elixir and Erlang v18, on a Mac you can use homebrew:
+You may need to install Elixir and Erlang, on a Mac you can use homebrew:
 
-    brew install homebrew/versions/erlang-r18
     brew install elixir
-
-The software will not compile on Erlang v19 at present due to a dependency that [ExCheck has on triq](https://github.com/devstopfix/elixoids/issues/35).
 
 # Run
 
