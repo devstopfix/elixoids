@@ -165,7 +165,7 @@ var SocketHandler = (function(){
     if ( message.a !== undefined) {
       var canvas = document.getElementById('viewport');
       var context = canvas.getContext('2d');
-      if ((Date.now() % 4) == 0) { blackCanvas(context) };
+      if ((Date.now() % 16) == 0) { blackCanvas(context) };
       drawAsteroids(message.a, context);
       drawShips(message.s, context);
       drawBullets(message.b, context);

@@ -2,22 +2,30 @@ require 'faye/websocket'
 require 'eventmachine'
 require 'json'
 
+#
+# This bot will turn towards the largest rock,
+# and fire at any rock along its line of site.
+#
+# Note that it will turn towards the current position
+# of the rock and so will usually miss it's target
+# unless the rock is large or moving directly towards
+# or away.
+#
 
 $SERVER = ENV['ELIXOIDS_SERVER'] || 'localhost:8065'
 
-
-def fire?
-  (rand(10)) == 0
-end
 
 def pointing_at(rock_theta, ship_theta)
   delta = (rock_theta-ship_theta).abs
   (delta <= 0.1) || (delta >= 6.2)
 end
 
-def sort_ships_by_distance(ships)
-  ships.sort do |a,b|
-    a.last <=> b.last
+def sort_by_size(rocks)
+  rocks.sort do |a,b|
+    a_id, _, a_radius, a_dist = a
+    b_id, _, b_radius, b_dist = b
+
+    b_radius <=> a_radius
   end
 end
 
@@ -28,7 +36,6 @@ def round(theta)
     theta
   end
 end
-
 
 def start_ship(tag)
   url = "ws://#{$SERVER}/ship/#{tag}"
@@ -44,26 +51,21 @@ def start_ship(tag)
 
     ws.on :message do |event|
       frame = JSON.parse(event.data)
+      rocks = frame['rocks'] || []
 
-      return unless frame.has_key?('rocks')
-
-      rocks = frame['rocks']
-
-      if rocks.empty?
-        puts "Awaiting target..."
-        return
+      if rocks.any? { |a| pointing_at(a[1], frame['theta'])} 
+        ws.send({'fire'=>true}.to_json)
       end
 
-      candidates = sort_ships_by_distance(rocks)
-
-      id, theta, radius, dist = candidates.first
-
-      if (id != target_id)
-        puts sprintf("%s Targeting %d at %f (of %d targets)", tag, id, theta, candidates.size)
+      unless rocks.empty?
+        candidates = sort_by_size(rocks)
+        id, theta, radius, dist = candidates.first
+        ws.send({'theta'=>round(theta)}.to_json)
+        if (id != target_id)
+          puts sprintf("%s Targeting %d at %f (of %d targets)", tag, id, theta, candidates.size)
+          target_id = id
+        end
       end
-
-      shoot = rocks.any? { |a| pointing_at(a[1], frame['theta'])} 
-      ws.send({'theta'=>round(theta), 'fire'=>shoot}.to_json)
     end
 
     ws.on :close do |event|

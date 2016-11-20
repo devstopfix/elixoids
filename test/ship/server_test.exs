@@ -1,81 +1,78 @@
 defmodule Ship.ServerTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
+  use ExCheck
   doctest Ship.Server
 
-#  alias Ship.Server, as: Ship
+  alias Ship.Server, as: Ship
 
-  # TODO convert this to callbacks
+  test "ship pointing east does not rotate" do
+    ship = %{theta: 0.0, target_theta: 0.0}
+    rotated_ship = Ship.rotate_ship(ship, 1 * 1000)
+    assert 0.0 == rotated_ship[:theta]
+  end
 
-  # test "New player points east" do
-  #   {:ok, ship} = Ship.start_link(1, self(), "AAA")
-  #   {_pos, 0.0, "AAA", _} = Ship.nose_tag(ship)    
+  test "rotate ship from East to North" do
+    ship = %{theta: 0.0, target_theta: 1.2}
+    rotated_ship = Ship.rotate_ship(ship, 1 * 1000)
+    assert 1.2 == rotated_ship[:theta]
+  end
+
+  # test "rotate ship from East to South" do
+  #   south = :math.pi * -2.0
+  #   ship = %{theta: 0.0, target_theta: south}
+  #   rotated_ship = Ship.rotate_ship(ship, 4 * 1000)
+  #   assert south == rotated_ship.theta
   # end
 
-  # test "Retrive nose of ship and its tag" do
-  #   {:ok, ship} = Ship.start_link(1, self(), "AAA")
-  #   {_pos, _theta, tag, _} = Ship.nose_tag(ship)
-  #   assert "AAA" == tag
-  # end
+  property :ships_pointing_desired_heading_do_not_rotate do
+    for_all {theta} in {int(0,6)} do
+      ship = %{theta: theta / 1.0, target_theta: theta / 1.0}
+      rotated_ship = Ship.rotate_ship(ship, 1 * 1000)
+      assert theta == rotated_ship.theta
+    end
+  end
 
-  # test "Hyperspace moves ship but keeps identify" do
-  #   {:ok, ship} = Ship.start_link(1, self(), "TAG")
-  #   {p1, theta1, "TAG", _} = Ship.nose_tag(ship)
-  #   Ship.hyperspace(ship)
-  #   {p2, theta2, "TAG", _} = Ship.nose_tag(ship)
+  property :ships_can_rotate_anticlockwise do
+    for_all {theta} in {int(0,5)} do
+      ship = %{theta: theta * 1.0, target_theta: (theta + 1.0)}
+      rotated_ship = Ship.rotate_ship(ship, 2 * 1000)
+      assert rotated_ship.theta == ship.target_theta
+    end
+  end
 
-  #   assert p1 != p2
-  #   assert theta1 != theta2
-  # end
+  property :ships_can_rotate_clockwise do
+    for_all {theta} in {int(1,6)} do
+      ship = %{theta: theta * 1.0, target_theta: (theta - 1.0)}
+      rotated_ship = Ship.rotate_ship(ship, 2 * 1000)
+      assert rotated_ship.theta == ship.target_theta
+    end
+  end
 
-  # test "Test firing laser" do
-  #   {:ok, ship} = Ship.start_link(1, self(), "AAA")
-  #   {_pos, _theta, "AAA", _} = Ship.nose_tag(ship)
 
-  #   :timer.sleep(800)
-  #   {_pos, _theta, "AAA", true} = Ship.nose_tag(ship)
+  # Test that we can rotate from any starting angle to any finishing angle
+  # within the maximum turn duration of a Ship (3 seconds)
+  property :rotate_ship_completely do
+    for_all {theta, target_theta} in {int(0,3), int(0,3)} do
+      ship = %{theta: theta, target_theta: target_theta}
 
-  #   Ship.fire(ship)
-  #   :timer.sleep(10)
-  #   {_pos, _theta, "AAA", false} = Ship.nose_tag(ship)
+      rotated_ship = Ship.rotate_ship(ship, 4 * 1000)
 
-  #   :timer.sleep(800)
-  #   {_pos, _theta, "AAA", true} = Ship.nose_tag(ship)
+      assert rotated_ship.theta == target_theta
+    end
+  end
 
-  #   Ship.hyperspace(ship)
-  #   {_pos, _theta, "AAA", false} = Ship.nose_tag(ship)
-  # end
+  # # Test that any rotation within a single frame takes the shortest path
+  # property :rotate_ship_takes_shortest_path do
+  #   for_all {theta, target_theta} in {int(0,6), int(0,6)} do
+  #     ship = %{theta: theta*1.0, target_theta: target_theta*1.0}
 
-  # test "Stationary" do
-  #   {:ok, ship} = Ship.start_link(1, self(), "PLY")
-  #   {_pos, 0.0, "PLY", _} = Ship.nose_tag(ship)
+  #     rotated_ship = Ship.rotate_ship(ship, 16)
 
-  #   Ship.new_heading(ship, 0.0)
-  #   :timer.sleep(10)
-  #   {_pos, 0.0, "PLY", _} = Ship.nose_tag(ship)
-  # end
+  #     original_delta = abs(theta-target_theta)
+  #     final_delta = abs(rotated_ship.theta-target_theta)
 
-  # test "Rotate clockwise" do
-  #   {:ok, game} = Game.Server.start_link
-  #   {:ok, ship} = Ship.start_link(1, game, "PLY")
-  #   {_pos, 0.0, "PLY", false} = Ship.nose_tag(ship)
-
-  #   Ship.new_heading(ship, 0.785)
-  #   Ship.move(ship, 1000.0, game)
-  #   {_pos, 0.785, "PLY", _} = Ship.nose_tag(ship)
-  # end
-
-  # test "Rotate clockwise and then counter-clockwise" do
-  #   {:ok, game} = Game.Server.start_link
-  #   {:ok, ship} = Ship.start_link(1, game, "PLY")
-  #   {_pos, 0.0, "PLY", false} = Ship.nose_tag(ship)
-
-  #   Ship.new_heading(ship, 0.785)
-  #   :timer.sleep(1000)
-  #   {_pos, 0.785, "PLY", _} = Ship.nose_tag(ship)
-
-  #   Ship.new_heading(ship, 0.0)
-  #   :timer.sleep(1000)
-  #   {_pos, 0.0, "PLY", _} = Ship.nose_tag(ship)
+  #     assert final_delta <= original_delta
+  #   end
   # end
 
 end

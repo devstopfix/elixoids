@@ -25,7 +25,7 @@ defmodule Ship.Server do
   # The spawn point of a bullet
   @nose_radius_m (@ship_radius_m * 1.1)
 
-  # Rotation rate (radians/sec)
+  # Rotation rate (radians/sec). Three seconds to turn a complete circle.
   @ship_rotation_rad_per_sec (:math.pi * 2 / 3.0)
 
   # Minimum time between shots
@@ -126,6 +126,10 @@ defmodule Ship.Server do
     {:noreply, new_ship}
   end
 
+  @doc """
+  Player pulls trigger. Do nothing if laser is recharging,
+  else spawn a bullet and add it the the game.
+  """
   def handle_cast({:player_pulls_trigger, ids}, ship) do
     if Clock.past?(ship.laser_charged_at) do
       id = Identifiers.next(ids) 
@@ -137,6 +141,12 @@ defmodule Ship.Server do
     else
       {:noreply, ship}
     end
+  end
+
+  defp calculate_nose(ship) do
+    ship_centre = ship.pos
+    v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
+    Point.apply_velocity(ship_centre, v, 500.0)
   end
 
   @doc """
@@ -176,30 +186,34 @@ defmodule Ship.Server do
   
   defp clip_delta_theta(delta_theta, delta_t_ms) do
     max_theta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
-    min_theta = max_theta * -1.0
-    cond do
-      (delta_theta > max_theta) -> max_theta
-      (delta_theta < min_theta) -> min_theta
-      true                      -> delta_theta
+    if delta_theta > max_theta do
+      max_theta
+    else
+      delta_theta
     end
   end
 
-  defp shortest_angle(delta_theta) do
-    other = (:math.pi * 2) - abs(delta_theta)
-    Enum.min([delta_theta, other])
+  # 360º
+  @two_pi_radians (2 * :math.pi)
+
+  defp turn_positive?(theta, target_theta) do
+    Velocity.fmod(target_theta - theta + @two_pi_radians, @two_pi_radians) > :math.pi
   end
 
+  @doc """
+  Rotate the ship from it's current theta towards it's 
+  intended delta_theta - but clip the rate of rotation
+  by the time elapsed since the last frame.
+  """
   def rotate_ship(ship, delta_t_ms) do
-    input_delta_theta = shortest_angle(ship.target_theta - ship.theta)
-    delta_theta = clip_delta_theta(input_delta_theta, delta_t_ms)
-    theta = Velocity.wrap_angle(ship.theta + delta_theta)
+    delta_theta = clip_delta_theta(abs(ship.target_theta - ship.theta), delta_t_ms)
+    turn = if turn_positive?(ship.target_theta, ship.theta) do
+      delta_theta
+    else
+      - delta_theta
+    end
+    theta = Velocity.wrap_angle(ship.theta + turn)
     %{ship | :theta => theta} 
-  end
-
-  defp calculate_nose(ship) do
-    ship_centre = ship.pos
-    v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
-    Point.apply_velocity(ship_centre, v, 500.0)
   end
 
   @doc """
