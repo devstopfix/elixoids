@@ -373,7 +373,7 @@ defmodule Game.Server do
 
   def handle_cast({:player_new_heading, player_tag, theta}, game) do
     ship_id = ship_id_of_player(game, player_tag)
-    if (ship_id != nil) && World.Velocity.valid_theta(theta) do
+    if ship_id != nil && World.Velocity.valid_theta(theta) do
       case Map.get(game.pids.ships, ship_id) do
         nil -> nil
         pid -> Ship.new_heading(pid, theta)  

@@ -52,12 +52,12 @@ defmodule Elixoids.Server.WebsocketHandler do
 
     # Use JSEX to decode the JSON message and extract the word entered
     # by the user into the variable 'message'.
-    {:ok, %{"message" => message}} = JSEX.decode(content)
+    {:ok, %{"message" => message}} = Poison.decode(content)
 
     # Reverse the message and use JSEX to re-encode a reply contatining
     # the reversed message.
     rev = String.reverse(message)
-    {:ok, reply} = JSEX.encode(%{reply: rev})
+    {:ok, reply} = Poison.encode(%{reply: rev})
 
     #IO.puts("Message: #{message}")
     
@@ -85,7 +85,7 @@ defmodule Elixoids.Server.WebsocketHandler do
 
     game_state = Game.Server.state(:game)
     transmit = Game.State.deduplicate(game_state, prev_state)
-    {:ok, message} = JSEX.encode(transmit)
+    {:ok, message} = Poison.encode(transmit)
    
     {:reply, {:text, message}, req, game_state}
   end

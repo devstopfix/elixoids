@@ -5,7 +5,7 @@ defmodule Elixoids.Mixfile do
     [app: :elixoids,
      description: "Asteroids game and server",
      name: "Elixoids",
-     version: "2.1.2",
+     version: "2.1.3",
      elixir: "~> 1.3.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -35,7 +35,6 @@ defmodule Elixoids.Mixfile do
      {:credo, "~> 0.5", only: [:dev, :test]},
      {:mix_test_watch, "~> 0.2", only: :dev},
      {:cowboy, "1.0.4" },
-     {:jsex, "~> 2.0.0" },
      {:poison, "~> 3.0"}]
   end
 

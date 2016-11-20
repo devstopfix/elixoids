@@ -126,6 +126,10 @@ defmodule Ship.Server do
     {:noreply, new_ship}
   end
 
+  @doc """
+  Player pulls trigger. Do nothing if laser is recharging,
+  else spawn a bullet and add it the the game.
+  """
   def handle_cast({:player_pulls_trigger, ids}, ship) do
     if Clock.past?(ship.laser_charged_at) do
       id = Identifiers.next(ids) 
@@ -137,6 +141,12 @@ defmodule Ship.Server do
     else
       {:noreply, ship}
     end
+  end
+
+  defp calculate_nose(ship) do
+    ship_centre = ship.pos
+    v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
+    Point.apply_velocity(ship_centre, v, 500.0)
   end
 
   @doc """
@@ -198,12 +208,6 @@ defmodule Ship.Server do
     end
     theta = Velocity.wrap_angle(ship.theta + turn)
     %{ship | :theta => theta} 
-  end
-
-  defp calculate_nose(ship) do
-    ship_centre = ship.pos
-    v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
-    Point.apply_velocity(ship_centre, v, 500.0)
   end
 
   @doc """
