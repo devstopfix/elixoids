@@ -2,11 +2,12 @@ require 'faye/websocket'
 require 'eventmachine'
 require 'json'
 
-$SERVER = ENV['ELIXOIDS_SERVER'] || 'localhost:8065'
+#
+# This bot will always turn towards the closest ship,
+# and fire at any ship in its current line of sight.
+#
 
-def fire?
-  (rand(10)) == 0
-end
+$SERVER = ENV['ELIXOIDS_SERVER'] || 'localhost:8065'
 
 def pointing_at(a,b)
   delta = (a-b).abs
@@ -19,8 +20,9 @@ def sort_ships_by_distance(ships)
   end
 end
 
-def start_ship(tag)
-  url = "ws://#{$SERVER}/ship/#{tag}"
+def start_ship(ship_tag)
+  url = "ws://#{$SERVER}/ship/#{ship_tag}"
+  target_id = nil
   EM.run {
     ws = Faye::WebSocket::Client.new(url)
 
@@ -29,15 +31,25 @@ def start_ship(tag)
     end
 
     ws.on :message do |event|
-      frame = JSON.parse(event.data)
-      if frame.has_key?('ships')
-        unless frame['ships'].empty?
-          target = sort_ships_by_distance(frame['ships']).first
-          tag, theta = target          
-          ws.send({'theta'=>theta}.to_json)
-          ws.send({:fire=>true}.to_json) if pointing_at(theta, frame['theta'])
+        frame = JSON.parse(event.data)
+        theta = frame['theta'] || 0.0
+        opponents = frame['ships'] || []
+        # Fire if we are pointing at any other ship
+        if opponents.any? { |s| pointing_at(s[1], theta) }
+          ws.send({:fire=>true}.to_json)
         end
-      end
+        # Turn towards closes ship, or patrol
+        if opponents.empty?
+          ws.send({'theta'=>theta+0.1}.to_json)
+        else
+          target = sort_ships_by_distance(opponents).first
+          tag, theta, dist = target          
+          ws.send({'theta'=>theta}.to_json)
+          if target_id != tag
+            puts sprintf("%s is Targeting %s at %f", ship_tag, tag, theta)
+            target_id = tag
+          end
+        end
     end
 
     ws.on :close do |event|
@@ -48,9 +60,8 @@ def start_ship(tag)
   }
 end
 
-def default_tag
-  (0...3).map { (65 + rand(26)).chr }.join
+def default_killer_tag
+  (['K'] << (0...2).map { (65 + rand(26)).chr }).join
 end
 
-$SHIP = ARGV.first || default_tag
-start_ship($SHIP)
+start_ship(ARGV.first || default_killer_tag)

@@ -186,12 +186,18 @@ defmodule Ship.Server do
   
   defp clip_delta_theta(delta_theta, delta_t_ms) do
     max_theta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
-    min_theta = max_theta * -1.0
-    cond do
-      (delta_theta > max_theta) -> max_theta
-      (delta_theta < min_theta) -> min_theta
-      true                      -> delta_theta
+    if delta_theta > max_theta do
+      max_theta
+    else
+      delta_theta
     end
+  end
+
+  # 360º
+  @two_pi_radians (2 * :math.pi)
+
+  defp turn_positive?(theta, target_theta) do
+    Velocity.fmod(target_theta - theta + @two_pi_radians, @two_pi_radians) > :math.pi
   end
 
   @doc """
@@ -200,11 +206,11 @@ defmodule Ship.Server do
   by the time elapsed since the last frame.
   """
   def rotate_ship(ship, delta_t_ms) do
-    delta_theta = ship.target_theta - ship.theta
-    turn = if delta_theta > :math.pi do
-      clip_delta_theta((2 * :math.pi) - delta_theta, delta_t_ms)
+    delta_theta = clip_delta_theta(abs(ship.target_theta - ship.theta), delta_t_ms)
+    turn = if turn_positive?(ship.target_theta, ship.theta) do
+      delta_theta
     else
-      clip_delta_theta(delta_theta, delta_t_ms)
+      - delta_theta
     end
     theta = Velocity.wrap_angle(ship.theta + turn)
     %{ship | :theta => theta} 

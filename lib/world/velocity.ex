@@ -78,7 +78,14 @@ defmodule World.Velocity do
   end
 
   def valid_theta(theta) do
-    (theta > (- @two_pi_radians)) && (theta < @two_pi_radians)
+    (theta >= (- @two_pi_radians)) && (theta <= @two_pi_radians)
+  end
+
+  @doc """
+  fmod returns the floating-point remainder of a / b
+  """
+  def fmod(a,b) do
+    a - Float.floor(a/b) * b
   end
 
 end
