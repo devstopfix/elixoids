@@ -6,7 +6,7 @@ defmodule Elixoids.Mixfile do
      description: "Asteroids game and server",
      name: "Elixoids",
      version: "2.1.2",
-     elixir: "~> 1.3.2",
+     elixir: "~> 1.3.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps,
@@ -29,14 +29,14 @@ defmodule Elixoids.Mixfile do
 
   defp deps do
     [
-     {:excheck, "~> 0.4.1", only: :test},
-     {:triq, github: "krestenkrab/triq", only: :test},
+     {:excheck, "~> 0.5", only: :test},
+     {:triq, github: "triqng/triq", only: :test},
      
-     {:credo, "~> 0.4", only: [:dev, :test]},
+     {:credo, "~> 0.5", only: [:dev, :test]},
      {:mix_test_watch, "~> 0.2", only: :dev},
      {:cowboy, "1.0.4" },
      {:jsex, "~> 2.0.0" },
-     {:poison, "~> 2.0"}]
+     {:poison, "~> 3.0"}]
   end
 
 end
