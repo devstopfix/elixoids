@@ -107,7 +107,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
     ship_state = Game.Server.state_of_ship(:game, ship_tag)
 
-    {:ok, message} = JSEX.encode(ship_state)
+    {:ok, message} = Poison.encode(ship_state)
     
     # set a new timer to send a :timeout message back to this process a second
     # from now.

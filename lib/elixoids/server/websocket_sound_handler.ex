@@ -46,7 +46,7 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
     game_state = Game.Server.sound_state(:game)
     {explosions, new_seen} = Channels.DeliverOnce.deduplicate(game_state.x, seen)
     new_game_state = %{game_state | :x => explosions}
-    {:ok, message} = JSEX.encode(new_game_state)
+    {:ok, message} = Poison.encode(new_game_state)
     
     {:reply, {:text, message}, req, new_seen}
   end
