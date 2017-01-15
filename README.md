@@ -22,6 +22,22 @@ Check out this repository and run:
 You may need to install Elixir and Erlang, on a Mac you can use homebrew:
 
     brew install elixir
+    
+## Compile quadtree Erlang library
+
+This branch requires an Erlang library to be compiled and present in a sibling folder:
+
+```
+cd ..
+git clone git@github.com:g-andrade/erlquad.git
+
+curl https://s3.amazonaws.com/rebar3/rebar3 -o /usr/local/bin/rebar3
+chmod +x /usr/local/bin/rebar3
+
+cd erlquad
+rebar3 compile
+
+```
 
 # Run
 

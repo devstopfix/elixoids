@@ -188,4 +188,19 @@ defmodule Asteroid.Server do
      |> bump
    end
 
+   @doc """
+   Return a list of integer asteroid sizes seen in the game
+   """
+   def asteroid_radii do
+     asteroid_radii([], @asteroid_radius_m)
+   end
+
+   defp asteroid_radii(xs, r) when r >= @splittable_radius_m do
+     asteroid_radii([r | xs], r/2.0)
+   end
+
+   defp asteroid_radii(xs, r) do
+     Enum.map([r | xs], &trunc/1)
+   end
+
 end

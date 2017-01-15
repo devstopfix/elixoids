@@ -25,4 +25,10 @@ defmodule Asteroid.ServerTest do
     assert f2.velocity.theta <= 1.6
   end
 
+  test "Asteroid radii" do
+    radii = Asteroid.asteroid_radii
+    assert List.last(radii) == 120
+    assert List.first(radii) == 15
+  end
+
 end
