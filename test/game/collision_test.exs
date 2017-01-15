@@ -8,23 +8,27 @@ defmodule Game.CollisionTest do
   alias Asteroid.Server, as: Asteroid
 
   # Size of world
-  @ratio 16.0 / 9.0
   @width 4000.0 # 4km
-  @height @width / @ratio
+  @height 2000.0
 
   # Depth of tree. TODO test most efficient depth
   @quadtree_depths 2..4 |> Enum.to_list
 
+  require Record
+  #@type asteroid ::  record(:asteroid, x: integer, y: integer)
+  #@type point :: record(X: integer, Y: integer)
+
   # Create an asteroid anywhere in the world and place a ship in close proximity,
   # test it always collides
+  @tag iterations: 1000
   property :asteroid_overlapping_ship_collides do
     radii = Asteroid.asteroid_radii()
     for_all {x, y, asteroid_width, depth} in {pos_integer, pos_integer, elements(radii), elements(@quadtree_depths)} do
-      qt = :erlquad.new(0,0,max(@width, @width+x),max(@height,@height+y), depth)
-      # TODO how do we create an Erlang record?
-      asteroid = %{x: x, y: y, r: asteroid_width}
-      # TODO what is the function signature for GetOutline?  rec -> tuple which is point or square?
-      world = :erlquad.objects_add([asteroid], fn _ -> false end, qt)
+      qt = :erlquad.new(0,0,min(@width, @width+x),min(@height,@height+y), depth)
+      asteroid = {:asteroid, x, y, asteroid_width}
+      getoutline = fn {:asteroid, x, y, s} -> {x-s/2,y-s/2,x+s/2,y+s/2} end
+      world = :erlquad.objects_add([asteroid], getoutline, qt)
+      assert [asteroid] == :erlquad.area_query(x,y,x,y, world)
     end
   end
 
