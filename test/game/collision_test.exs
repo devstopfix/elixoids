@@ -4,15 +4,19 @@ defmodule Game.CollisionTest do
 
   doctest Game.Collision
 
-  alias Game.Collision, as: Collision
+  #alias Game.Collision, as: Collision
   alias Asteroid.Server, as: Asteroid
 
   # Size of world
   @width 4000.0 # 4km
   @height 2000.0
 
+  @ship_radius_m 20
+
   # Depth of tree. TODO test most efficient depth
   @quadtree_depths 2..4 |> Enum.to_list
+
+  @asteroid_radii Asteroid.asteroid_radii()
 
   require Record
   #@type asteroid ::  record(:asteroid, x: integer, y: integer)
@@ -20,19 +24,31 @@ defmodule Game.CollisionTest do
 
   # Create an asteroid anywhere in the world and place a ship in close proximity,
   # test it always collides
-  @tag iterations: 1000
+  @tag iterations: 100
   property :asteroid_overlapping_ship_collides do
-    radii = Asteroid.asteroid_radii()
-    for_all {x, y, asteroid_width, depth} in {pos_integer, pos_integer, elements(radii), elements(@quadtree_depths)} do
+    for_all {x, y, asteroid_width, depth, dx, dy} in {pos_integer(), pos_integer(), elements(@asteroid_radii), elements(@quadtree_depths), int(-@ship_radius_m,@ship_radius_m), int(-@ship_radius_m,@ship_radius_m)} do
       qt = :erlquad.new(0,0,min(@width, @width+x),min(@height,@height+y), depth)
       asteroid = {:asteroid, x, y, asteroid_width}
       getoutline = fn {:asteroid, x, y, s} -> {x-s/2,y-s/2,x+s/2,y+s/2} end
       world = :erlquad.objects_add([asteroid], getoutline, qt)
-      assert [asteroid] == :erlquad.area_query(x,y,x,y, world)
+      {sx,sy} = {x+dx, y+dy}
+      assert [asteroid] == :erlquad.area_query(sx-@ship_radius_m,sy-@ship_radius_m,sx+@ship_radius_m,sy+@ship_radius_m,world)
     end
   end
 
-  # TODO bullet hitting asteroid (point inside circle)
+  # TODO bullet hitting asteroid (point inside bounding box)
+  @tag iterations: 100
+  property :bullets_inside_asteroid_collides do
+    smallest_asteroid=Enum.min(@asteroid_radii)
+    for_all {x, y, asteroid_width, depth, dx, dy} in {pos_integer(), pos_integer(), elements(@asteroid_radii), elements(@quadtree_depths), int(-smallest_asteroid,smallest_asteroid), int(-smallest_asteroid,smallest_asteroid)} do
+      qt = :erlquad.new(0,0,min(@width, @width+x),min(@height,@height+y), depth)
+      asteroid = {:asteroid, x, y, asteroid_width}
+      getoutline = fn {:asteroid, x, y, s} -> {x-s/2,y-s/2,x+s/2,y+s/2} end
+      world = :erlquad.objects_add([asteroid], getoutline, qt)
+      {bx,by} = {x+dx, y+dy}
+      assert [asteroid] == :erlquad.area_query(bx,by,bx,by,world)
+    end
+  end
 
   # TODO bullet hitting ship (point inside circle)
 
