@@ -33,6 +33,7 @@ defmodule Game.Events do
   end
 
   def handle_cast({:broadcast, msg}, messages) do
+    IO.puts(msg) # TODO remove
     {:noreply, MapSet.put(messages, msg)}
   end
 

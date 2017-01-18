@@ -138,6 +138,11 @@ defmodule Game.Server do
     GenServer.cast(pid, {:broadcast, id, msg})
   end
 
+  @doc """
+  Spawn a player with a random tag:
+      Game.Server.spawn_player(:game, Elixoids.Player.random_tag)
+  """
+
   def spawn_player(pid, player_tag) do
     GenServer.cast(pid, {:spawn_player, player_tag})
   end
@@ -325,6 +330,7 @@ defmodule Game.Server do
   end
 
   def handle_cast({:hyperspace_ship, ship_id}, game) do
+    GenServer.cast(self(), :ships_moved)
     case game.pids.ships[ship_id] do
       nil -> {:noreply, game}
       pid -> Ship.hyperspace(pid)
@@ -413,6 +419,7 @@ defmodule Game.Server do
       nil -> nil
       pid -> Ship.stop(pid)
     end
+    GenServer.cast(self(), :ships_moved)
     case ship_id_of_player(game, player_tag) do
       nil -> {:noreply, game}
       id  -> {:noreply, remove_ship_from_game(game, id)}
@@ -444,7 +451,6 @@ defmodule Game.Server do
     Collision.ships(game.collision_pid, ships, Elixoids.Space.dimensions)
     {:noreply, game}
   end
-
 
   # Information
 

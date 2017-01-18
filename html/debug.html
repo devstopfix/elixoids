@@ -100,10 +100,11 @@ var SocketHandler = (function(){
     context.beginPath();
     context.arc(x, y, r, 0, 2 * Math.PI, false);
     context.lineWidth = 2;
-    context.strokeStyle = rainbowColor();
+    context.strokeStyle = rainbowColorComplement();
     context.stroke();
+    context.strokeStyle = rainbowColor();
     context.lineWidth = 1;
-    context.rect(x-r/2,y-r/2,r,r);
+    context.rect(x-r,y-r,r*2,r*2);
     context.stroke();
   }
 
@@ -126,8 +127,8 @@ var SocketHandler = (function(){
                    y + (r * 1.2 * Math.sin(theta)))
     context.stroke();
     context.lineWidth = 1;
-    // context.rect(x-r/2,y-r/2,r,r);
-    // context.stroke();
+    context.rect(x-r,y-r,r*2,r*2);
+    context.stroke();
   }
 
   function drawShips(ships, context) {

@@ -47,7 +47,8 @@ defmodule Elixoids.Server.WebsocketShipHandler do
         {:shutdown, req}
       end
     rescue
-      e in RuntimeError -> 
+      e in RuntimeError ->
+        IO.puts("WEBSOCKET INIT ERROR")
         IO.puts(Exception.message(e))
         {:shutdown, req}
     end
