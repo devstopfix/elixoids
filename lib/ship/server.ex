@@ -114,6 +114,8 @@ defmodule Ship.Server do
     new_ship = %{ship | pos: p, theta: theta}
     |> discharge_laser
 
+    Game.broadcast(ship.game_pid, ship.id, [ship.tag, " hyperspace"])
+
     {:noreply, new_ship}
   end
 

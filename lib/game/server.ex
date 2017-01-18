@@ -19,10 +19,11 @@ defmodule Game.Server do
 
       game_state = Game.Server.state(game)
 
-  To start a running Game at 60 fps with 4 random ships:
+  To start a running Game at 20 fps with a player:
 
-      {:ok, game} = Game.Server.start_link(60)
+      {:ok, game} = Game.Server.start_link(20)
       Game.Server.show(game)
+      Game.Server.spawn_player(game, Elixoids.Player.random_tag)
 
   To split an asteroid:
 
@@ -123,6 +124,10 @@ defmodule Game.Server do
 
   def hyperspace_ship(pid, ship_id) do
     GenServer.cast(pid, {:hyperspace_ship, ship_id})
+  end
+
+  def ships_collide(pid, ship1_id, ship2_id) do
+    GenServer.cast(pid, {:ships_collide, ship1_id, ship2_id})
   end
 
   def say_ship_hit_by_asteroid(pid, ship_id) do
@@ -327,6 +332,14 @@ defmodule Game.Server do
     end
   end
 
+  def handle_cast({:ships_collide, ship1_id, ship2_id}, game) do
+    broadcast(self(), ship1_id, ["COLLISION!"])
+    broadcast(self(), ship2_id, ["COLLISION!"])
+    hyperspace_ship(self(), ship1_id)
+    hyperspace_ship(self(), ship2_id)
+    {:noreply, game}
+  end
+
   def handle_cast({:say_ship_hit_by_asteroid, ship_id}, game) do
     case game.state.ships[ship_id] do
       nil -> {:noreply, game}
@@ -364,6 +377,8 @@ defmodule Game.Server do
       new_game = game
       |> put_ship_pid(id, ship_pid)
       |> put_player_tag_ship(player_tag, id)
+
+      GenServer.cast(self(), :ships_moved)
 
       {:noreply, new_game}
     else
@@ -417,6 +432,19 @@ defmodule Game.Server do
 
     {:noreply, next_game_state}
   end
+
+  @doc """
+  Any time ships are added, moved or destroyed,
+  send their postitions to the collission process.
+  """
+  def handle_cast(:ships_moved, game) do
+    ships = game.state.ships
+    |> Map.values
+    |> Enum.map(fn {id, _, x, y, r, _, _} -> {:ship, id, x, y, r} end)
+    Collision.ships(game.collision_pid, ships, Elixoids.Space.dimensions)
+    {:noreply, game}
+  end
+
 
   # Information
 
@@ -485,6 +513,8 @@ defmodule Game.Server do
 
   @doc """
   Convert a list of tuples into a list of lists
+
+  TODO move out of this class
   """
   def list_of_tuples_to_list(m) do
     Enum.map(m, fn(t) -> Tuple.to_list(t) end)
@@ -492,6 +522,8 @@ defmodule Game.Server do
 
   @doc """
   Convert a map of tuples into a list of lists
+
+  TODO move out of this class
   """
   def map_of_tuples_to_list(m) do
     m 

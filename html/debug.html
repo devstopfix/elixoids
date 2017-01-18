@@ -102,6 +102,9 @@ var SocketHandler = (function(){
     context.lineWidth = 2;
     context.strokeStyle = rainbowColor();
     context.stroke();
+    context.lineWidth = 1;
+    context.rect(x-r/2,y-r/2,r,r);
+    context.stroke();
   }
 
   function drawAsteroids(asteroids, context) {
@@ -122,6 +125,9 @@ var SocketHandler = (function(){
     context.lineTo(x + (r * 1.2 * Math.cos(theta)),
                    y + (r * 1.2 * Math.sin(theta)))
     context.stroke();
+    context.lineWidth = 1;
+    // context.rect(x-r/2,y-r/2,r,r);
+    // context.stroke();
   }
 
   function drawShips(ships, context) {

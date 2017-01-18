@@ -14,7 +14,7 @@ defmodule Game.CollisionTest do
   @ship_radius_m 20
 
   # Depth of tree. TODO test most efficient depth
-  @quadtree_depths 2..4 |> Enum.to_list
+  @quadtree_depths 2..5 |> Enum.to_list
 
   @asteroid_radii Asteroid.asteroid_radii()
 
@@ -24,12 +24,12 @@ defmodule Game.CollisionTest do
 
   # Create an asteroid anywhere in the world and place a ship in close proximity,
   # test it always collides
-  @tag iterations: 100
+  @tag iterations: 1000
   property :asteroid_overlapping_ship_collides do
+    getoutline = fn {:asteroid, x, y, s} -> {x-s/2,y-s/2,x+s/2,y+s/2} end
     for_all {x, y, asteroid_width, depth, dx, dy} in {pos_integer(), pos_integer(), elements(@asteroid_radii), elements(@quadtree_depths), int(-@ship_radius_m,@ship_radius_m), int(-@ship_radius_m,@ship_radius_m)} do
       qt = :erlquad.new(0,0,min(@width, @width+x),min(@height,@height+y), depth)
       asteroid = {:asteroid, x, y, asteroid_width}
-      getoutline = fn {:asteroid, x, y, s} -> {x-s/2,y-s/2,x+s/2,y+s/2} end
       world = :erlquad.objects_add([asteroid], getoutline, qt)
       {sx,sy} = {x+dx, y+dy}
       assert [asteroid] == :erlquad.area_query(sx-@ship_radius_m,sy-@ship_radius_m,sx+@ship_radius_m,sy+@ship_radius_m,world)

@@ -6,12 +6,21 @@ defmodule Game.Collision do
   Tests everything against everything else - no bounding boxes or culling.
   """
 
+  @quadtree_depth 3
+
   use GenServer
+
+  alias Game.Server, as: Game
 
   def start_link(game_pid) do
     GenServer.start_link(__MODULE__, {:ok, game_pid}, [])
   end
 
+  def ships(pid, ships, world_dimensions) do
+    GenServer.cast(pid, {:ships, ships, world_dimensions})    
+  end
+
+   
   @doc """
   Square a number.
   """
@@ -97,18 +106,56 @@ defmodule Game.Collision do
   # GenServer
 
   def init({:ok, game_pid}) do
-    {:ok, game_pid}
+    {:ok, %{game_pid: game_pid}}
   end
 
   def collision_tests(pid, game) do
     GenServer.cast(pid, {:collision_tests, game})
   end
 
+  #fn {:asteroid, x, y, s} -> {x-s/2,y-s/2,x+s/2,y+s/2}
+  def bounding_box({:ship, _, x, y, r}) do
+    {x-r/2,y-r/2,x+r/2,y+r/2}
+  end
+
+  # TODO other shapes
+
+  @doc """
+  Build a new quadtree whenever the ships move or change.
+  Then check to see if any ships collide.
+  """
+  def handle_cast({:ships, ships, world_dimensions}, state) do
+    [x,y] = world_dimensions
+    qt = :erlquad.new(0, 0, x, y, @quadtree_depth)
+    world = :erlquad.objects_add(ships, &bounding_box/1, qt)
+
+    GenServer.cast(self(), :test_ship_collisions)
+      
+    {:noreply, Map.put(state, :world, world)}
+  end
+
+  @doc """
+  Test all ships in the world to see if they overlap any others
+  """
+  def handle_cast(:test_ship_collisions, state) do
+    collisions = :erlquad.objects_all(state.world)
+    |> Enum.flat_map(fn({:ship, _, x, y, r})->
+      :erlquad.area_query(x-r/2,y-r/2,x+r/2,y+r/2, state.world)
+      |> Enum.chunk(2,2)
+      |> Enum.map(fn([{:ship, id1, _, _, _}, {:ship, id2, _, _, _}])->
+        {:ships_collide, id1, id2}
+      end)
+    end)
+    |> Enum.uniq
+    |> Enum.each(fn {:ships_collide, id1, id2} -> Game.ships_collide(state.game_pid, id1, id2) end)
+    {:noreply, state}
+  end
+
   # Collisions
 
-  def handle_cast({:collision_tests, game}, game_pid) do
-    check_for_collisions(game, game_pid)
-    {:noreply, game_pid}
+  def handle_cast({:collision_tests, game}, state) do
+    check_for_collisions(game, state.game_pid)
+    {:noreply, state}
   end
 
   defp check_for_collisions(game, game_pid) do
@@ -133,46 +180,46 @@ defmodule Game.Collision do
 
   defp handle_asteroid_hitting_ships(asteroid_ships, game_pid) do
     Enum.map(asteroid_ships, fn({a,s}) ->
-      Game.Server.say_ship_hit_by_asteroid(game_pid, s)
-      Game.Server.hyperspace_ship(game_pid, s)
-      Game.Server.asteroid_hit(game_pid, a)
+      Game.say_ship_hit_by_asteroid(game_pid, s)
+      Game.hyperspace_ship(game_pid, s)
+      Game.asteroid_hit(game_pid, a)
     end)
   end
 
   defp handle_bullets_hitting_ships(game, bullet_ships, game_pid) do
     Enum.each(bullet_ships, fn({b,s}) -> 
-      Game.Server.say_player_shot_ship(game_pid, b, s) 
+      Game.say_player_shot_ship(game_pid, b, s) 
     end)
 
     bullet_ships
     |> unique_bullets
     |> Enum.each(fn(b) -> 
       {_, x, y} = game.state.bullets[b]
-      Game.Server.explosion(game_pid, x, y)
+      Game.explosion(game_pid, x, y)
     end)
 
     Enum.each(bullet_ships, fn({_,s}) -> 
-      Game.Server.hyperspace_ship(game_pid, s)
+      Game.hyperspace_ship(game_pid, s)
     end)
   end
 
   defp handle_bullets_hitting_asteroids(game, bullet_asteroids, game_pid) do
     bullet_asteroids
     |> unique_bullets
-    |> Enum.each(fn(b) -> Game.Server.say_player_shot_asteroid(game_pid, b) end)
+    |> Enum.each(fn(b) -> Game.say_player_shot_asteroid(game_pid, b) end)
 
     bullet_asteroids
     |> unique_targets
     |> Enum.each(fn(a) -> 
       {_, x, y, _r} = game.state.asteroids[a]
-      Game.Server.explosion(game_pid, x, y)
-      Game.Server.asteroid_hit(game_pid, a)
+      Game.explosion(game_pid, x, y)
+      Game.asteroid_hit(game_pid, a)
     end)
   end
 
   defp stop_bullets(bullets, game_pid) do
     Enum.each(bullets, fn(b) -> 
-      Game.Server.stop_bullet(game_pid, b) end)
+      Game.stop_bullet(game_pid, b) end)
   end
 
 end
