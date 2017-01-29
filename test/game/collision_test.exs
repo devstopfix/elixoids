@@ -24,7 +24,7 @@ defmodule Game.CollisionTest do
 
   # Create an asteroid anywhere in the world and place a ship in close proximity,
   # test it always collides
-  @tag iterations: 1000
+  @tag iterations: 10
   property :asteroid_overlapping_ship_collides do
     getoutline = fn {:asteroid, x, y, s} -> {x-s/2,y-s/2,x+s/2,y+s/2} end
     for_all {x, y, asteroid_width, depth, dx, dy} in {pos_integer(), pos_integer(), elements(@asteroid_radii), elements(@quadtree_depths), int(-@ship_radius_m,@ship_radius_m), int(-@ship_radius_m,@ship_radius_m)} do
@@ -37,7 +37,7 @@ defmodule Game.CollisionTest do
   end
 
   # TODO bullet hitting asteroid (point inside bounding box)
-  @tag iterations: 100
+  @tag iterations: 10
   property :bullets_inside_asteroid_collides do
     smallest_asteroid=Enum.min(@asteroid_radii)
     for_all {x, y, asteroid_width, depth, dx, dy} in {pos_integer(), pos_integer(), elements(@asteroid_radii), elements(@quadtree_depths), int(-smallest_asteroid,smallest_asteroid), int(-smallest_asteroid,smallest_asteroid)} do
@@ -47,6 +47,16 @@ defmodule Game.CollisionTest do
       world = :erlquad.objects_add([asteroid], getoutline, qt)
       {bx,by} = {x+dx, y+dy}
       assert [asteroid] == :erlquad.area_query(bx,by,bx,by,world)
+    end
+  end
+
+  @tag iterations: 10
+  property :bullets_inside_ships do
+    [w, h] = [trunc(@width), trunc(@height)]
+    for_all {x1, y1} in {int(10,w), int(10, h)} do
+      qt = Game.Collision.quadtree([w,h], [{:ship, 1, x1, y1, @ship_radius_m}])
+      bullets = [{66, x1, y1}, {99, 6000, 5000}]
+      assert [{:bullet, 66, :hits, :ship, 1}, {:bullet, 99, 6000, 5000}] == Game.Collision.bullets_on_ships(bullets, qt)
     end
   end
 

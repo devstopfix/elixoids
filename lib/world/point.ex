@@ -38,4 +38,27 @@ defmodule World.Point do
     :math.sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)))
   end
 
+  @doc """
+  Square a number.
+  """
+  defmacro sq(n) do
+    quote do
+      (unquote(n) * unquote(n))
+    end
+  end
+
+  @doc """
+  True if point [px, py] is inside circle centered on [sx, sy]
+  """
+  def point_inside_circle?(px, py, sx, sy, radius) do
+    (sq(px - sx) + sq(py - sy)) < sq(radius)
+  end
+
+  @doc """
+  True if the two circles touch or intersect.
+  """
+  def circles_intersect?({x1, y1, r1}, {x2, y2, r2}) do
+    :math.sqrt(sq(x2 - x1) + sq(y2 - y1)) < (r1 + r2)
+  end
+
 end

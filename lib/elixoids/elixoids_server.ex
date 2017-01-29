@@ -1,7 +1,8 @@
 defmodule Elixoids.Server do
 
-  @fps        60 # Game frame rate
-  @asteroids   8 # Initial and minimum number of asteroids
+  @fps       30 # Game frame rate
+  @asteroids  8 # Initial and minimum number of asteroids
+  # TODO set FPS
 
   @moduledoc """
   Asteroids Server. Starts a game and opens websocket.

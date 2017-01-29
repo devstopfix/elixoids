@@ -110,6 +110,14 @@ defmodule Game.Server do
     GenServer.cast(pid, {:explosion, x, y})
   end
 
+  def detonate_asteroid(pid, id) do
+    GenServer.cast(pid, {:detonate_asteroid, id})
+  end
+
+  def detonate_ship(pid, id) do
+    GenServer.cast(pid, {:detonate_ship, id})
+  end
+
   def say_player_shot_asteroid(pid, bullet_id) do
     GenServer.cast(pid, {:say_player_shot_asteroid, bullet_id})
   end
@@ -132,6 +140,10 @@ defmodule Game.Server do
 
   def say_ship_hit_by_asteroid(pid, ship_id) do
     GenServer.cast(pid, {:say_ship_hit_by_asteroid, ship_id})
+  end
+
+  def asteroid_hit_ship(pid, asteroid_id, ship_id) do
+    GenServer.cast(pid, {:asteroid_hit_ship, asteroid_id, ship_id})
   end
 
   def broadcast(pid, id, msg) do
@@ -177,16 +189,15 @@ defmodule Game.Server do
 
   def init({:ok, fps, asteroid_count}) do
     Process.flag(:trap_exit, true)
+    Process.flag(:priority, :high)
     game_state = initial_game_state(fps, asteroid_count)
-    if fps > 0 do
-       Process.send(self(), :tick, [])
-    end
+    if fps > 0 do Process.send(self(), :tick, []) end
     {:ok, game_state}
   end
 
   defp initial_game_state(fps, asteroid_count) do
     {:ok, ids} = Identifiers.start_link
-    {:ok, collision_pid} = Game.Collision.start_link(self())
+    {:ok, collision_pid} = Game.Collision.start_link(self(), Elixoids.Space.dimensions)
     %{
         :ids => ids, 
         :pids =>  %{:asteroids => generate_asteroids(ids, asteroid_count),
@@ -288,18 +299,32 @@ defmodule Game.Server do
       Game.Server.asteroid_hit(:game, 1)
   """
   def handle_cast({:asteroid_hit, id}, game) do
-    pid = game.pids.asteroids[id]
-    if pid != nil do
-      fragments = Asteroid.split(pid)
-      new_game = Enum.reduce(fragments, game, fn(f, game) -> new_asteroid_in_game(f, game, self()) end)
-
-      Asteroid.stop(pid)
-
-      {:noreply, remove_asteroid_from_game(new_game, id)}
-    else
-      {:noreply, game}
+    case game.pids.asteroids[id] do
+      nil -> {:noreply, game}
+      pid -> detonate_asteroid(self(), id)
+             fragments = Asteroid.split(pid)
+             new_game = Enum.reduce(fragments, game, fn(f, game) -> new_asteroid_in_game(f, game, self()) end)
+             Asteroid.stop(pid)
+             {:noreply, remove_asteroid_from_game(new_game, id)}
     end
   end
+
+  def handle_cast({:detonate_asteroid, id}, game) do
+    case game.state.asteroids[id] do
+      nil -> false
+      {_, x, y, _} -> explosion(self(), x, y)
+    end
+    {:noreply, game}
+  end
+
+  def handle_cast({:detonate_ship, id}, game) do
+    case game.state.ships[id] do
+      nil -> false
+      {_, _, x, y, _, _, _} -> explosion(self(), x, y)
+    end
+    {:noreply, game}
+  end
+
 
   @doc """
       {:ok, game} = Game.Server.start_link(60)
@@ -338,11 +363,13 @@ defmodule Game.Server do
     end
   end
 
+
+  @doc """
+  When two ships collide hyperspace the newest ship.
+  """
   def handle_cast({:ships_collide, ship1_id, ship2_id}, game) do
-    broadcast(self(), ship1_id, ["COLLISION!"])
     broadcast(self(), ship2_id, ["COLLISION!"])
-    hyperspace_ship(self(), ship1_id)
-    hyperspace_ship(self(), ship2_id)
+    hyperspace_ship(self(), max(ship1_id, ship2_id))
     {:noreply, game}
   end
 
@@ -354,6 +381,13 @@ defmodule Game.Server do
         Game.Server.explosion(self(), x, y)
         {:noreply, game}
     end
+  end
+
+  def handle_cast({:asteroid_hit_ship, asteroid_id, ship_id}, game) do
+    hyperspace_ship(self(), ship_id)
+    asteroid_hit(self(), asteroid_id)    
+    say_ship_hit_by_asteroid(self(), ship_id)
+    {:noreply, game}
   end
 
   def handle_cast({:broadcast, id, msg}, game) do

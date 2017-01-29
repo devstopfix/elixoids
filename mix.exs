@@ -36,7 +36,8 @@ defmodule Elixoids.Mixfile do
      {:mix_test_watch, "~> 0.2", only: :dev},
      {:cowboy, "1.0.4" },
      {:poison, "~> 3.0"},
-     {:erlquad, path: "../erlquad"}]
+     {:erlquad, path: "../erlquad"},
+     {:csvlixir, "~> 2.0.3"}] # TODO remove
   end
 
 end
