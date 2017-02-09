@@ -7,7 +7,7 @@ defmodule Game.IdentifiersTest do
 
   # Make an id generator, get a sequence of numbers, ensure consecutive
   property :generate_n_identifiers do
-    for_all {n} in {pos_integer} do
+    for_all {n} in {pos_integer()} do
 
       {:ok, pid} = Identifiers.start_link
 

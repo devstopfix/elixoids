@@ -7,7 +7,7 @@ defmodule Elixoids.SpaceTest do
   alias World.Point, as: Point
 
   property :wrap_any_point_into_screen do
-    for_all {x, y} in {real, real} do
+    for_all {x, y} in {real(), real()} do
       p = %Point{x: x, y: y}
       p2 = Space.wrap(p)
       assert p2.x >= p.x

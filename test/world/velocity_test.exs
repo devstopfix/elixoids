@@ -31,7 +31,7 @@ defmodule World.VelocityTest do
   end
 
   property :double_velocity_doubles_speed do
-    for_all {speed} in {real} do
+    for_all {speed} in {real()} do
       v1 = Velocity.random_direction_with_speed(speed)
       assert v1.speed == speed
 

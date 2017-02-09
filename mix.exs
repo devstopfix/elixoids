@@ -29,7 +29,7 @@ defmodule Elixoids.Mixfile do
 
   defp deps do
     [
-     {:excheck, "~> 0.5", only: :test},
+     {:excheck, "~> 0.5.3", only: :test},
      {:triq, github: "triqng/triq", only: :test},
      
      {:credo, "~> 0.5", only: [:dev, :test]},
