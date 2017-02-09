@@ -148,7 +148,7 @@ defmodule Ship.Server do
   defp calculate_nose(ship) do
     ship_centre = ship.pos
     v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
-    Point.apply_velocity(ship_centre, v, 500.0)
+    Point.apply_velocity(ship_centre, v, 1000.0)
   end
 
   @doc """
