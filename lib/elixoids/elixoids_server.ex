@@ -1,7 +1,8 @@
 defmodule Elixoids.Server do
 
-  @fps        60 # Game frame rate
-  @asteroids   8 # Initial and minimum number of asteroids
+  @fps         60 # Game frame rate
+  @asteroids    8 # Initial and minimum number of asteroids
+  @port      8065 # HTTP + 'A'
 
   @moduledoc """
   Asteroids Server. Starts a game and opens websocket.
@@ -26,14 +27,11 @@ defmodule Elixoids.Server do
     #      http://ninenines.eu/docs/en/cowboy/HEAD/guide/routing/
     dispatch = :cowboy_router.compile([
 
-      # :_ causes a match on all hostnames.  Access this example with localhost:8065.
+      # :_ match on all hostnames -> localhost:8065.
       {:_, 
         
-        # The following list specifies all the routes for hosts matching the
-        # previous specification.  The list takes the form of tuples, each one 
-        # being { PathMatch, Handler, Options}
+        # Routes: { PathMatch, Handler, Options}
         [
-
           
           # Serve a single static file on the route "/".
           # PathMatch is "/" 
@@ -44,7 +42,7 @@ defmodule Elixoids.Server do
           #   :asteroids_server -- application name.  This is used to search for
           #                             the path that priv/ exists in.
           #   "index.html            -- filename to serve
-          {"/", :cowboy_static, {:priv_file, :asteroids_server, "index.html"}},
+          {"/", :cowboy_static, {:priv_file, :elixoids, "html/index.html"}},
 
 
           # Serve all static files in a directory. 
@@ -73,7 +71,7 @@ defmodule Elixoids.Server do
     ])
     { :ok, _ } = :cowboy.start_http(:http, 
                                     100,
-                                   [{:port, 8065}],  
+                                   [{:port, @port}],  
                                    [{ :env, [{:dispatch, dispatch}]}]
                                    ) 
 
