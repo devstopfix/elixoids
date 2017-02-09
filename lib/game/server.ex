@@ -314,7 +314,11 @@ defmodule Game.Server do
   end
 
   def handle_cast({:player_shot_player, bullet_id, shooter_tag, victim_tag}, game) do
-    broadcast(self(), bullet_id, [shooter_tag, "kills", victim_tag])
+    if shooter_tag != victim_tag do
+      broadcast(self(), bullet_id, [shooter_tag, "kills", victim_tag])
+    else # TODO fix #46
+      broadcast(self(), bullet_id, [shooter_tag, "harakiri", victim_tag])
+    end
     {:noreply, put_in(game.kby[victim_tag], shooter_tag)}
   end
 
