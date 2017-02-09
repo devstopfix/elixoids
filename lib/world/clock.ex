@@ -25,7 +25,7 @@ defmodule World.Clock do
   Return true if t is in the past, otherwise false
   """
   def past?(t) do
-  	t < now_ms
+  	t < now_ms()
   end
 
   @doc """
