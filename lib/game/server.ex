@@ -45,7 +45,6 @@ defmodule Game.Server do
   alias Game.Explosion, as: Explosion
 
   @initial_asteroid_count   4
-  @initial_ship_count       4
 
   def start_link(fps \\ 0, 
                  asteroid_count \\ @initial_asteroid_count) do
