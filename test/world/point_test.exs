@@ -13,7 +13,7 @@ defmodule World.PointTest do
   end
 
   property :move_point do
-    for_all {x, y, dx, dy} in {real, real, real, real} do
+    for_all {x, y, dx, dy} in {real(), real(), real(), real()} do
       p1 = %Point{x: x, y: y}
       p2 = Point.move(p1, dx, dy)
       assert p2.x == p1.x + dx
@@ -22,7 +22,7 @@ defmodule World.PointTest do
   end  
 
   property :apply_velocity_to_point do
-    for_all {x, y, theta, speed} in {real, real, real, real} do
+    for_all {x, y, theta, speed} in {real(), real(), real(), real()} do
       p1 = %Point{x: x, y: y}
       v  = %Velocity{theta: theta, speed: speed}
       p2 = Point.apply_velocity(p1, v, 1)

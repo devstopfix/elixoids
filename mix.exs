@@ -5,12 +5,12 @@ defmodule Elixoids.Mixfile do
     [app: :elixoids,
      description: "Asteroids game and server",
      name: "Elixoids",
-     version: "2.3.0",
-     elixir: "~> 1.3.2",
+     version: "2.4.0",
+     elixir: "~> 1.4.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps,
-     package: package]
+     deps: deps(),
+     package: package()]
   end
 
   defp package do
@@ -29,7 +29,7 @@ defmodule Elixoids.Mixfile do
 
   defp deps do
     [
-     {:excheck, "~> 0.5", only: :test},
+     {:excheck, "~> 0.5.3", only: :test},
      {:triq, github: "triqng/triq", only: :test},
      
      {:credo, "~> 0.5", only: [:dev, :test]},
