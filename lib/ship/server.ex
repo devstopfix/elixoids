@@ -13,7 +13,7 @@ defmodule Ship.Server do
   alias Bullet.Server, as: Bullet
   alias Elixoids.Player, as: Player
   alias Elixoids.Space, as: Space
-  alias Game.Identifiers, as: Identifiers
+  import Game.Identifiers
   alias Game.Server, as: Game
   alias World.Clock, as: Clock
   alias World.Point, as: Point
@@ -78,8 +78,8 @@ defmodule Ship.Server do
   Player pulls trigger, which may fire a bullet
   if the ship is recharged.
   """
-  def player_pulls_trigger(pid, ids) do
-    GenServer.cast(pid, {:player_pulls_trigger, ids})
+  def player_pulls_trigger(pid) do
+    GenServer.cast(pid, :player_pulls_trigger)
   end
 
   # GenServer callbacks
@@ -130,9 +130,9 @@ defmodule Ship.Server do
   Player pulls trigger. Do nothing if laser is recharging,
   else spawn a bullet and add it the the game.
   """
-  def handle_cast({:player_pulls_trigger, ids}, ship) do
+  def handle_cast(:player_pulls_trigger, ship) do
     if Clock.past?(ship.laser_charged_at) do
-      id = Identifiers.next(ids) 
+      id = next_id()
       pos = calculate_nose(ship)
       {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, ship.game_pid)
       Game.bullet_fired(ship.game_pid, id, bullet_pid)

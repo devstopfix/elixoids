@@ -39,7 +39,7 @@ defmodule Game.Server do
   alias Asteroid.Server, as: Asteroid
   alias Bullet.Server, as: Bullet
   alias Ship.Server, as: Ship
-  alias Game.Identifiers, as: Identifiers
+  import Game.Identifiers
   alias World.Clock, as: Clock
   alias Game.Collision, as: Collision
   alias Game.Explosion, as: Explosion
@@ -154,9 +154,9 @@ defmodule Game.Server do
   Generate n new asteroids and store as a map of their
   identifier to a tuple of their {pid, state}.
   """
-  def generate_asteroids(ids, n) do
+  def generate_asteroids(n) do
     Enum.reduce(1..n, %{}, fn(_i, rocks) ->
-      id = Identifiers.next(ids)
+      id = next_id()
       {:ok, pid} = Asteroid.start_link(id, self())
       Map.put(rocks, id, pid)
     end)
@@ -174,11 +174,9 @@ defmodule Game.Server do
   end
 
   defp initial_game_state(fps, asteroid_count) do
-    {:ok, ids} = Identifiers.start_link
     {:ok, collision_pid} = Game.Collision.start_link(self())
     %{
-        :ids => ids, 
-        :pids =>  %{:asteroids => generate_asteroids(ids, asteroid_count),
+        :pids =>  %{:asteroids => generate_asteroids(asteroid_count),
                     :bullets => %{}, 
                     :ships => %{}},
         :state => %{:asteroids => %{},
@@ -357,7 +355,7 @@ defmodule Game.Server do
   """
   def handle_cast({:spawn_player, player_tag}, game) do
     if ship_id_of_player(game, player_tag) == nil do
-      id = Identifiers.next(game.ids)
+      id = next_id()
       {:ok, ship_pid} = Ship.start_link(id, self(), player_tag)
 
       new_game = game
@@ -384,7 +382,7 @@ defmodule Game.Server do
   def handle_cast({:player_pulls_trigger, player_tag}, game) do
     case ship_pid_of_player(game, player_tag) do
       nil -> nil
-      pid -> Ship.player_pulls_trigger(pid, game.ids)
+      pid -> Ship.player_pulls_trigger(pid)
     end
     {:noreply, game}
   end
@@ -508,7 +506,7 @@ defmodule Game.Server do
   # Asteroids
 
   def new_asteroid_in_game(a, game, game_pid) do
-    id = Identifiers.next(game.ids)
+    id = next_id()
     {:ok, pid} = Asteroid.start_link(id, game_pid, a)
     put_in(game.pids.asteroids[id], pid)
   end
