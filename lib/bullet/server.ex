@@ -32,8 +32,13 @@ defmodule Bullet.Server do
           :expire_at=>calculate_ttl(),
           :clock_ms => Clock.now_ms,
           :tick_ms=>Clock.ms_between_frames}
-    GenServer.start_link(__MODULE__, b, [])
+    GenServer.start_link(__MODULE__, b, [name: process_name(id, shooter)])
   end
+
+  defp process_name(id, tag) do
+    ["bullet", String.downcase(tag), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom
+  end
+
 
   @doc """
   The bullet has expired and should be removed from the game.
