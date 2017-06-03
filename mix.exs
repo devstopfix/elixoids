@@ -32,7 +32,7 @@ defmodule Elixoids.Mixfile do
      {:excheck, "~> 0.5.3", only: :test},
      {:triq, github: "triqng/triq", only: :test},
      
-     {:credo, "~> 0.5", only: [:dev, :test]},
+     {:credo, "~> 0.8", only: [:dev, :test]},
      {:mix_test_watch, "~> 0.2", only: :dev},
      {:cowboy, "1.0.4" },
      {:poison, "~> 3.0"}]
