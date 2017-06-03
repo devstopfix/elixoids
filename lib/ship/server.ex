@@ -40,9 +40,11 @@ defmodule Ship.Server do
            :clock_ms=>Clock.now_ms,
            :tick_ms=>Clock.ms_between_frames})
 
-    name = String.to_atom(tag <> Integer.to_string(id))
+    GenServer.start_link(__MODULE__, ship, [name: process_name(id, tag)])
+  end
 
-    GenServer.start_link(__MODULE__, ship, [name: name])
+  defp process_name(id, tag) do
+    ["ship", String.downcase(tag), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom
   end
 
   @doc """
