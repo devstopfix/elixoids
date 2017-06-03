@@ -39,7 +39,6 @@ defmodule Bullet.Server do
     ["bullet", String.downcase(tag), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom
   end
 
-
   @doc """
   The bullet has expired and should be removed from the game.
   """

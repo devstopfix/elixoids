@@ -31,8 +31,12 @@ defmodule Asteroid.Server do
       :clock_ms=>Clock.now_ms,
       :tick_ms=>Clock.ms_between_frames})
 
-     GenServer.start_link(__MODULE__, a, [])
+     GenServer.start_link(__MODULE__, a, [name: process_name(id)])
    end
+
+  defp process_name(id) do
+    ["asteroid", Integer.to_string(id)] |> Enum.join("_") |> String.to_atom
+  end
 
    @doc """
    The asteroid has been destroyed.
