@@ -31,11 +31,15 @@ defmodule Asteroid.Server do
       :clock_ms=>Clock.now_ms,
       :tick_ms=>Clock.ms_between_frames})
 
-     GenServer.start_link(__MODULE__, a, [name: process_name(id)])
+     GenServer.start_link(__MODULE__, a, [name: process_name(id, asteroid[:id])])
    end
 
-  defp process_name(id) do
+  defp process_name(id, nil) do
     ["asteroid", Integer.to_string(id)] |> Enum.join("_") |> String.to_atom
+  end
+
+  defp process_name(id, p) do
+    ["asteroid", Integer.to_string(p), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom
   end
 
    @doc """
@@ -185,7 +189,6 @@ defmodule Asteroid.Server do
 
    def cleave(delta_theta, a) do
      a 
-     |> anonymous
      |> halve
      |> redirect(delta_theta)
      |> speedup
