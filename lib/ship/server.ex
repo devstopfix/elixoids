@@ -11,13 +11,13 @@ defmodule Ship.Server do
   use GenServer
 
   alias Bullet.Server, as: Bullet
-  alias Elixoids.Player, as: Player
-  alias Elixoids.Space, as: Space
+  alias Elixoids.Player
+  alias Elixoids.Space
   import Game.Identifiers
   alias Game.Server, as: Game
-  alias World.Clock, as: Clock
-  alias World.Point, as: Point
-  alias World.Velocity, as: Velocity
+  alias World.Clock
+  alias World.Point
+  alias World.Velocity
 
   # Ship radius (m)
   @ship_radius_m 20.0

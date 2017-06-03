@@ -2,7 +2,6 @@ defmodule Game.Explosion do
 
     import Game.Identifiers
 
-
     @fade_out_ms 1 * 1000 # Duration for which explosions are visible
 
     @moduledoc """

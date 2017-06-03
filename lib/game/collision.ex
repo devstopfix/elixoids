@@ -89,7 +89,7 @@ defmodule Game.Collision do
   Return a tuple of {asteroid_id, ship_id} for each collision.
   """
   def detect_asteroids_hitting_ships(asteroids, ships) do
-    l = for a <- asteroids, s <- ships, asteroid_hits_ship?(a,s), 
+    l = for a <- asteroids, s <- ships, asteroid_hits_ship?(a, s),
       do: {elem(a, 0), elem(s, 0)}
     Enum.uniq_by(l, fn {_a,s} -> s end)
   end
@@ -140,7 +140,7 @@ defmodule Game.Collision do
   end
 
   defp handle_bullets_hitting_ships(game, bullet_ships, game_pid) do
-    Enum.each(bullet_ships, fn({b,s}) -> 
+    Enum.each(bullet_ships, fn({b, s}) ->
       Game.Server.say_player_shot_ship(game_pid, b, s) 
     end)
 
@@ -151,7 +151,7 @@ defmodule Game.Collision do
       Game.Server.explosion(game_pid, x, y)
     end)
 
-    Enum.each(bullet_ships, fn({_,s}) -> 
+    Enum.each(bullet_ships, fn({_, s}) ->
       Game.Server.hyperspace_ship(game_pid, s)
     end)
   end

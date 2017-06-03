@@ -40,9 +40,11 @@ defmodule Game.Server do
   alias Bullet.Server, as: Bullet
   alias Ship.Server, as: Ship
   import Game.Identifiers
-  alias World.Clock, as: Clock
-  alias Game.Collision, as: Collision
-  alias Game.Explosion, as: Explosion
+  alias Game.Collision
+  alias Game.Explosion
+  alias World.Clock
+  alias World.Point
+  alias World.Velocity
 
   @initial_asteroid_count   4
 
@@ -174,7 +176,7 @@ defmodule Game.Server do
   end
 
   defp initial_game_state(fps, asteroid_count) do
-    {:ok, collision_pid} = Game.Collision.start_link(self())
+    {:ok, collision_pid} = Collision.start_link(self())
     %{
         :pids =>  %{:asteroids => generate_asteroids(asteroid_count),
                     :bullets => %{}, 
@@ -219,8 +221,8 @@ defmodule Game.Server do
   Update game state with ship state.
   """
   def handle_cast({:update_ship, ship_state}, game) do
-    {id,_,_ ,_ ,_ ,_ ,_} = ship_state
-    if Map.has_key?(game.pids.ships,id) do
+    {id, _, _ , _ , _ , _ ,_} = ship_state
+    if Map.has_key?(game.pids.ships, id) do
       new_game = put_in(game.state.ships[id], ship_state)
       {:noreply, new_game}
     else
@@ -327,7 +329,7 @@ defmodule Game.Server do
   def handle_cast({:say_ship_hit_by_asteroid, ship_id}, game) do
     case game.state.ships[ship_id] do
       nil -> {:noreply, game}
-      {_ship_id, tag, x, y, _, _, _,} ->
+      {_ship_id, tag, x, y, _, _, _, } ->
         broadcast(self(), ship_id, ["ASTEROID", "hit", tag])
         Game.Server.explosion(self(), x, y)
         {:noreply, game}
@@ -370,7 +372,7 @@ defmodule Game.Server do
 
   def handle_cast({:player_new_heading, player_tag, theta}, game) do
     ship_id = ship_id_of_player(game, player_tag)
-    if ship_id != nil && World.Velocity.valid_theta(theta) do
+    if ship_id != nil && Velocity.valid_theta(theta) do
       case Map.get(game.pids.ships, ship_id) do
         nil -> nil
         pid -> Ship.new_heading(pid, theta)  
@@ -545,7 +547,7 @@ defmodule Game.Server do
     case candidates do
       [] -> nil
       [s] -> s
-      [s,_] -> s
+      [s, _] -> s
     end
   end
 
@@ -558,15 +560,15 @@ defmodule Game.Server do
   def ship_relative(ship, ox, oy) do
     {_, tag, sx, sy, _, _, _} = ship
 
-    d = World.Point.distance(ox, oy, sx, sy)
+    d = Point.distance(ox, oy, sx, sy)
 
     theta = :math.atan2(sy - oy, sx - ox)
 
     theta
-    |> World.Velocity.wrap_angle()
-    |> World.Velocity.round_theta()
+    |> Velocity.wrap_angle()
+    |> Velocity.round_theta()
 
-    [tag, theta, World.Point.round(d)]
+    [tag, theta, Point.round(d)]
   end
 
   @doc """
@@ -590,10 +592,10 @@ defmodule Game.Server do
     theta = :math.atan2(ay - oy, ax - ox)
 
     theta
-    |> World.Velocity.wrap_angle()
-    |> World.Velocity.round_theta()
+    |> Velocity.wrap_angle()
+    |> Velocity.round_theta()
 
-    [id, theta, r, World.Point.round(d)]
+    [id, theta, r, Point.round(d)]
   end
 
   @doc """

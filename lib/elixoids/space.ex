@@ -5,7 +5,7 @@ defmodule Elixoids.Space do
   All units are in metres.
   """
 
-  alias World.Point, as: Point
+  alias World.Point
 
   # The ratio of the play area
   @ratio 16.0 / 9.0
