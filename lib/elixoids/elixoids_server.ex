@@ -69,10 +69,10 @@ defmodule Elixoids.Server do
           {"/news",       Elixoids.Server.WebsocketNewsHandler, []}
       ]}
     ])
-    { :ok, _ } = :cowboy.start_http(:http, 
+    {:ok, _} = :cowboy.start_http(:http,
                                     100,
                                    [{:port, @port}],  
-                                   [{ :env, [{:dispatch, dispatch}]}]
+                                   [{:env, [{:dispatch, dispatch}]}]
                                    ) 
 
     #device = File.open!("dbg.log", [:write])

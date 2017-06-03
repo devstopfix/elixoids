@@ -1,5 +1,8 @@
 defmodule Game.Explosion do
 
+    import Game.Identifiers
+
+
     @fade_out_ms 1 * 1000 # Duration for which explosions are visible
 
     @moduledoc """
@@ -27,7 +30,9 @@ defmodule Game.Explosion do
     Create Explosion at given x,y
     """
     def at_xy(x, y) do
-        %Game.Explosion{x: x, y: y, at: World.Clock.now_ms}
+        %Game.Explosion{x: x, y: y,
+          at: World.Clock.now_ms,
+          id: next_id()}
     end
 
     @doc """
