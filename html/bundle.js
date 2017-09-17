@@ -659,8 +659,7 @@
 	};
 	
 	renderer.start();
-	//server.connect('ws://ec2-52-58-193-54.eu-central-1.compute.amazonaws.com/websocket')
-	server.connect('ws://localhost:8065/websocket');
+	server.connect("ws://" + location.host +'/websocket');
 
 /***/ },
 /* 4 */

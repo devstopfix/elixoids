@@ -89,7 +89,7 @@ var SocketHandler = (function(){
     connect();
   }  
   function connect() {
-    websocket = new WebSocket('ws://localhost:8065/websocket');
+    websocket = new WebSocket("ws://" + location.host + "/websocket");
     websocket.onopen = function(evt) { onOpen(evt) }; 
     websocket.onclose = function(evt) { onClose(evt) }; 
     websocket.onmessage = function(evt) { onMessage(evt) }; 
