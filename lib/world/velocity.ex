@@ -84,7 +84,7 @@ defmodule World.Velocity do
   @doc """
   fmod returns the floating-point remainder of a / b
   """
-  def fmod(a,b) do
+  def fmod(a, b) do
     a - Float.floor(a/b) * b
   end
 

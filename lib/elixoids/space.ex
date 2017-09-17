@@ -5,7 +5,7 @@ defmodule Elixoids.Space do
   All units are in metres.
   """
 
-  alias World.Point, as: Point
+  alias World.Point
 
   # The ratio of the play area
   @ratio 16.0 / 9.0
@@ -73,7 +73,7 @@ defmodule Elixoids.Space do
 
   def rand_grid_position(grid_size_px) do
     perturb = :rand.normal * (grid_size_px / 8.0)
-    (grid_size_px * rand_grid_index) + perturb
+    (grid_size_px * rand_grid_index()) + perturb
   end
 
   def random_grid_point do

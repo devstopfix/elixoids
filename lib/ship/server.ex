@@ -11,13 +11,13 @@ defmodule Ship.Server do
   use GenServer
 
   alias Bullet.Server, as: Bullet
-  alias Elixoids.Player, as: Player
-  alias Elixoids.Space, as: Space
-  alias Game.Identifiers, as: Identifiers
+  alias Elixoids.Player
+  alias Elixoids.Space
+  import Game.Identifiers
   alias Game.Server, as: Game
-  alias World.Clock, as: Clock
-  alias World.Point, as: Point
-  alias World.Velocity, as: Velocity
+  alias World.Clock
+  alias World.Point
+  alias World.Velocity
 
   # Ship radius (m)
   @ship_radius_m 20.0
@@ -40,9 +40,11 @@ defmodule Ship.Server do
            :clock_ms=>Clock.now_ms,
            :tick_ms=>Clock.ms_between_frames})
 
-    name = String.to_atom(tag <> Integer.to_string(id))
+    GenServer.start_link(__MODULE__, ship, [name: process_name(id, tag)])
+  end
 
-    GenServer.start_link(__MODULE__, ship, [name: name])
+  defp process_name(id, tag) do
+    ["ship", String.downcase(tag), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom
   end
 
   @doc """
@@ -78,8 +80,8 @@ defmodule Ship.Server do
   Player pulls trigger, which may fire a bullet
   if the ship is recharged.
   """
-  def player_pulls_trigger(pid, ids) do
-    GenServer.cast(pid, {:player_pulls_trigger, ids})
+  def player_pulls_trigger(pid) do
+    GenServer.cast(pid, :player_pulls_trigger)
   end
 
   # GenServer callbacks
@@ -130,9 +132,9 @@ defmodule Ship.Server do
   Player pulls trigger. Do nothing if laser is recharging,
   else spawn a bullet and add it the the game.
   """
-  def handle_cast({:player_pulls_trigger, ids}, ship) do
+  def handle_cast(:player_pulls_trigger, ship) do
     if Clock.past?(ship.laser_charged_at) do
-      id = Identifiers.next(ids) 
+      id = next_id()
       pos = calculate_nose(ship)
       {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, ship.game_pid)
       Game.bullet_fired(ship.game_pid, id, bullet_pid)
@@ -146,7 +148,7 @@ defmodule Ship.Server do
   defp calculate_nose(ship) do
     ship_centre = ship.pos
     v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
-    Point.apply_velocity(ship_centre, v, 500.0)
+    Point.apply_velocity(ship_centre, v, 1000.0)
   end
 
   @doc """

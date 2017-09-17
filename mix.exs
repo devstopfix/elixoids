@@ -9,8 +9,8 @@ defmodule Elixoids.Mixfile do
      elixir: "~> 1.5.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps,
-     package: package]
+     deps: deps(),
+     package: package()]
   end
 
   defp package do
@@ -29,10 +29,10 @@ defmodule Elixoids.Mixfile do
 
   defp deps do
     [
-     {:excheck, "~> 0.5", only: :test},
+     {:excheck, "~> 0.5.3", only: :test},
      {:triq, github: "triqng/triq", only: :test},
      
-     {:credo, "~> 0.5", only: [:dev, :test]},
+     {:credo, "~> 0.8", only: [:dev, :test]},
      {:mix_test_watch, "~> 0.2", only: :dev},
      {:cowboy, "1.0.4" },
      {:poison, "~> 3.0"}]

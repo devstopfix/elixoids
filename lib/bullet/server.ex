@@ -8,9 +8,9 @@ defmodule Bullet.Server do
 
   use GenServer
 
-  alias Elixoids.Space, as: Space
-  alias World.Clock, as: Clock
-  alias World.Point, as: Point
+  alias Elixoids.Space
+  alias World.Clock
+  alias World.Point
 
   @bullet_range_m        2000.0
   @bullet_speed_m_per_s   750.0
@@ -32,7 +32,11 @@ defmodule Bullet.Server do
           :expire_at=>calculate_ttl(),
           :clock_ms => Clock.now_ms,
           :tick_ms=>Clock.ms_between_frames}
-    GenServer.start_link(__MODULE__, b, [])
+    GenServer.start_link(__MODULE__, b, [name: process_name(id, shooter)])
+  end
+
+  defp process_name(id, tag) do
+    ["bullet", String.downcase(tag), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom
   end
 
   @doc """

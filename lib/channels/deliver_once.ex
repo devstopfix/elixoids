@@ -23,7 +23,7 @@ defmodule Channels.DeliverOnce do
         transmit = data_set
         |> MapSet.difference(seen)
         |> MapSet.to_list
-        |> Enum.slice(0,8)
+        |> Enum.slice(0, 8)
         {transmit, keep}
       end
     end
