@@ -13,16 +13,25 @@ def run()
   EM.run {
     ws = Faye::WebSocket::Client.new(url)
 
+    ws.on :open do |event|
+      p [:open]
+    end
+
 
     ws.on :message do |msg|
-      state = JSON.parse(msg.data)
-      explosions = state['x']
-      puts explosions.inspect unless explosions.empty?
+      begin
+        state = JSON.parse(msg.data)
+        puts state unless state.empty?
+      rescue
+        puts msg
+      end
+      # explosions = state['x']
+      # puts explosions.inspect unless explosions.empty?
     end
 
     ws.on :error do |e|
       p e
-      $finished = true
+      abort()
     end
 
     ws.on :close do |e|

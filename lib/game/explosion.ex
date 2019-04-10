@@ -23,13 +23,14 @@ defmodule Game.Explosion do
 
   """
 
-  defstruct id: -1, x: 0.0, y: 0.0, at: 0
+  @derive {Jason.Encoder, only: [:x, :y, :explosion]}
+  defstruct id: -1, x: 0.0, y: 0.0, explosion: 0
 
   @doc """
   Create Explosion at given x,y
   """
   def at_xy(x, y) do
-    %Game.Explosion{x: x, y: y, at: World.Clock.now_ms(), id: next_id()}
+    %Game.Explosion{x: x, y: y, explosion: World.Clock.now_ms(), id: next_id()}
   end
 
   @doc """
@@ -37,14 +38,6 @@ defmodule Game.Explosion do
   """
   def active?(ex, t) do
     ex.at >= t
-  end
-
-  @doc """
-  Filter explosions the occured in the past and have since faded out.
-  """
-  def filter_expired_explosions(explosions) do
-    t = World.Clock.now_ms() - @fade_out_ms
-    Enum.filter(explosions, &active?(&1, t))
   end
 
   @doc """

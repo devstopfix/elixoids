@@ -1,6 +1,6 @@
 defmodule Ship.Server do
   @moduledoc """
-  Space ship controlled by a player or bot over a websocker. 
+  Space ship controlled by a player or bot over a websocker.
   Ships have position and size.
   Ships are identified by a unique integer.
   Players are identified by a 3-char string (AAA..ZZZ)
@@ -142,6 +142,7 @@ defmodule Ship.Server do
       {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, ship.game_pid)
       Game.bullet_fired(ship.game_pid, id, bullet_pid)
       Game.broadcast(ship.game_pid, id, [ship.tag, "fires"])
+      Elixoids.Audio.publish(0, %{fires: World.Clock.now_ms(), pan: 0.0})
       {:noreply, recharge_laser(ship)}
     else
       {:noreply, ship}
@@ -204,7 +205,7 @@ defmodule Ship.Server do
   end
 
   @doc """
-  Rotate the ship from it's current theta towards it's 
+  Rotate the ship from it's current theta towards it's
   intended delta_theta - but clip the rate of rotation
   by the time elapsed since the last frame.
   """

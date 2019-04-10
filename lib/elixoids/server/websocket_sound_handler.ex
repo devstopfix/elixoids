@@ -22,7 +22,7 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
     {:ok, _pid} = Elixoids.Audio.subscribe(0)
     [:ws_connection, :audio] |> inspect |> Logger.info()
     :erlang.start_timer(@ms_between_frames, self(), [])
-    {:ok, MapSet.new()}
+    {:ok, []}
   end
 
   def websocket_terminate(_reason, _req, _state) do
@@ -38,27 +38,28 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
   Perodically query the game state, deduplicate explosions,
   and push to the client.
   """
-  def websocket_info({:timeout, _ref, _}, seen) do
+
+  def websocket_info({:timeout, _ref, _}, []) do
     :erlang.start_timer(@ms_between_frames, self(), [])
-
-    case Enum.empty?(state) do
-      true -> {:ok, state}
-      false -> {:reply, {:text, format(state)}, MapSet.new()
-    end
-
-    game_state = Game.Server.sound_state(:game)
-    {explosions, new_seen} = Channels.DeliverOnce.deduplicate(game_state.x, seen)
-    new_game_state = %{game_state | :x => explosions}
-    case  Jason.encode(new_game_state) do
-      {:ok, message} -> {:reply, {:text, message}, req, new_seen}
-    end
+    {:ok, []}
   end
 
-  defp format(state) do
+  def websocket_info({:timeout, _ref, _}, state) do
+    :erlang.start_timer(@ms_between_frames, self(), [])
+    {:reply, {:text, format(state)}, []}
+  end
 
+  def websocket_info({:audio, sound}, state) do
+    {:ok, [sound | state]}
   end
 
   def websocket_info(_, state) do
     {:ok, state}
+  end
+
+  defp format(state) do
+    case Jason.encode(state) do
+      {:ok, message} -> message
+    end
   end
 end

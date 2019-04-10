@@ -65,10 +65,6 @@ defmodule Game.Server do
     GenServer.call(pid, :state)
   end
 
-  def sound_state(pid) do
-    GenServer.call(pid, :sound_state)
-  end
-
   def state_of_ship(pid, ship_tag) do
     GenServer.call(pid, {:state_of_ship, ship_tag})
   end
@@ -179,7 +175,6 @@ defmodule Game.Server do
       :pids => %{:asteroids => generate_asteroids(asteroid_count), :bullets => %{}, :ships => %{}},
       :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
       :players => %{},
-      :explosions => [],
       :collision_pid => collision_pid,
       :min_asteroid_count => asteroid_count,
       :tick_ms => Clock.ms_between_frames(fps),
@@ -356,10 +351,10 @@ defmodule Game.Server do
   @doc """
   Append an Explosion to the game state at given co-ordinates.
   """
-  def handle_cast({:explosion, x, y}, game) do
+  def handle_cast({:explosion, x, y}, state) do
     e = Explosion.at_xy(x, y)
-    next_game_state = update_in(game.explosions, &[e | &1])
-    {:noreply, next_game_state}
+    Elixoids.Audio.publish(0, e)
+    {:noreply, state}
   end
 
   @doc """
@@ -428,7 +423,6 @@ defmodule Game.Server do
     next_game_state =
       game
       |> maybe_spawn_asteroid(self())
-      |> filter_explosions
 
     {:noreply, next_game_state}
   end
@@ -462,19 +456,8 @@ defmodule Game.Server do
       :dim => Elixoids.Space.dimensions(),
       :a => game.state.asteroids |> map_of_tuples_to_list,
       :s => game.state.ships |> map_of_tuples_to_list |> map_rest,
-      :x => game.explosions |> explosions_to_list,
       :b => game.state.bullets |> map_of_tuples_to_list,
       :kby => game.kby
-    }
-
-    {:reply, game_state, game}
-  end
-
-  def handle_call(:sound_state, _from, game) do
-    game_state = %{
-      :dim => Elixoids.Space.dimensions(),
-      :x => game.explosions |> explosions_to_list,
-      :b => game.state.bullets |> map_of_tuples_to_list
     }
 
     {:reply, game_state, game}
@@ -543,12 +526,6 @@ defmodule Game.Server do
     else
       game
     end
-  end
-
-  # Game state
-
-  def filter_explosions(game) do
-    update_in(game.explosions, &Explosion.filter_expired_explosions(&1))
   end
 
   # Ships

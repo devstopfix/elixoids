@@ -38,13 +38,14 @@ defmodule Elixoids.Server.WebsocketGameHandler do
     {:ok, state}
   end
 
-  def websocket_info({_timeout, _ref, _}, prev_state) do
+  def websocket_info({_timeout, _ref, _}, state) do
     :erlang.start_timer(@ms_between_frames, self(), [])
 
     game_state = Game.Server.state(:game)
-    transmit = Game.State.deduplicate(game_state, prev_state)
 
-    case Jason.encode(transmit) do
+    # TODO merge in explosions
+
+    case Jason.encode(game_state) do
       {:ok, message} -> {:reply, {:text, message}, game_state}
       {:error, _} -> {:ok, game_state}
     end

@@ -6,12 +6,13 @@ defmodule Elixoids.Mixfile do
       app: :elixoids,
       description: "Asteroids game and server",
       name: "Elixoids",
-      version: "2.17.267",
+      version: "2.17.268",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package()
+      # dialyzer: [flags: ["-Wunmatched_returns", :error_handling, :underspecs]]
     ]
   end
 
