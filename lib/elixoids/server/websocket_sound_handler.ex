@@ -19,7 +19,7 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
   Client connects here. State is the set of explosions sent to the client recently.
   """
   def websocket_init(_state) do
-    # {:ok, _pid} = Elixoids.Audio.subscribe(0)
+    {:ok, _pid} = Elixoids.Audio.subscribe(0)
     [:ws_connection, :audio] |> inspect |> Logger.info()
     :erlang.start_timer(@ms_between_frames, self(), [])
     {:ok, MapSet.new()}
@@ -41,12 +41,21 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
   def websocket_info({:timeout, _ref, _}, seen) do
     :erlang.start_timer(@ms_between_frames, self(), [])
 
+    case Enum.empty?(state) do
+      true -> {:ok, state}
+      false -> {:reply, {:text, format(state)}, MapSet.new()
+    end
+
     game_state = Game.Server.sound_state(:game)
     {explosions, new_seen} = Channels.DeliverOnce.deduplicate(game_state.x, seen)
     new_game_state = %{game_state | :x => explosions}
-    {:ok, message} = Jason.encode(new_game_state)
+    case  Jason.encode(new_game_state) do
+      {:ok, message} -> {:reply, {:text, message}, req, new_seen}
+    end
+  end
 
-    {:reply, {:text, message}, new_seen}
+  defp format(state) do
+
   end
 
   def websocket_info(_, state) do
