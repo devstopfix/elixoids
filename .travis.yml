@@ -3,7 +3,8 @@ language: elixir
 elixir:
   - 1.8.1
   - 1.7
+  - 1.6
 
 before_script:
   - mix credo --ignore readability
-  - mix format mix.exs "lib/**/*.{ex,exs}" "test/**/*.{ex,exs}" --check-formatted
+  - if [ "$TRAVIS_ELIXIR_VERSION" =~ "1.8"]; then mix format mix.exs "lib/**/*.{ex,exs}" "test/**/*.{ex,exs}" --check-formatted; fi
