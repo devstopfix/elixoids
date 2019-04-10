@@ -14,7 +14,6 @@ defmodule Elixoids.Server.WebsocketGameHandler do
 
   @behaviour :cowboy_handler
 
-
   def init(req, _state) do
     [:http_connection, :game] |> inspect |> Logger.info()
     {:cowboy_websocket, req, [], @opts}
@@ -44,7 +43,8 @@ defmodule Elixoids.Server.WebsocketGameHandler do
 
     game_state = Game.Server.state(:game)
     transmit = Game.State.deduplicate(game_state, prev_state)
-    case Poison.encode(transmit) do
+
+    case Jason.encode(transmit) do
       {:ok, message} -> {:reply, {:text, message}, game_state}
       {:error, _} -> {:ok, game_state}
     end

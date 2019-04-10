@@ -45,12 +45,12 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
     game_state = Game.Server.sound_state(:game)
     {explosions, new_seen} = Channels.DeliverOnce.deduplicate(game_state.x, seen)
     new_game_state = %{game_state | :x => explosions}
-    {:ok, message} = Poison.encode(new_game_state)
+    {:ok, message} = Jason.encode(new_game_state)
 
     {:reply, {:text, message}, req, new_seen}
   end
 
-  # fallback message handler 
+  # fallback message handler
   def websocket_info(_info, req, state) do
     {:ok, req, state}
   end

@@ -5,7 +5,6 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   """
 
   alias Elixoids.Player, as: Player
-  alias Elixoids.Server.PlayerInput, as: PlayerInput
   import Logger
 
   @ms_between_frames div(1000, 4)
@@ -44,35 +43,37 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   defp player_pulls_trigger(tag) do
     Game.Server.player_pulls_trigger(:game, tag)
-    :ok
+    true
   end
 
   defp player_turns(tag, theta) do
     Game.Server.player_new_heading(:game, tag, theta)
-    :ok
+    true
   end
 
-  @spec handle_input(map(), String.t()) :: atom()
+  @spec handle_input(map(), String.t()) :: boolean()
   defp handle_input(player_input, tag) do
-    cond do
-      player_input.fire == true -> player_pulls_trigger(tag)
-      is_float(player_input.theta) -> player_turns(tag, player_input.theta)
-      is_integer(player_input.theta) -> player_turns(tag, player_input.theta * 1.0)
-      true -> :ok
-    end
-  rescue
-    e ->
-      [:badinput, tag, player_input, e] |> inspect |> Logger.warn()
-      :ok
+    for {k, v} <- player_input do
+      handle_input(k, v, tag)
+    end |> Enum.any?
   end
+
+  defp handle_input("fire", true, tag), do: player_pulls_trigger(tag)
+  defp handle_input("theta", theta, tag) when is_float(theta), do: player_turns(tag, theta)
+
+  defp handle_input("theta", theta, tag) when is_integer(theta),
+    do: player_turns(tag, theta * 1.0)
+
+  defp handle_input(_k, _v, _tag), do: false
 
   def websocket_handle({:text, content}, state = %{tag: tag}) do
-    case Poison.decode(content, as: %PlayerInput{}) do
+    case Jason.decode(content) do
       {:ok, player_input} ->
         handle_input(player_input, tag)
         {:ok, state}
 
-      {:error, _} ->
+      {:error, e} ->
+        [:badjson, tag, content, e] |> inspect |> Logger.info()
         {:reply, {:text, '{"bad":"json"}'}, state}
     end
   end
@@ -83,9 +84,11 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   def websocket_info({:timeout, _ref, _}, state = %{tag: ship_tag}) do
     ship_state = Game.Server.state_of_ship(:game, ship_tag)
-    {:ok, message} = Poison.encode(ship_state)
     :erlang.start_timer(@ms_between_frames, self(), [])
-    {:reply, {:text, message}, state}
+
+    case Jason.encode(ship_state) do
+      {:ok, message} -> {:reply, {:text, message}, state}
+    end
   end
 
   def websocket_info(_info, state) do
