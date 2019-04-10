@@ -7,4 +7,4 @@ elixir:
 
 before_script:
   - mix credo --ignore readability
-  - mix format --check-formatted
+  - mix format "lib/**/*.{ex,exs}" "test/**/*.{ex,exs}" --check-formatted
