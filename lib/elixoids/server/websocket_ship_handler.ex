@@ -55,7 +55,8 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   defp handle_input(player_input, tag) do
     for {k, v} <- player_input do
       handle_input(k, v, tag)
-    end |> Enum.any?
+    end
+    |> Enum.any?()
   end
 
   defp handle_input("fire", true, tag), do: player_pulls_trigger(tag)

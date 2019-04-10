@@ -1,45 +1,44 @@
 defmodule Elixoids.Server.WebsocketSoundHandler do
   @moduledoc """
   Websocket Handler. Queries the game state at 12fps
-  and publishes it over the websocket.
+  and publishes the sounds to the subscriber.
   """
 
-  # 12 FPS
+  import Logger
+
   @ms_between_frames div(1000, 12)
+  @opts %{idle_timeout: 60 * 60 * 1000}
 
-  @behaviour :cowboy_websocket_handler
+  @behaviour :cowboy_handler
 
-  def init({_tcp, _http}, _req, _opts) do
-    {:upgrade, :protocol, :cowboy_websocket}
+  def init(req, _opts) do
+    {:cowboy_websocket, req, [], @opts}
   end
 
   @doc """
   Client connects here. State is the set of explosions sent to the client recently.
   """
-  def websocket_init(_TransportName, req, _opts) do
-    IO.puts("Audio client connected as PID #{inspect(self())}")
+  def websocket_init(_state) do
+    # {:ok, _pid} = Elixoids.Audio.subscribe(0)
+    [:ws_connection, :audio] |> inspect |> Logger.info()
     :erlang.start_timer(@ms_between_frames, self(), [])
-    {:ok, req, MapSet.new()}
+    {:ok, MapSet.new()}
   end
 
   def websocket_terminate(_reason, _req, _state) do
-    IO.puts("Audio client disconnected from PID #{inspect(self())}")
+    [:ws_disconnect, :audio] |> inspect |> Logger.info()
     :ok
   end
 
-  def websocket_handle({:text, _content}, req, state) do
-    {:reply, {:text, "Ignored"}, req, state}
-  end
-
-  def websocket_handle(_data, req, state) do
-    {:ok, req, state}
+  def websocket_handle(_data, state) do
+    {:ok, state}
   end
 
   @doc """
   Perodically query the game state, deduplicate explosions,
   and push to the client.
   """
-  def websocket_info({_timeout, _ref, _foo}, req, seen) do
+  def websocket_info({:timeout, _ref, _}, seen) do
     :erlang.start_timer(@ms_between_frames, self(), [])
 
     game_state = Game.Server.sound_state(:game)
@@ -47,11 +46,10 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
     new_game_state = %{game_state | :x => explosions}
     {:ok, message} = Jason.encode(new_game_state)
 
-    {:reply, {:text, message}, req, new_seen}
+    {:reply, {:text, message}, new_seen}
   end
 
-  # fallback message handler
-  def websocket_info(_info, req, state) do
-    {:ok, req, state}
+  def websocket_info(_, state) do
+    {:ok, state}
   end
 end
