@@ -4,6 +4,7 @@
 erl_crash.dump
 *.ez
 *.tar
+test.sh
 
 .idea/
 *.iml
