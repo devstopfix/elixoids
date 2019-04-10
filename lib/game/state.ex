@@ -1,5 +1,4 @@
 defmodule Game.State do
-
   @moduledoc """
   Functions that operate on game state.
   """
@@ -30,9 +29,8 @@ defmodule Game.State do
   """
   def deduplicate_list(current, prev) do
     current
-    |> MapSet.new
+    |> MapSet.new()
     |> MapSet.difference(MapSet.new(prev))
-    |> MapSet.to_list
+    |> MapSet.to_list()
   end
-
 end

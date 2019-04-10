@@ -12,10 +12,10 @@ defmodule Game.StateTest do
   end
 
   test "Do not deduplicate new items" do
-    current = [1,2,3]
+    current = [1, 2, 3]
     prev = []
 
-    assert [1,2,3] == State.deduplicate_list(current, prev)
+    assert [1, 2, 3] == State.deduplicate_list(current, prev)
   end
 
   test "Deduplicate lists" do
@@ -26,15 +26,14 @@ defmodule Game.StateTest do
   end
 
   test "Deduplicate explosions" do
-    current = %{x: [1,2], dim: [4000,2000], b: []}
-    prev    = %{x: [1], dim: [4000,2000]}
-    assert %{x: [2], dim: [4000,2000], b: []} == State.deduplicate(current, prev)
+    current = %{x: [1, 2], dim: [4000, 2000], b: []}
+    prev = %{x: [1], dim: [4000, 2000]}
+    assert %{x: [2], dim: [4000, 2000], b: []} == State.deduplicate(current, prev)
   end
 
   test "Initial game state has empty explosion list" do
-    state = State.initial
+    state = State.initial()
     assert Map.has_key?(state, :x)
     assert [] == state.x
   end
-
 end

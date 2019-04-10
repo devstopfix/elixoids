@@ -8,20 +8,20 @@ defmodule World.Velocity do
   alias World.Velocity, as: Velocity
 
   # 360º
-  @two_pi_radians (2 * :math.pi)
+  @two_pi_radians 2 * :math.pi()
 
   defstruct theta: 0.0, speed: 0.0
 
   def north(speed \\ 0.0) do
-    %Velocity{theta: (:math.pi / 2), speed: speed}
+    %Velocity{theta: :math.pi() / 2, speed: speed}
   end
 
   def west do
-    %Velocity{theta: :math.pi}
+    %Velocity{theta: :math.pi()}
   end
 
   def south do
-    %Velocity{theta: (3 * :math.pi / 2)}
+    %Velocity{theta: 3 * :math.pi() / 2}
   end
 
   def east do
@@ -33,7 +33,7 @@ defmodule World.Velocity do
   end
 
   def random_direction do
-    (:rand.uniform * :math.pi * 2)
+    :rand.uniform() * :math.pi() * 2
   end
 
   @doc """
@@ -47,7 +47,7 @@ defmodule World.Velocity do
   Change the direction by delta_thetaº clockwise
   """
   def fork(v, delta_theta) do
-    theta = wrap_angle(v.theta + delta_theta) 
+    theta = wrap_angle(v.theta + delta_theta)
     %{v | theta: theta}
   end
 
@@ -55,7 +55,7 @@ defmodule World.Velocity do
   Modify the angle by a small amount
   """
   def perturb(theta) do
-    delta_theta = (:rand.uniform * :math.pi / 24.0)
+    delta_theta = :rand.uniform() * :math.pi() / 24.0
     wrap_angle(theta + delta_theta)
   end
 
@@ -71,21 +71,20 @@ defmodule World.Velocity do
   """
   def wrap_angle(theta) do
     cond do
-      (theta < 0.0)              -> (theta + @two_pi_radians)
-      (theta >= @two_pi_radians) -> (theta - @two_pi_radians)
-      true                       -> theta
+      theta < 0.0 -> theta + @two_pi_radians
+      theta >= @two_pi_radians -> theta - @two_pi_radians
+      true -> theta
     end
   end
 
   def valid_theta(theta) do
-    (theta >= (- @two_pi_radians)) && (theta <= @two_pi_radians)
+    theta >= -@two_pi_radians && theta <= @two_pi_radians
   end
 
   @doc """
   fmod returns the floating-point remainder of a / b
   """
   def fmod(a, b) do
-    a - Float.floor(a/b) * b
+    a - Float.floor(a / b) * b
   end
-
 end

@@ -12,8 +12,8 @@ defmodule Bullet.Server do
   alias World.Clock
   alias World.Point
 
-  @bullet_range_m        2000.0
-  @bullet_speed_m_per_s   750.0
+  @bullet_range_m 2000.0
+  @bullet_speed_m_per_s 750.0
 
   @doc """
   Fire a bullet with:
@@ -23,20 +23,24 @@ defmodule Bullet.Server do
       Process.alive?(b)
   """
   def start_link(id, pos, theta, shooter, game_pid) do
-    v = %World.Velocity{:theta=>theta, :speed=>@bullet_speed_m_per_s}
-    b = %{:id=>id,
-          :pos=>pos,
-          :velocity=>v,
-          :shooter=>shooter,
-          :game_pid => game_pid,
-          :expire_at=>calculate_ttl(),
-          :clock_ms => Clock.now_ms,
-          :tick_ms=>Clock.ms_between_frames}
-    GenServer.start_link(__MODULE__, b, [name: process_name(id, shooter)])
+    v = %World.Velocity{:theta => theta, :speed => @bullet_speed_m_per_s}
+
+    b = %{
+      :id => id,
+      :pos => pos,
+      :velocity => v,
+      :shooter => shooter,
+      :game_pid => game_pid,
+      :expire_at => calculate_ttl(),
+      :clock_ms => Clock.now_ms(),
+      :tick_ms => Clock.ms_between_frames()
+    }
+
+    GenServer.start_link(__MODULE__, b, name: process_name(id, shooter))
   end
 
   defp process_name(id, tag) do
-    ["bullet", String.downcase(tag), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom
+    ["bullet", String.downcase(tag), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom()
   end
 
   @doc """
@@ -70,9 +74,10 @@ defmodule Bullet.Server do
   def handle_cast(:move, bullet) do
     delta_t_ms = Clock.since(bullet.clock_ms)
 
-    moved_bullet = bullet
-    |> move_bullet(delta_t_ms)
-    |> Map.put(:clock_ms, Clock.now_ms)
+    moved_bullet =
+      bullet
+      |> move_bullet(delta_t_ms)
+      |> Map.put(:clock_ms, Clock.now_ms())
 
     Game.Server.update_bullet(bullet.game_pid, state_tuple(moved_bullet))
     {:noreply, moved_bullet}
@@ -98,7 +103,7 @@ defmodule Bullet.Server do
   """
   def handle_cast(:hit_asteroid, b) do
     Game.Events.player_shot_asteroid(:news, b.shooter)
-    
+
     {:noreply, b}
   end
 
@@ -117,7 +122,7 @@ defmodule Bullet.Server do
       Game.Server.bullet_missed(bullet.game_pid, {bullet.id, bullet.shooter})
       {:stop, :normal, bullet}
     else
-      GenServer.cast(self(), :move)  
+      GenServer.cast(self(), :move)
       Process.send_after(self(), :tick, bullet.tick_ms)
       {:noreply, bullet}
     end
@@ -130,9 +135,10 @@ defmodule Bullet.Server do
   in given time slice.
   """
   def move_bullet(b, delta_t_ms) do
-    p2 = b.pos
-    |> Point.apply_velocity(b.velocity, delta_t_ms)
-    |> Space.wrap()
+    p2 =
+      b.pos
+      |> Point.apply_velocity(b.velocity, delta_t_ms)
+      |> Space.wrap()
 
     %{b | :pos => p2}
   end
@@ -141,9 +147,7 @@ defmodule Bullet.Server do
   The tuple that will be shown to the UI for rendering.
   """
   def state_tuple(b) do
-    {b.id,
-     Point.round(b.pos.x), 
-     Point.round(b.pos.y)}
+    {b.id, Point.round(b.pos.x), Point.round(b.pos.y)}
   end
 
   @doc """
@@ -151,9 +155,9 @@ defmodule Bullet.Server do
   from the distance it can cover and it's velocity.
   """
   def calculate_ttl do
-    bullet_speed_m_per_ms = (@bullet_speed_m_per_s / 1000.0)
+    bullet_speed_m_per_ms = @bullet_speed_m_per_s / 1000.0
     fly_time_ms = trunc(@bullet_range_m / bullet_speed_m_per_ms)
-    Clock.now_ms + fly_time_ms
+    Clock.now_ms() + fly_time_ms
   end
 
   @doc """
@@ -162,5 +166,4 @@ defmodule Bullet.Server do
   def in_range?(d) do
     d < @bullet_range_m
   end
-
 end

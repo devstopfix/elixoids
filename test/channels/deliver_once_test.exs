@@ -4,14 +4,14 @@ defmodule Channels.DeliverOnceTest do
 
   alias Channels.DeliverOnce, as: DeliverOnce
 
-  @empty_set MapSet.new
+  @empty_set MapSet.new()
 
   test "Empty channel" do
     assert {[], @empty_set} == DeliverOnce.deduplicate([], @empty_set)
   end
 
   test "Empty channel clears history" do
-    assert {[], @empty_set} == DeliverOnce.deduplicate([], MapSet.new([1,2,3]))
+    assert {[], @empty_set} == DeliverOnce.deduplicate([], MapSet.new([1, 2, 3]))
   end
 
   test "New item is transmitted and remembered" do
@@ -21,5 +21,4 @@ defmodule Channels.DeliverOnceTest do
   test "New items are transmitted and remembered, and appended to seen" do
     assert {[2], MapSet.new([1, 2])} == DeliverOnce.deduplicate([2], MapSet.new([1]))
   end
-
 end

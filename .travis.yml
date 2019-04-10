@@ -2,6 +2,9 @@ language: elixir
 
 elixir:
   - 1.4.1
+  - 1.5
+  - 1.8.1
 
 before_script:
   - mix credo --ignore readability
+  - mix format --check-formatted

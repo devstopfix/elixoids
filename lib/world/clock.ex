@@ -1,5 +1,4 @@
 defmodule World.Clock do
-
   @moduledoc """
   Functions that deal with time.
   """
@@ -25,7 +24,7 @@ defmodule World.Clock do
   Return true if t is in the past, otherwise false
   """
   def past?(t) do
-  	t < now_ms()
+    t < now_ms()
   end
 
   @doc """
@@ -34,5 +33,4 @@ defmodule World.Clock do
   def ms_between_frames(fps \\ @default_fps) do
     div(1000, fps)
   end
-
 end

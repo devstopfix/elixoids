@@ -23,11 +23,11 @@ defmodule World.VelocityTest do
   end
 
   test "Wrap negative angle" do
-    assert :math.pi == Velocity.wrap_angle( -1 * :math.pi)
+    assert :math.pi() == Velocity.wrap_angle(-1 * :math.pi())
   end
 
   test "Wrap overflow angle" do
-    assert :math.pi == Velocity.wrap_angle( 3 * :math.pi)
+    assert :math.pi() == Velocity.wrap_angle(3 * :math.pi())
   end
 
   property :double_velocity_doubles_speed do
@@ -43,16 +43,15 @@ defmodule World.VelocityTest do
   end
 
   test :fork_velocity do
-      v = Velocity.north
+    v = Velocity.north()
 
-      vl = Velocity.fork(v,  0.2)
-      vr = Velocity.fork(v, -0.2)
+    vl = Velocity.fork(v, 0.2)
+    vr = Velocity.fork(v, -0.2)
 
-      assert vl.speed == v.speed
-      assert vr.speed == v.speed
+    assert vl.speed == v.speed
+    assert vr.speed == v.speed
 
-      assert vl.theta > v.theta
-      assert vr.theta < v.theta
+    assert vl.theta > v.theta
+    assert vr.theta < v.theta
   end
-
 end

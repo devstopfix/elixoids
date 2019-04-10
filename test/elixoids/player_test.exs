@@ -14,5 +14,4 @@ defmodule Elixoids.PlayerTest do
     refute Player.valid_player_tag?("ZZZZ")
     refute Player.valid_player_tag?("A1A")
   end
-
 end

@@ -14,7 +14,7 @@ defmodule Game.ServerTest do
 
     game_state = Game.state(game)
 
-    assert [1, _, _, 120.0] = List.first(game_state[:a])
+    assert [_, _, _, 120.0] = List.first(game_state[:a])
   end
 
   test "We can retrieve game state of Ships" do
@@ -33,7 +33,7 @@ defmodule Game.ServerTest do
     game_state = Game.state(game)
 
     assert 0 == length(game_state[:x])
-    #assert [1, _, _, 40] = List.first(game_state[:a])
+    # assert [1, _, _, 40] = List.first(game_state[:a])
   end
 
   test "We can retrieve sound state of eXplosions" do
@@ -66,7 +66,7 @@ defmodule Game.ServerTest do
 
   #   {:elapsed_ms, _elapsed_ms} = Game.tick(game)
   #   :timer.sleep(10)
-    
+
   #   :timer.sleep(10)
 
   #   Game.say_player_shot_ship(game, 17, 10)
@@ -93,7 +93,7 @@ defmodule Game.ServerTest do
     :timer.sleep(200)
     game_state = Game.state(game)
 
-    [player_tag, _, _, 20.0, theta,_] = List.first(game_state[:s])
+    [player_tag, _, _, 20.0, theta, _] = List.first(game_state[:s])
 
     ship_state = Game.state_of_ship(game, player_tag)
 
@@ -104,33 +104,39 @@ defmodule Game.ServerTest do
 
   test "We can filter on ship id" do
     ships = %{
-       9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
+      9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
       10 => {10, "CXN", 1704.0, 1555.0, 20.0, 1.3603, "FFFFFF"},
       15 => {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
-      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}}
+      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}
+    }
 
     assert {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"} == Game.only_ship(ships, "SYX")
   end
 
   test "We get nil for missing ship" do
     ships = %{
-       9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
+      9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
       10 => {10, "CXN", 1704.0, 1555.0, 20.0, 1.3603, "FFFFFF"},
       15 => {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
-      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}}
+      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}
+    }
 
     assert nil == Game.only_ship(ships, "UKN")
   end
 
   test "We can filter out ship id" do
-    ships = %{9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
+    ships = %{
+      9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
       14 => {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
       15 => {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
-      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}}
+      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}
+    }
 
-    assert [{9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
-            {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
-            {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}] == Game.ships_except(ships, "SYX")
+    assert [
+             {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
+             {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
+             {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}
+           ] == Game.ships_except(ships, "SYX")
   end
 
   test "We can find ship state by tag" do
@@ -140,5 +146,4 @@ defmodule Game.ServerTest do
   test "We do not find missing ship state by tag" do
     refute Game.ship_state_has_tag({9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"}, "XXX")
   end
-
 end

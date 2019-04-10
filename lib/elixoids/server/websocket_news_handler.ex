@@ -1,10 +1,9 @@
 defmodule Elixoids.Server.WebsocketNewsHandler do
-
   @moduledoc """
   Websocket Handler. Queries the game state at 12fps
   and publishes it over the websocket.
   """
- 
+
   # 4 FPS
   @ms_between_frames div(1000, 4)
 
@@ -15,7 +14,7 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
   end
 
   def websocket_init(_TransportName, req, _opts) do
-    IO.puts "Sending NEWS from PID #{inspect(self())}"
+    IO.puts("Sending NEWS from PID #{inspect(self())}")
     :erlang.start_timer(1000, self(), [])
     {:ok, req, :undefined_state}
   end
@@ -28,8 +27,8 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
   def websocket_handle({:text, _content}, req, state) do
     {:reply, {:text, "Ignored"}, req, state}
   end
-  
-  def websocket_handle(_data, req, state) do    
+
+  def websocket_handle(_data, req, state) do
     {:ok, req, state}
   end
 
@@ -45,5 +44,4 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
   def websocket_info(_info, req, state) do
     {:ok, req, state}
   end
-
 end

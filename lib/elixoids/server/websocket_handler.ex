@@ -1,10 +1,9 @@
 defmodule Elixoids.Server.WebsocketHandler do
-
   @moduledoc """
   Websocket Handler. Queries the game state at 24fps
   and publishes it over the websocket.
   """
- 
+
   # 24 FPS
   @ms_between_frames div(1000, 24)
 
@@ -30,18 +29,18 @@ defmodule Elixoids.Server.WebsocketHandler do
   # Useful to know: a new process will be spawned for each connection
   # to the websocket.
   def websocket_init(_TransportName, req, _opts) do
-    IO.puts "UI connected with PID #{inspect(self())}"
+    IO.puts("UI connected with PID #{inspect(self())}")
 
     # Here I'm starting a standard erlang timer that will send
     # an empty message [] to this process in one second. If your handler
     # can handle more that one kind of message that wouldn't be empty.
     :erlang.start_timer(1000, self(), [])
-    {:ok, req, Game.State.initial}
+    {:ok, req, Game.State.initial()}
   end
 
   # Required callback.  Put any essential clean-up here.
   def websocket_terminate(_reason, _req, _state) do
-    IO.puts "UI disconnected from PID #{inspect(self())}"
+    IO.puts("UI disconnected from PID #{inspect(self())}")
     :ok
   end
 
@@ -49,7 +48,6 @@ defmodule Elixoids.Server.WebsocketHandler do
   # it should return a 4-tuple starting with either :ok (to do nothing)
   # or :reply (to send a message back).  
   def websocket_handle({:text, content}, req, state) do
-
     # Use JSEX to decode the JSON message and extract the word entered
     # by the user into the variable 'message'.
     {:ok, %{"message" => message}} = Poison.decode(content)
@@ -59,17 +57,17 @@ defmodule Elixoids.Server.WebsocketHandler do
     rev = String.reverse(message)
     {:ok, reply} = Poison.encode(%{reply: rev})
 
-    #IO.puts("Message: #{message}")
-    
+    # IO.puts("Message: #{message}")
+
     # The reply format here is a 4-tuple starting with :reply followed 
     # by the body of the reply, in this case the tuple {:text, reply} 
     {:reply, {:text, reply}, req, state}
   end
-  
+
   # Fallback clause for websocket_handle.  If the previous one does not match
   # this one just returns :ok without taking any action.  A proper app should
   # probably intelligently handle unexpected messages.
-  def websocket_handle(_data, req, state) do    
+  def websocket_handle(_data, req, state) do
     {:ok, req, state}
   end
 
@@ -86,7 +84,7 @@ defmodule Elixoids.Server.WebsocketHandler do
     game_state = Game.Server.state(:game)
     transmit = Game.State.deduplicate(game_state, prev_state)
     {:ok, message} = Poison.encode(transmit)
-   
+
     {:reply, {:text, message}, req, game_state}
   end
 
@@ -94,5 +92,4 @@ defmodule Elixoids.Server.WebsocketHandler do
   def websocket_info(_info, req, state) do
     {:ok, req, state}
   end
-
 end

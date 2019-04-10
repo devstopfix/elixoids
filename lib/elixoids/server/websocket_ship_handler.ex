@@ -1,5 +1,4 @@
 defmodule Elixoids.Server.WebsocketShipHandler do
-
   @moduledoc """
   Websocket Handler. Queries the ship state at 1fps
   and publishes it over the websocket.
@@ -7,7 +6,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   alias Elixoids.Player, as: Player
   alias Elixoids.Server.PlayerInput, as: PlayerInput
- 
+
   @ms_between_frames 250
 
   @behaviour :cowboy_websocket_handler
@@ -34,9 +33,11 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   # to the websocket.
   def websocket_init(_TransportName, req, _opts) do
     IO.puts("Incoming websocket connection...")
+
     try do
       {path, req} = :cowboy_req.path_info(req)
       tag = :erlang.iolist_to_binary(path)
+
       if Player.valid_player_tag?(tag) do
         Game.Server.spawn_player(:game, tag)
         IO.puts(["Welcome", " ", tag])
@@ -47,7 +48,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
         {:shutdown, req}
       end
     rescue
-      e in RuntimeError -> 
+      e in RuntimeError ->
         IO.puts(Exception.message(e))
         {:shutdown, req}
     end
@@ -71,7 +72,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   def handle_input(player_input, tag) do
     cond do
-      (player_input.fire == true)  -> player_pulls_trigger(tag)
+      player_input.fire == true -> player_pulls_trigger(tag)
       is_float(player_input.theta) -> player_turns(tag, player_input.theta)
       is_integer(player_input.theta) -> player_turns(tag, player_input.theta * 1.0)
       true -> :ok
@@ -85,30 +86,30 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     try do
       case Poison.decode(content, as: %PlayerInput{}) do
         {:ok, player_input} -> {handle_input(player_input, state), req, state}
-        {:error, _}         -> {:reply, {:text, '{"bad":"json"}'}, req, state}
+        {:error, _} -> {:reply, {:text, '{"bad":"json"}'}, req, state}
       end
     catch
       :exit, _ -> {:reply, {:text, '{"bad":"json!"}'}, req, state}
     end
+
     # The reply format here is a 4-tuple starting with :reply followed 
     # by the body of the reply, in this case the tuple {:text, reply} 
   end
-  
+
   # Fallback clause for websocket_handle.  If the previous one does not match
   # this one just returns :ok without taking any action.  A proper app should
   # probably intelligently handle unexpected messages.
-  def websocket_handle(_data, req, state) do    
+  def websocket_handle(_data, req, state) do
     {:ok, req, state}
   end
 
   # websocket_info is the required callback that gets called when erlang/elixir
   # messages are sent to the handler process. 
   def websocket_info({_timeout, _ref, _foo}, req, ship_tag) do
-
     ship_state = Game.Server.state_of_ship(:game, ship_tag)
 
     {:ok, message} = Poison.encode(ship_state)
-    
+
     # set a new timer to send a :timeout message back to this process a second
     # from now.
     :erlang.start_timer(@ms_between_frames, self(), [])
@@ -124,5 +125,4 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   def websocket_info(_info, req, state) do
     {:ok, req, state}
   end
-
 end

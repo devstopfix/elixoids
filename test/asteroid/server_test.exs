@@ -5,10 +5,8 @@ defmodule Asteroid.ServerTest do
   alias Asteroid.Server, as: Asteroid
 
   test "Cleave asteroid" do
-    init = %{ pos: %World.Point{},
-              velocity: World.Velocity.north(10.0),
-              radius: 100.0 }
-    {:ok, a } = Asteroid.start_link(1, self(), init)
+    init = %{pos: %World.Point{}, velocity: World.Velocity.north(10.0), radius: 100.0}
+    {:ok, a} = Asteroid.start_link(1, self(), init)
 
     [f1, f2] = Asteroid.split(a)
 
@@ -24,5 +22,4 @@ defmodule Asteroid.ServerTest do
     assert f1.velocity.theta >= 1.856194490192345
     assert f2.velocity.theta <= 1.6
   end
-
 end
