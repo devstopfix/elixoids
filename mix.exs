@@ -30,12 +30,13 @@ defmodule Elixoids.Mixfile do
 
   defp deps do
     [
-      {:excheck, "~> 0.5.3", only: :test},
-      {:triq, "~> 1.3", only: [:dev, :test]},
-      {:credo, "~> 1.0.4", only: [:dev, :test]},
-      {:mix_test_watch, "~> 0.9", only: :dev},
       {:cowboy, "~> 2.6"},
-      {:poison, "~> 4.0.1"}
+      {:credo, "~> 1.0.4", only: [:dev, :test]},
+      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
+      {:excheck, "~> 0.5.3", only: :test},
+      {:mix_test_watch, "~> 0.9", only: :dev},
+      {:poison, "~> 3.1.0"},
+      {:triq, "~> 1.3", only: [:dev, :test]}
     ]
   end
 end

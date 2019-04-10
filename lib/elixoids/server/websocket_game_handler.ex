@@ -44,9 +44,10 @@ defmodule Elixoids.Server.WebsocketGameHandler do
 
     game_state = Game.Server.state(:game)
     transmit = Game.State.deduplicate(game_state, prev_state)
-    {:ok, message} = Poison.encode(transmit)
-
-    {:reply, {:text, message}, game_state}
+    case Poison.encode(transmit) do
+      {:ok, message} -> {:reply, {:text, message}, game_state}
+      {:error, _} -> {:ok, game_state}
+    end
   end
 
   def websocket_info(_info, state) do
