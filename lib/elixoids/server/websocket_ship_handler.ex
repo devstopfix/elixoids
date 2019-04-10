@@ -1,6 +1,6 @@
 defmodule Elixoids.Server.WebsocketShipHandler do
   @moduledoc """
-  Websocket Handler. Queries the ship state at 1fps
+  Websocket Handler. Queries the ship state at 4fps
   and publishes it over the websocket.
   """
 
@@ -8,14 +8,16 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   alias Elixoids.Server.PlayerInput, as: PlayerInput
   import Logger
 
-  @ms_between_frames 250
+  @ms_between_frames div(1000, 4)
   @pause_ms 1000
 
   @behaviour :cowboy_handler
 
+  @opts %{idle_timeout: 60 * 1000}
+
   def init(req = %{bindings: %{tag: tag}}, _state) do
     [:http_connection, :ship] |> inspect |> Logger.info()
-    {:cowboy_websocket, req, %{url_tag: tag}}
+    {:cowboy_websocket, req, %{url_tag: tag}, @opts}
   end
 
   def websocket_init(state = %{url_tag: tag}) do

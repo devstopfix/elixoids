@@ -9,8 +9,10 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
 
   @behaviour :cowboy_handler
 
+  @opts %{idle_timeout: 60 * 60 * 1000}
+
   def init(req, _opts) do
-    {:cowboy_websocket, req, [], %{idle_timeout: 60 * 60 * 1000}}
+    {:cowboy_websocket, req, [], @opts}
   end
 
   def websocket_init(_state) do
