@@ -102,8 +102,8 @@ defmodule Bullet.Server do
       Bullet.Server.hit_asteroid(:c.pid(0,19,0))
   """
   def handle_cast(:hit_asteroid, b) do
-    Game.Events.player_shot_asteroid(:news, b.shooter)
-
+    msg = Enum.join([b.shooter, "shot", "ASTEROID"], " ")
+    Elixoids.News.publish(0, msg)
     {:noreply, b}
   end
 
@@ -114,7 +114,7 @@ defmodule Bullet.Server do
 
   @doc """
   Tick event occurs at approximately 60fps until the bullet expires.
-  If the bullet is still travelling, tell it to move, and enque the next tick. 
+  If the bullet is still travelling, tell it to move, and enque the next tick.
   Otherwise stop.
   """
   def handle_info(:tick, bullet) do
@@ -151,7 +151,7 @@ defmodule Bullet.Server do
   end
 
   @doc """
-  Calculate the time to live (in ms) of a bullet 
+  Calculate the time to live (in ms) of a bullet
   from the distance it can cover and it's velocity.
   """
   def calculate_ttl do

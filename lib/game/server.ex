@@ -51,15 +51,6 @@ defmodule Game.Server do
         fps \\ 0,
         asteroid_count \\ @initial_asteroid_count
       ) do
-    case Process.whereis(:news) do
-      nil ->
-        {:ok, e} = Game.Events.start_link()
-        Process.register(e, :news)
-
-      _ ->
-        true
-    end
-
     GenServer.start_link(__MODULE__, {:ok, fps, asteroid_count}, [])
   end
 
@@ -358,7 +349,7 @@ defmodule Game.Server do
 
   def handle_cast({:broadcast, id, msg}, game) do
     txt = Enum.join([id] ++ msg, " ")
-    Game.Events.broadcast(:news, txt)
+    Elixoids.News.publish(0, txt)
     {:noreply, game}
   end
 
@@ -451,7 +442,7 @@ defmodule Game.Server do
   end
 
   @doc """
-  Echo any unsual messages to the console. 
+  Echo any unsual messages to the console.
   Ignore processes that stop normally.
   """
   def handle_info(msg, state) do
@@ -568,7 +559,7 @@ defmodule Game.Server do
     # case ship do
     #   {_, expected_tag, _, _, _, _, _} -> true
     #   _ -> false
-    # end 
+    # end
   end
 
   def only_ship(ships, tag) do

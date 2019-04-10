@@ -10,7 +10,7 @@ require 'logger'
 # and fire at any rock along its line of site.
 #
 # Note that it will turn towards the current position
-# of the rock and so will usually miss it's target
+# of the rock and so will usually miss the target
 # unless the rock is large or moving directly towards
 # or away.
 #
@@ -41,6 +41,7 @@ def round(theta)
 end
 
 def start_ship(tag)
+  @tag = tag
   url = "ws://#{$SERVER}/ship/#{tag}"
   @logger.info(sprintf("Piloting ship %s at %s", tag, url))
   target_id = nil
@@ -74,7 +75,8 @@ def start_ship(tag)
     ws.on :close do |event|
       @logger.info([:close, event&.code, event&.reason])
       ws = nil
-      exit(1)
+      sleep(10)
+      start_ship(@tag)
     end
   }
 end

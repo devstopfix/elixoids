@@ -1,47 +1,48 @@
 defmodule Elixoids.Server.WebsocketNewsHandler do
   @moduledoc """
-  Websocket Handler. Queries the game state at 12fps
-  and publishes it over the websocket.
+  Websocket Handler. Receives strings from the game and publishes them to the subscriber.
   """
 
-  # 4 FPS
+  import Logger
+
   @ms_between_frames div(1000, 4)
 
-  @behaviour :cowboy_websocket_handler
+  @behaviour :cowboy_handler
 
-  def init({_tcp, _http}, _req, _opts) do
-    {:upgrade, :protocol, :cowboy_websocket}
+  def init(req, _opts) do
+    {:cowboy_websocket, req, [], %{idle_timeout: 60 * 60 * 1000}}
   end
 
-  def websocket_init(_TransportName, req, _opts) do
-    IO.puts("Sending NEWS from PID #{inspect(self())}")
-    :erlang.start_timer(1000, self(), [])
-    {:ok, req, :undefined_state}
+  def websocket_init(_state) do
+    {:ok, _pid} = Elixoids.News.subscribe(0)
+    [:ws_connection, :news] |> inspect |> Logger.info()
+    :erlang.start_timer(@ms_between_frames, self(), [])
+    {:ok, []}
   end
 
-  # Required callback.  Put any essential clean-up here.
   def websocket_terminate(_reason, _req, _state) do
+    [:ws_disconnect, :news] |> inspect |> Logger.info()
     :ok
   end
 
-  def websocket_handle({:text, _content}, req, state) do
-    {:reply, {:text, "Ignored"}, req, state}
+  def websocket_handle(_data, state) do
+    {:ok, state}
   end
 
-  def websocket_handle(_data, req, state) do
-    {:ok, req, state}
-  end
-
-  def websocket_info({_timeout, _ref, _foo}, req, state) do
-    lines = :news |> Game.Events.flush() |> Enum.join("\n")
-
+  def websocket_info({:timeout, _ref, _}, state) do
     :erlang.start_timer(@ms_between_frames, self(), [])
 
-    {:reply, {:text, lines}, req, state}
+    case state do
+      [] -> {:ok, state}
+      lines -> {:reply, {:text, Enum.join(lines, "\n")}, []}
+    end
   end
 
-  # fallback message handler 
-  def websocket_info(_info, req, state) do
-    {:ok, req, state}
+  def websocket_info({:news, news}, state) do
+    {:ok, [news | state]}
+  end
+
+  def websocket_info(_, state) do
+    {:ok, state}
   end
 end

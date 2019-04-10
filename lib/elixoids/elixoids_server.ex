@@ -18,8 +18,9 @@ defmodule Elixoids.Server do
 
   # Reference: https://github.com/IdahoEv/cowboy-elixir-example
 
-  def start(_type, _args) do
+  def start(type, args) do
     start_game()
+    {:ok, _pid} = Elixoids.Application.start(type, args)
 
     # Compile takes as argument a list of tuples that represent hosts to
     # match against.So, for example if your DNS routed two different
