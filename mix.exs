@@ -33,9 +33,9 @@ defmodule Elixoids.Mixfile do
       {:excheck, "~> 0.5.3", only: :test},
       {:triq, "~> 1.3", only: [:dev, :test]},
       {:credo, "~> 1.0.4", only: [:dev, :test]},
-      {:mix_test_watch, "~> 0.2", only: :dev},
-      {:cowboy, "1.0.4"},
-      {:poison, "~> 3.0"}
+      {:mix_test_watch, "~> 0.9", only: :dev},
+      {:cowboy, "1.1.2"},
+      {:poison, "~> 4.0.1"}
     ]
   end
 end
