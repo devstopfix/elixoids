@@ -1,10 +1,9 @@
 language: elixir
 
 elixir:
-  - 1.4.1
-  - 1.5
   - 1.8.1
+  - 1.5
 
 before_script:
   - mix credo --ignore readability
-  - mix format "lib/**/*.{ex,exs}" "test/**/*.{ex,exs}" --check-formatted
+  - mix format mix.exs "lib/**/*.{ex,exs}" "test/**/*.{ex,exs}" --check-formatted
