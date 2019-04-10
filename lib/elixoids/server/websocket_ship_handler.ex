@@ -9,6 +9,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   import Logger
 
   @ms_between_frames 250
+  @pause_ms 1000
 
   @behaviour :cowboy_handler
 
@@ -23,7 +24,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   # first, which requests an upgrade to the websocket protocol.
 
   def init(req = %{bindings: %{tag: tag}}, _state) do
-    [:http_connection] |> inspect |> Logger.info()
+    [:http_connection, :ship] |> inspect |> Logger.info()
     {:cowboy_websocket, req, %{url_tag: tag}}
   end
 
@@ -34,12 +35,10 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   # Useful to know: a new process will be spawned for each connection
   # to the websocket.
   def websocket_init(state = %{url_tag: tag}) do
-    [:ws_connection] |> inspect |> Logger.info()
-
     if Player.valid_player_tag?(tag) do
       Game.Server.spawn_player(:game, tag)
-      [:ws_connection, tag] |> inspect |> Logger.info()
-      :erlang.start_timer(1000, self(), [])
+      [:ws_connection, :ship, tag] |> inspect |> Logger.info()
+      :erlang.start_timer(@pause_ms, self(), [])
       {:ok, %{tag: tag}}
     else
       [:bad_player_tag, tag] |> inspect |> Logger.warn()

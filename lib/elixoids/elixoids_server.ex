@@ -63,7 +63,7 @@ defmodule Elixoids.Server do
             # {"/dynamic", DynamicPageHandler, []},
 
             # Serve websocket requests.
-            {"/websocket", Elixoids.Server.WebsocketHandler, []},
+            {"/websocket", Elixoids.Server.WebsocketGameHandler, []},
             {"/ship/:tag", Elixoids.Server.WebsocketShipHandler, []},
             {"/sound", Elixoids.Server.WebsocketSoundHandler, []},
             {"/news", Elixoids.Server.WebsocketNewsHandler, []}
