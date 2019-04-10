@@ -1,6 +1,9 @@
 require 'faye/websocket'
 require 'eventmachine'
 require 'json'
+require 'logger'
+
+@logger = Logger.new(STDOUT)
 
 #
 # This bot will turn towards the largest rock,
@@ -39,21 +42,21 @@ end
 
 def start_ship(tag)
   url = "ws://#{$SERVER}/ship/#{tag}"
-  puts sprintf("Piloting ship %s at %s", tag, url)
+  @logger.info(sprintf("Piloting ship %s at %s", tag, url))
   target_id = nil
 
   EM.run {
     ws = Faye::WebSocket::Client.new(url)
 
     ws.on :open do |event|
-      p [:open]
+      @logger.info [tag, :open]
     end
 
     ws.on :message do |event|
       frame = JSON.parse(event.data)
       rocks = frame['rocks'] || []
 
-      if rocks.any? { |a| pointing_at(a[1], frame['theta'])} 
+      if rocks.any? { |a| pointing_at(a[1], frame['theta'])}
         ws.send({'fire'=>true}.to_json)
       end
 
@@ -62,14 +65,14 @@ def start_ship(tag)
         id, theta, radius, dist = candidates.first
         ws.send({'theta'=>round(theta)}.to_json)
         if (id != target_id)
-          puts sprintf("%s Targeting %d at %f (of %d targets)", tag, id, theta, candidates.size)
+          @logger.info(sprintf("%s Targeting %d at %f (of %d targets)", tag, id, theta, candidates.size))
           target_id = id
         end
       end
     end
 
     ws.on :close do |event|
-      p [:close, event.code, event.reason]
+      @logger.info([:close, event&.code, event&.reason])
       ws = nil
       exit(1)
     end
