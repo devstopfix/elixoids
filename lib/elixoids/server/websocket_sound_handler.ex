@@ -19,7 +19,7 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
   Client connects here. State is the set of explosions sent to the client recently.
   """
   def websocket_init(_state) do
-    {:ok, _pid} = Elixoids.Audio.subscribe(0)
+    {:ok, _pid} = Elixoids.News.subscribe(0)
     [:ws_connection, :audio] |> inspect |> Logger.info()
     :erlang.start_timer(@ms_between_frames, self(), [])
     {:ok, []}

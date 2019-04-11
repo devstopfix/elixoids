@@ -30,7 +30,7 @@ defmodule Game.ServerTest do
     {:ok, game} = Game.start_link(1)
     :timer.sleep(10)
 
-    Elixoids.Audio.subscribe(0)
+    Elixoids.News.subscribe(0)
 
     # TODO check for sound
 

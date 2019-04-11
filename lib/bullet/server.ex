@@ -103,7 +103,7 @@ defmodule Bullet.Server do
   """
   def handle_cast(:hit_asteroid, b) do
     msg = Enum.join([b.shooter, "shot", "ASTEROID"], " ")
-    Elixoids.News.publish(0, msg)
+    Elixoids.News.publish_news(0, msg)
     {:noreply, b}
   end
 

@@ -344,7 +344,7 @@ defmodule Game.Server do
 
   def handle_cast({:broadcast, id, msg}, game) do
     txt = Enum.join([id] ++ msg, " ")
-    Elixoids.News.publish(0, txt)
+    Elixoids.News.publish_news(0, txt)
     {:noreply, game}
   end
 
@@ -353,7 +353,8 @@ defmodule Game.Server do
   """
   def handle_cast({:explosion, x, y}, state) do
     e = Explosion.at_xy(x, y)
-    Elixoids.Audio.publish(0, e)
+    Elixoids.News.publish_audio(0, e) #TODO
+    Elixoids.News.publish_explosion(0, e) #TODO
     {:noreply, state}
   end
 
