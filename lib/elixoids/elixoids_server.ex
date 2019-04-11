@@ -11,7 +11,7 @@ defmodule Elixoids.Server do
   Registers the game process as :game.
   """
 
-  defp start_game() do
+  defp start_game do
     {:ok, game} = Game.Server.start_link(@fps, @asteroids)
     Process.register(game, :game)
   end

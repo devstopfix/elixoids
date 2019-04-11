@@ -6,10 +6,10 @@ defmodule Asteroid.Server do
 
   use GenServer
 
+  alias Elixoids.Space
   alias World.Clock
   alias World.Point
   alias World.Velocity
-  alias Elixoids.Space
 
   # Radius of random asteroid
   @asteroid_radius_m 120.0
