@@ -6,5 +6,6 @@ elixir:
   - 1.6
 
 before_script:
+  - mix compile –warnings-as-errors
   - mix credo --ignore readability
   - if [[ "$TRAVIS_ELIXIR_VERSION" =~ "1.8" ]]; then mix format mix.exs "lib/**/*.{ex,exs}" "test/**/*.{ex,exs}" --check-formatted; fi
