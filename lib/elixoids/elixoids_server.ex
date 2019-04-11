@@ -1,8 +1,8 @@
 defmodule Elixoids.Server do
   # Game frame rate
-  @fps 60
+  # @fps 60
   # Initial and minimum number of asteroids
-  @asteroids 8
+  # @asteroids 8
   # HTTP + 'A'
   @port 8065
 

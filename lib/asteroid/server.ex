@@ -32,17 +32,7 @@ defmodule Asteroid.Server do
         :tick_ms => Clock.ms_between_frames()
       })
 
-    GenServer.start_link(__MODULE__, a, name: process_name(id, asteroid[:id]))
-  end
-
-  defp process_name(id, nil) do
-    ["asteroid", Integer.to_string(id)] |> Enum.join("_") |> String.to_atom()
-  end
-
-  defp process_name(id, p) do
-    ["asteroid", Integer.to_string(p), Integer.to_string(id)]
-    |> Enum.join("_")
-    |> String.to_atom()
+    GenServer.start_link(__MODULE__, a)
   end
 
   @doc """

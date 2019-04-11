@@ -36,11 +36,7 @@ defmodule Bullet.Server do
       :tick_ms => Clock.ms_between_frames()
     }
 
-    GenServer.start_link(__MODULE__, b, name: process_name(id, shooter))
-  end
-
-  defp process_name(id, tag) do
-    ["bullet", String.downcase(tag), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom()
+    GenServer.start_link(__MODULE__, b)
   end
 
   @doc """
