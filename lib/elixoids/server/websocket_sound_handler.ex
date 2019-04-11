@@ -20,13 +20,13 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
   """
   def websocket_init(_state) do
     {:ok, _pid} = Elixoids.News.subscribe(0)
-    [:ws_connection, :audio] |> inspect |> Logger.info()
+    [:ws_connection, :audio] |> inspect |> info()
     :erlang.start_timer(@ms_between_frames, self(), [])
     {:ok, []}
   end
 
   def websocket_terminate(_reason, _req, _state) do
-    [:ws_disconnect, :audio] |> inspect |> Logger.info()
+    [:ws_disconnect, :audio] |> inspect |> info()
     :ok
   end
 

@@ -15,29 +15,29 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   @opts %{idle_timeout: 60 * 1000}
 
   def init(req = %{bindings: %{tag: tag}}, _state) do
-    [:http_connection, :ship] |> inspect |> Logger.info()
+    [:http_connection, :ship] |> inspect |> info()
     {:cowboy_websocket, req, %{url_tag: tag}, @opts}
   end
 
   def websocket_init(state = %{url_tag: tag}) do
     if Player.valid_player_tag?(tag) do
       Game.Server.spawn_player(:game, tag)
-      [:ws_connection, :ship, tag] |> inspect |> Logger.info()
+      [:ws_connection, :ship, tag] |> inspect |> info()
       :erlang.start_timer(@pause_ms, self(), [])
       {:ok, %{tag: tag}}
     else
-      [:bad_player_tag, tag] |> inspect |> Logger.warn()
+      [:bad_player_tag, tag] |> inspect |> warn()
       {:stop, state}
     end
   rescue
     e in RuntimeError ->
-      [:ws_connection, e] |> inspect |> Logger.error()
+      [:ws_connection, e] |> inspect |> error()
       {:stop, state}
   end
 
   def terminate(_reason, _partial_req, %{tag: tag}) do
     Game.Server.remove_player(:game, tag)
-    [:ws_disconnect, tag] |> inspect |> Logger.info()
+    [:ws_disconnect, tag] |> inspect |> info()
     :ok
   end
 

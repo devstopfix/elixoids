@@ -16,19 +16,19 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   @behaviour :cowboy_handler
 
   def init(req, _state) do
-    [:http_connection, :game] |> inspect |> Logger.info()
+    [:http_connection, :game] |> inspect |> info()
     {:cowboy_websocket, req, [], @opts}
   end
 
   def websocket_init(_state) do
     {:ok, _pid} = Elixoids.News.subscribe(0)
-    [:ws_connection, :game] |> inspect |> Logger.info()
+    [:ws_connection, :game] |> inspect |> info()
     :erlang.start_timer(@pause_ms, self(), [])
     {:ok, []}
   end
 
   def terminate(_reason, _state) do
-    [:ws_disconnect, :game] |> inspect |> Logger.info()
+    [:ws_disconnect, :game] |> inspect |> info()
     :ok
   end
 

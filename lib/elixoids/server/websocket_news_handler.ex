@@ -17,13 +17,13 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
 
   def websocket_init(_state) do
     {:ok, _pid} = Elixoids.News.subscribe(0)
-    [:ws_connection, :news] |> inspect |> Logger.info()
+    [:ws_connection, :news] |> inspect |> info()
     :erlang.start_timer(@ms_between_frames, self(), [])
     {:ok, []}
   end
 
   def websocket_terminate(_reason, _req, _state) do
-    [:ws_disconnect, :news] |> inspect |> Logger.info()
+    [:ws_disconnect, :news] |> inspect |> info()
     :ok
   end
 
