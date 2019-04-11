@@ -6,7 +6,7 @@ defmodule Elixoids.Mixfile do
       app: :elixoids,
       description: "Asteroids game and server",
       name: "Elixoids",
-      version: "2.17.270",
+      version: "2.17.271",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -26,7 +26,7 @@ defmodule Elixoids.Mixfile do
   end
 
   def application do
-    [mod: {Elixoids.Server, []}, applications: [:cowboy, :ranch, :logger]]
+    [mod: {Elixoids.Application, []}, extra_applications: [:cowboy, :ranch, :logger]]
   end
 
   defp deps do

@@ -11,16 +11,16 @@ defmodule Elixoids.Server do
   Registers the game process as :game.
   """
 
-  defp start_game do
-    {:ok, game} = Game.Server.start_link(@fps, @asteroids)
-    Process.register(game, :game)
-  end
+  # defp start_game do
+  #   {:ok, game} = Game.Server.start_link(@fps, @asteroids)
+  #   Process.register(game, :game)
+  # end
 
   # Reference: https://github.com/IdahoEv/cowboy-elixir-example
 
-  def start(type, args) do
-    start_game()
-    {:ok, _pid} = Elixoids.Application.start(type, args)
+  def start_link(_opts) do
+    # start_game()
+    # {:ok, _pid} = Elixoids.Application.start(type, args)
 
     # Compile takes as argument a list of tuples that represent hosts to
     # match against.So, for example if your DNS routed two different
@@ -78,5 +78,15 @@ defmodule Elixoids.Server do
         [{:port, @port}],
         %{env: %{dispatch: dispatch}}
       )
+  end
+
+  def child_spec(opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [opts]},
+      type: :worker,
+      restart: :permanent,
+      shutdown: 500
+    }
   end
 end

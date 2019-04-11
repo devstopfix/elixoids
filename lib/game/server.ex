@@ -46,12 +46,14 @@ defmodule Game.Server do
 
   @initial_asteroid_count 4
 
-  def start_link(
-        fps \\ 0,
-        asteroid_count \\ @initial_asteroid_count
-      ) do
-    GenServer.start_link(__MODULE__, {:ok, fps, asteroid_count}, [])
+  def start_link(), do: start_link({0, @initial_asteroid_count})
+
+  def start_link({fps, asteroid_count}) do
+    GenServer.start_link(__MODULE__, {:ok, fps, asteroid_count}, name: :game)
+    # TODO remove hardcoded process name
   end
+
+  def start_link(fps) when is_integer(fps), do: start_link({fps, @initial_asteroid_count})
 
   def show(pid) do
     GenServer.cast(pid, :show)
