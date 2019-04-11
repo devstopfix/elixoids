@@ -62,8 +62,8 @@
 
         # For some checks, like AliasUsage, you can only customize the priority
         # Priority values are: `low, normal, high, higher`
-        #
-        {Credo.Check.Design.AliasUsage, priority: :low},
+        # TODO!
+        {Credo.Check.Design.AliasUsage, priority: :low, if_called_more_often_than: 10},
 
         # For others you can set parameters
 
@@ -77,7 +77,7 @@
         # If you don't want TODO comments to cause `mix credo` to fail, just
         # set this value to 0 (zero).
         #
-        {Credo.Check.Design.TagTODO, exit_status: 2},
+        {Credo.Check.Design.TagTODO, exit_status: 0},
         {Credo.Check.Design.TagFIXME},
 
         {Credo.Check.Readability.FunctionNames},
