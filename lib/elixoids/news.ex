@@ -23,6 +23,4 @@ defmodule Elixoids.News do
   end
 
   defp key(game_id), do: {:game, game_id}
-
-
 end

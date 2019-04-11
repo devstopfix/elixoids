@@ -11,6 +11,7 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   @ms_between_frames div(1000, 24)
   @pause_ms 1000
   @opts %{idle_timeout: 60 * 60 * 1000, compress: false}
+  @explosions_per_frame 2
 
   @behaviour :cowboy_handler
 
@@ -20,9 +21,10 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   end
 
   def websocket_init(_state) do
+    {:ok, _pid} = Elixoids.News.subscribe(0)
     [:ws_connection, :game] |> inspect |> Logger.info()
     :erlang.start_timer(@pause_ms, self(), [])
-    {:ok, Game.State.initial()}
+    {:ok, []}
   end
 
   def terminate(_reason, _state) do
@@ -38,17 +40,19 @@ defmodule Elixoids.Server.WebsocketGameHandler do
     {:ok, state}
   end
 
-  def websocket_info({_timeout, _ref, _}, state) do
+  def websocket_info({:timeout, _ref, _}, explosions) do
     :erlang.start_timer(@ms_between_frames, self(), [])
-
     game_state = Game.Server.state(:game)
+    game_state_explosions = Map.put(game_state, :x, Enum.take(explosions, @explosions_per_frame))
 
-    # TODO merge in explosions
-
-    case Jason.encode(game_state) do
-      {:ok, message} -> {:reply, {:text, message}, game_state}
-      {:error, _} -> {:ok, game_state}
+    case Jason.encode(game_state_explosions) do
+      {:ok, message} -> {:reply, {:text, message}, Enum.drop(explosions, @explosions_per_frame)}
+      {:error, _} -> {:ok, explosions}
     end
+  end
+
+  def websocket_info({:explosion, x = [_, _]}, state) do
+    {:ok, [x | state]}
   end
 
   def websocket_info(_info, state) do

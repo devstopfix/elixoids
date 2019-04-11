@@ -40,7 +40,6 @@ defmodule Game.Server do
   alias Ship.Server, as: Ship
   import Game.Identifiers
   alias Game.Collision
-  alias Game.Explosion
   alias World.Clock
   alias World.Point
   alias World.Velocity
@@ -352,9 +351,9 @@ defmodule Game.Server do
   Append an Explosion to the game state at given co-ordinates.
   """
   def handle_cast({:explosion, x, y}, state) do
-    e = Explosion.at_xy(x, y)
-    Elixoids.News.publish_audio(0, e) #TODO
-    Elixoids.News.publish_explosion(0, e) #TODO
+    # TODO pan
+    Elixoids.News.publish_audio(0, next_id())
+    Elixoids.News.publish_explosion(0, [x, y])
     {:noreply, state}
   end
 
@@ -612,14 +611,6 @@ defmodule Game.Server do
     |> Map.values()
     |> Enum.map(fn a -> asteroid_relative(a, ship_x, ship_y) end)
     |> Enum.filter(fn s -> Bullet.in_range?(List.last(s)) end)
-  end
-
-  @doc """
-  Convert our game state containing a list of explosion structs,
-  to a list of lists
-  """
-  def explosions_to_list(explosions) do
-    Enum.map(explosions, &Explosion.to_state(&1))
   end
 
   # Game state
