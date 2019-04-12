@@ -5,6 +5,8 @@ require 'logger'
 
 @logger = Logger.new(STDOUT)
 
+$RETRY_INTERVAL=5
+
 #
 # This bot will turn towards the largest rock,
 # and fire at any rock along its line of site.
@@ -40,7 +42,9 @@ def round(theta)
   end
 end
 
-def start_ship(tag)
+def start_ship(tag, retry_count)
+  abort() unless retry_count > 0
+
   @tag = tag
   url = "ws://#{$SERVER}/ship/#{tag}"
   @logger.info(sprintf("Piloting ship %s at %s", tag, url))
@@ -75,8 +79,8 @@ def start_ship(tag)
     ws.on :close do |event|
       @logger.info([:close, event&.code, event&.reason])
       ws = nil
-      sleep(10)
-      start_ship(@tag)
+      sleep($RETRY_INTERVAL)
+      start_ship(@tag, retry_count-1)
     end
   }
 end
@@ -85,4 +89,4 @@ def default_tag
   (0...3).map { (65 + rand(26)).chr }.join
 end
 
-start_ship(ARGV.first || default_tag)
+start_ship(ARGV.first || default_tag, 5)

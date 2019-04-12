@@ -20,9 +20,14 @@ def start()
 
     ws.on :close do |event|
       p [:close, event.code, event.reason]
-      ws = nil
       abort()
     end
+
+    ws.on :error do |e|
+      p e
+      abort()
+    end
+
   }
 end
 

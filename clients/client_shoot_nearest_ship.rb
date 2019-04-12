@@ -9,6 +9,9 @@ require 'json'
 
 $SERVER = ENV['ELIXOIDS_SERVER'] || 'localhost:8065'
 
+$RETRY_INTERVAL=5
+
+
 def pointing_at(a,b)
   delta = (a-b).abs
   (delta <= 0.1) || (delta >= 6.2)
@@ -20,7 +23,9 @@ def sort_ships_by_distance(ships)
   end
 end
 
-def start_ship(ship_tag)
+def start_ship(ship_tag, retry_count)
+  abort() unless retry_count > 0
+
   url = "ws://#{$SERVER}/ship/#{ship_tag}"
   target_id = nil
   EM.run {
@@ -43,7 +48,7 @@ def start_ship(ship_tag)
           ws.send({'theta'=>theta+0.1}.to_json)
         else
           target = sort_ships_by_distance(opponents).first
-          tag, theta, dist = target          
+          tag, theta, dist = target
           ws.send({'theta'=>theta}.to_json)
           if target_id != tag
             puts sprintf("%s is Targeting %s at %f", ship_tag, tag, theta)
@@ -55,7 +60,8 @@ def start_ship(ship_tag)
     ws.on :close do |event|
       p ["GAME OVER!", :close, event.code, event.reason]
       ws = nil
-      exit(1)
+      sleep($RETRY_INTERVAL)
+      start_ship(ship_tag, retry_count-1)
     end
   }
 end
@@ -64,4 +70,4 @@ def default_killer_tag
   (['K'] << (0...2).map { (65 + rand(26)).chr }).join
 end
 
-start_ship(ARGV.first || default_killer_tag)
+start_ship(ARGV.first || default_killer_tag, 5)
