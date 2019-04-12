@@ -48,12 +48,19 @@ defmodule Game.Server do
 
   def start_link, do: start_link({0, @initial_asteroid_count})
 
+  def start_link(args = [game_id: game_id, fps: _, asteroids: _]) do
+    GenServer.start_link(__MODULE__, args, name: via(game_id))
+  end
+
   def start_link({fps, asteroid_count}) do
     GenServer.start_link(__MODULE__, {:ok, fps, asteroid_count}, name: :game)
     # TODO remove hardcoded process name
   end
 
   def start_link(fps) when is_integer(fps), do: start_link({fps, @initial_asteroid_count})
+
+  defp via(game_id) when is_integer(game_id),
+    do: {:via, Registry, {Registry.Elixoids.Games, {game_id}}}
 
   def show(pid) do
     GenServer.cast(pid, :show)
@@ -157,6 +164,18 @@ defmodule Game.Server do
   end
 
   ## Server Callbacks
+
+  def init(game_id: _game_id, fps: fps, asteroids: asteroid_count) do
+    game_state = initial_game_state(fps, asteroid_count)
+
+    if fps > 0 do
+      Process.send(self(), :tick, [])
+    end
+
+    Process.flag(:trap_exit, true)
+
+    {:ok, game_state}
+  end
 
   def init({:ok, fps, asteroid_count}) do
     Process.flag(:trap_exit, true)

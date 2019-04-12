@@ -3,33 +3,33 @@ defmodule Game.ServerTest do
   doctest Game.Server
 
   alias Game.Server, as: Game
+  alias Elixoids.Game.Supervisor, as: GameSupervisor
 
-  # TODO refactor with game number, not atom :game
-  # test "We can retrieve game state of Asteroids" do
-  #   {:ok, game} = Game.start_link(1)
-  #   :timer.sleep(10)
+  test "We can retrieve game state of Asteroids" do
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 2)
+    :timer.sleep(10)
+    game_state = Game.state(game)
+    assert [_, _, _, 120.0] = List.first(game_state[:a])
+    Process.exit(game, :normal)
+  end
 
-  #   game_state = Game.state(game)
+  test "We can retrieve game state of Ships" do
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+    Game.spawn_player(game, "AST")
+    :timer.sleep(200)
 
-  #   assert [_, _, _, 120.0] = List.first(game_state[:a])
+    game_state = Game.state(game)
+    assert [_, _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
 
-  #   Process.exit(game, :normal)
+    Process.exit(game, :normal)
+  end
 
-  # end
-
-  # TODO refactor with game number, not atom :game
-
-  # test "We can retrieve game state of Ships" do
-  #   {:ok, game} = Game.start_link(1)
-  #   Game.spawn_player(game, "AST")
-  #   :timer.sleep(200)
-
-  #   game_state = Game.state(game)
-  #   assert [_, _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
-
-  #   Process.exit(game, :normal)
-
-  # end
+  test "Games get different ids and pids" do
+    {:ok, game1, game1_id} = GameSupervisor.start_game(fps: 1, asteroids: 1)
+    {:ok, game2, game2_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+    assert game2_id != game1_id
+    assert game1 != game2
+  end
 
   # test "We can retrieve sound state of eXplosions" do
   #   {:ok, game} = Game.start_link(1)
@@ -42,21 +42,20 @@ defmodule Game.ServerTest do
   #   assert true
   # end
 
-  # TODO refactor with game number, not atom :game
-  # test "We can retrieve viewport dimensions from game state" do
-  #   {:ok, game} = Game.start_link(1)
-  #   :timer.sleep(10)
-  #   game_state = Game.state(game)
-  #   assert 4000.0 == List.first(game_state.dim)
-  #   assert 2250.0 == List.last(game_state.dim)
-  #   Process.exit(game, :normal)
-  # end
+  test "We can retrieve viewport dimensions from game state" do
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
+    :timer.sleep(10)
+    game_state = Game.state(game)
+    assert 4000.0 == List.first(game_state.dim)
+    assert 2250.0 == List.last(game_state.dim)
+    Process.exit(game, :normal)
+  end
 
   # test "We record who shot a player" do
-  #   {:ok, game} = Game.start_link(0,8)
+  #   {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
   #   :timer.sleep(10)
 
-  #   {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+  #   # {:elapsed_ms, _elapsed_ms} = Game.tick(game)
   #   :timer.sleep(10)
 
   #   Game.ship_fires_bullet(game, 9)
@@ -84,22 +83,21 @@ defmodule Game.ServerTest do
   #   assert player_9_tag == ship_state.kby
   # end
 
-  # TODO refactor with game number, not atom :game
-  # test "We can retrieve game state of a player by their ID" do
-  #   {:ok, game} = Game.start_link(60)
-  #   :timer.sleep(10)
-  #   Game.spawn_player(game, "AST")
-  #   :timer.sleep(200)
-  #   game_state = Game.state(game)
+  test "We can retrieve game state of a player by their ID" do
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
+    :timer.sleep(10)
+    Game.spawn_player(game, "AST")
+    :timer.sleep(200)
+    game_state = Game.state(game)
 
-  #   [player_tag, _, _, 20.0, theta, _] = List.first(game_state[:s])
+    [player_tag, _, _, 20.0, theta, _] = List.first(game_state[:s])
 
-  #   ship_state = Game.state_of_ship(game, player_tag)
+    ship_state = Game.state_of_ship(game, player_tag)
 
-  #   assert ship_state.status == 200
-  #   assert ship_state.tag == player_tag
-  #   assert ship_state.theta == theta
-  # end
+    assert ship_state.status == 200
+    assert ship_state.tag == player_tag
+    assert ship_state.theta == theta
+  end
 
   test "We can filter on ship id" do
     ships = %{
