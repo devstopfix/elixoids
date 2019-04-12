@@ -18,15 +18,15 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   def init(req = %{bindings: %{tag: tag}}, _state) do
     [:http_connection, :ship] |> inspect |> info()
-    {:cowboy_websocket, req, %{url_tag: tag}, @opts}
+    {:cowboy_websocket, req, %{url_tag: tag, game_id: 0}, @opts}
   end
 
-  def websocket_init(state = %{url_tag: tag}) do
+  def websocket_init(state = %{url_tag: tag, game_id: game_id}) do
     if Player.valid_player_tag?(tag) do
       Game.spawn_player(:game, tag)
       [:ws_connection, :ship, tag] |> inspect |> info()
       :erlang.start_timer(@pause_ms, self(), [])
-      {:ok, %{tag: tag}}
+      {:ok, %{tag: tag, game_id: game_id}}
     else
       [:bad_player_tag, tag] |> inspect |> warn()
       {:stop, state}
@@ -37,42 +37,16 @@ defmodule Elixoids.Server.WebsocketShipHandler do
       {:stop, state}
   end
 
-  def terminate(_reason, _partial_req, %{tag: tag}) do
-    Game.remove_player(:game, tag)
+  def terminate(_reason, _partial_req, %{tag: tag, game_id: game_id}) do
+    Game.remove_player(game_id, tag)
     [:ws_disconnect, tag] |> inspect |> info()
     :ok
   end
 
-  defp player_pulls_trigger(tag) do
-    Game.player_pulls_trigger(:game, tag)
-    true
-  end
-
-  defp player_turns(tag, theta) do
-    Game.player_new_heading(:game, tag, theta)
-    true
-  end
-
-  @spec handle_input(map(), String.t()) :: boolean()
-  defp handle_input(player_input, tag) do
-    for {k, v} <- player_input do
-      handle_input(k, v, tag)
-    end
-    |> Enum.any?()
-  end
-
-  defp handle_input("fire", true, tag), do: player_pulls_trigger(tag)
-  defp handle_input("theta", theta, tag) when is_float(theta), do: player_turns(tag, theta)
-
-  defp handle_input("theta", theta, tag) when is_integer(theta),
-    do: player_turns(tag, theta * 1.0)
-
-  defp handle_input(_k, _v, _tag), do: false
-
   def websocket_handle({:text, content}, state = %{tag: tag}) do
     case Jason.decode(content) do
       {:ok, player_input} ->
-        handle_input(player_input, tag)
+        handle_input(player_input, state)
         {:ok, state}
 
       {:error, e} ->
@@ -85,8 +59,8 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     {:ok, state}
   end
 
-  def websocket_info({:timeout, _ref, _}, state = %{tag: ship_tag}) do
-    ship_state = Game.state_of_ship(:game, ship_tag)
+  def websocket_info({:timeout, _ref, _}, state = %{tag: ship_tag, game_id: game_id}) do
+    ship_state = Game.state_of_ship(game_id, ship_tag)
 
     {x, y} = ship_state.origin
 
@@ -105,5 +79,33 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   def websocket_info(_info, state) do
     {:ok, state}
+  end
+
+  # Player
+
+  @spec handle_input(map(), String.t()) :: boolean()
+  defp handle_input(player_input, state) do
+    for {k, v} <- player_input do
+      handle_input(k, v, state)
+    end
+    |> Enum.any?()
+  end
+
+  defp handle_input("fire", true, state), do: player_pulls_trigger(state)
+  defp handle_input("theta", theta, state) when is_float(theta), do: player_turns(theta, state)
+
+  defp handle_input("theta", theta, state) when is_integer(theta),
+    do: player_turns(theta * 1.0, state)
+
+  defp handle_input(_k, _v, _state), do: false
+
+  defp player_pulls_trigger(%{tag: tag, game_id: game_id}) do
+    Game.player_pulls_trigger(game_id, tag)
+    true
+  end
+
+  defp player_turns(theta, %{tag: tag, game_id: game_id}) do
+    Game.player_new_heading(game_id, tag, theta)
+    true
   end
 end

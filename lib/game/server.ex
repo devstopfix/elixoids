@@ -61,8 +61,8 @@ defmodule Game.Server do
     GenServer.call(pid, :state)
   end
 
-  def state_of_ship(pid, ship_tag) do
-    GenServer.call(pid, {:state_of_ship, ship_tag})
+  def state_of_ship(game_id, ship_tag) do
+    GenServer.call(via(game_id), {:state_of_ship, ship_tag})
   end
 
   def update_asteroid(pid, new_state) do
@@ -125,16 +125,16 @@ defmodule Game.Server do
     GenServer.cast(pid, {:spawn_player, player_tag})
   end
 
-  def player_new_heading(pid, player_tag, theta) do
-    GenServer.cast(pid, {:player_new_heading, player_tag, theta})
+  def player_new_heading(game_id, player_tag, theta) do
+    GenServer.cast(via(game_id), {:player_new_heading, player_tag, theta})
   end
 
-  def player_pulls_trigger(pid, player_tag) do
-    GenServer.cast(pid, {:player_pulls_trigger, player_tag})
+  def player_pulls_trigger(game_id, player_tag) do
+    GenServer.cast(via(game_id), {:player_pulls_trigger, player_tag})
   end
 
-  def remove_player(pid, player_tag) do
-    GenServer.cast(pid, {:remove_player, player_tag})
+  def remove_player(game_id, player_tag) do
+    GenServer.cast(via(game_id), {:remove_player, player_tag})
   end
 
   ## Initial state

@@ -84,7 +84,7 @@ defmodule Game.ServerTest do
   # end
 
   test "We can retrieve game state of a player by their ID" do
-    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
+    {:ok, game, game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
     :timer.sleep(10)
     Game.spawn_player(game, "AST")
     :timer.sleep(200)
@@ -92,7 +92,7 @@ defmodule Game.ServerTest do
 
     [player_tag, _, _, 20.0, theta, _] = List.first(game_state[:s])
 
-    ship_state = Game.state_of_ship(game, player_tag)
+    ship_state = Game.state_of_ship(game_id, player_tag)
 
     assert ship_state.tag == player_tag
     assert ship_state.theta == theta
