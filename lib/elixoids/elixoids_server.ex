@@ -1,5 +1,4 @@
 defmodule Elixoids.Server do
-
   @moduledoc """
   Asteroids Server. Starts a game and opens websocket.
   Registers the game process as :game.

@@ -154,7 +154,6 @@ defmodule Game.Server do
 
   ## Server Callbacks
 
-
   def init(game_id: game_id, fps: fps, asteroids: asteroid_count) do
     game_state = initial_game_state(fps, asteroid_count)
 
