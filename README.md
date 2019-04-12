@@ -2,13 +2,17 @@
 
 [Asteroids][1] game engine written in [Elixir][2].
 
+![Elixoids](docs/elixoids-8fps.gif)
+
 Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
 
 Stable v1: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=v1)](https://travis-ci.org/devstopfix/elixoids)
 
-The UI is rendered by [asteroids-ui][3]. Audio provided by [SonicAsteroids][4]
+The UI is rendered by [asteroids-ui][3]. Audio provided by [SonicAsteroids][4]. See the original [Arcade Asteroids Video](https://www.youtube.com/watch?v=WYSupJ5r2zo)
 
-[Asteroids Video](https://www.youtube.com/watch?v=WYSupJ5r2zo)
+<iframe src="https://player.vimeo.com/video/330017229" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+
+[Elixoids movie](https://vimeo.com/330017229) on [Vimeo](https://vimeo.com)
 
 # Build
 
@@ -22,6 +26,8 @@ Check out this repository and run:
 You may need to install Elixir and Erlang, on a Mac you can use homebrew:
 
     brew install elixir
+
+*Master* is currently being refactored and a lot of code being removed and replaced with Elixir 1.4 features such as Registry.
 
 # Run
 
@@ -99,7 +105,7 @@ How to install to an Ubuntu 14.04 LTS server:
 
 ```
 sudo apt-get -y update
-wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb 
+wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
 sudo dpkg -i erlang-solutions_1.0_all.deb
 sudo apt-get -y update
 sudo apt-get -y install esl-erlang
