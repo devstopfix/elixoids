@@ -4,15 +4,13 @@
 
 ![Elixoids](docs/elixoids-8fps.gif)
 
-Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
-
-Stable v1: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=v1)](https://travis-ci.org/devstopfix/elixoids)
+Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids) Stable v1: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=v1)](https://travis-ci.org/devstopfix/elixoids)
 
 The UI is rendered by [asteroids-ui][3]. Audio provided by [SonicAsteroids][4]. See the original [Arcade Asteroids Video](https://www.youtube.com/watch?v=WYSupJ5r2zo)
 
-<iframe src="https://player.vimeo.com/video/330017229" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+[![Elixoids](docs/elixoids.vimeo.JPG)][6]
 
-[Elixoids movie](https://vimeo.com/330017229) on [Vimeo](https://vimeo.com)
+Watch the [Elixoids movie][6] on [Vimeo](https://vimeo.com) recorded at a Coding Night. Participants were given one hour to write an AI bot that could pilot a ship and play the game!
 
 # Build
 
@@ -176,3 +174,4 @@ This software is published under the [MIT License](LICENSE) and copyright [devst
 [3]: https://github.com/lachok/asteroids
 [4]: https://github.com/jrothwell/sonic-asteroids
 [5]: https://github.com/jrothwell
+[6]: https://vimeo.com/330017229
