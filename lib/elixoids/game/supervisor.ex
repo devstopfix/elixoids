@@ -20,6 +20,10 @@ defmodule Elixoids.Game.Supervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
+  @doc """
+  Start a new supervised game.
+  """
+  @spec start_game(fps: integer(), asteroids: integer()) :: {:ok, pid(), integer()}
   def start_game(args = [fps: fps, asteroids: asteroid_count])
       when fps >= 0 and fps <= 60 and
              asteroid_count >= 0 and asteroid_count <= @max_asteroids do
@@ -30,5 +34,18 @@ defmodule Elixoids.Game.Supervisor do
     {:ok, pid, game_id}
   end
 
-  defp next_game_id, do: System.unique_integer([:positive])
+  @doc """
+  Temporary instruction to start game zero so our clients can always connect to a running game.
+
+  TODO remove this and replace with runtime arguments!
+  """
+  def start_game_zero do
+    args = [game_id: 0, fps: 8, asteroids: 8]
+    child_spec = {GameServer, args}
+    {:ok, pid} = DynamicSupervisor.start_child(__MODULE__, child_spec)
+    true = Process.register(pid, :name)
+    {:ok, pid, 0}
+  end
+
+  defp next_game_id, do: System.unique_integer([:positive, :monotonic])
 end

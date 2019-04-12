@@ -14,7 +14,7 @@ Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=ma
 
 # Build
 
-There are two versions of this game. Branch [v1](tree/v1) contains the version compatible with the UI and Sonic repositories. Switch to that branch until they are modified to be compatible with master.
+There are two versions of this game. Branch [v1](//github.com/devstopfix/elixoids/tree/v1) contains the version compatible with the UI and Sonic repositories. Switch to that branch until they are modified to be compatible with master.
 
 Check out this repository and run:
 
