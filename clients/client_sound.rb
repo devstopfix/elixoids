@@ -38,6 +38,7 @@ def run()
       p e
       puts "GAME OVER!"
       $finished = true
+      abort()
     end
   }
 end

@@ -30,7 +30,7 @@ defmodule World.Clock do
   @doc """
   Sleep time between frames required to run at standard frame rate.
   """
-  def ms_between_frames(fps \\ @default_fps) do
+  def ms_between_frames(fps \\ @default_fps) when is_integer(fps) and fps > 0 do
     div(1000, fps)
   end
 end

@@ -3,53 +3,59 @@ defmodule Game.ServerTest do
   doctest Game.Server
 
   alias Game.Server, as: Game
-
-  test "Can start a game" do
-    {:ok, _game} = Game.start_link(1)
-  end
+  alias Elixoids.Game.Supervisor, as: GameSupervisor
 
   test "We can retrieve game state of Asteroids" do
-    {:ok, game} = Game.start_link(1)
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 2)
     :timer.sleep(10)
-
     game_state = Game.state(game)
-
     assert [_, _, _, 120.0] = List.first(game_state[:a])
+    Process.exit(game, :normal)
   end
 
   test "We can retrieve game state of Ships" do
-    {:ok, game} = Game.start_link(1)
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
     Game.spawn_player(game, "AST")
     :timer.sleep(200)
 
     game_state = Game.state(game)
     assert [_, _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
+
+    Process.exit(game, :normal)
   end
 
-  test "We can retrieve sound state of eXplosions" do
-    {:ok, game} = Game.start_link(1)
-    :timer.sleep(10)
-
-    Elixoids.News.subscribe(0)
-
-    # TODO check for sound
-
-    assert true
+  test "Games get different ids and pids" do
+    {:ok, game1, game1_id} = GameSupervisor.start_game(fps: 1, asteroids: 1)
+    {:ok, game2, game2_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+    assert game2_id != game1_id
+    assert game1 != game2
   end
+
+  # test "We can retrieve sound state of eXplosions" do
+  #   {:ok, game} = Game.start_link(1)
+  #   :timer.sleep(10)
+
+  #   Elixoids.News.subscribe(0)
+
+  #   # TODO check for sound
+
+  #   assert true
+  # end
 
   test "We can retrieve viewport dimensions from game state" do
-    {:ok, game} = Game.start_link(1)
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
     :timer.sleep(10)
     game_state = Game.state(game)
     assert 4000.0 == List.first(game_state.dim)
     assert 2250.0 == List.last(game_state.dim)
+    Process.exit(game, :normal)
   end
 
   # test "We record who shot a player" do
-  #   {:ok, game} = Game.start_link(0,8)
+  #   {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
   #   :timer.sleep(10)
 
-  #   {:elapsed_ms, _elapsed_ms} = Game.tick(game)
+  #   # {:elapsed_ms, _elapsed_ms} = Game.tick(game)
   #   :timer.sleep(10)
 
   #   Game.ship_fires_bullet(game, 9)
@@ -78,7 +84,7 @@ defmodule Game.ServerTest do
   # end
 
   test "We can retrieve game state of a player by their ID" do
-    {:ok, game} = Game.start_link(60)
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
     :timer.sleep(10)
     Game.spawn_player(game, "AST")
     :timer.sleep(200)
@@ -88,7 +94,6 @@ defmodule Game.ServerTest do
 
     ship_state = Game.state_of_ship(game, player_tag)
 
-    assert ship_state.status == 200
     assert ship_state.tag == player_tag
     assert ship_state.theta == theta
   end
@@ -116,12 +121,12 @@ defmodule Game.ServerTest do
   end
 
   test "We can filter out ship id" do
-    ships = %{
-      9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
-      14 => {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
-      15 => {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
-      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}
-    }
+    ships = [
+      {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
+      {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
+      {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
+      {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}
+    ]
 
     assert [
              {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},

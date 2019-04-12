@@ -2,17 +2,19 @@
 
 [Asteroids][1] game engine written in [Elixir][2].
 
-Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
+[![Elixoids](docs/elixoids-8fps.gif)][6] [![Elixoids](docs/elixoids.vimeo.JPG)][6]
 
-Stable v1: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=v1)](https://travis-ci.org/devstopfix/elixoids)
 
-The UI is rendered by [asteroids-ui][3]. Audio provided by [SonicAsteroids][4]
+The UI is rendered by [asteroids-ui][3]. Audio provided by [SonicAsteroids][4].
 
-[Asteroids Video](https://www.youtube.com/watch?v=WYSupJ5r2zo)
+Watch the [Elixoids movie][6] on [Vimeo](https://vimeo.com) recorded at a Coding Night. Participants were given one hour to write an AI bot that could pilot a ship and play the game! See the original [Arcade Asteroids video](https://www.youtube.com/watch?v=WYSupJ5r2zo).
+
+Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids) Stable v1: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=v1)](https://travis-ci.org/devstopfix/elixoids)
+
 
 # Build
 
-There are two versions of this game. Branch *v1* contains the version compatible with the UI and Sonic repositories. Switch to that branch until they are modified to be compatible with master.
+There are two versions of this game. Branch [v1](//github.com/devstopfix/elixoids/tree/v1) contains the version compatible with the UI and Sonic repositories. Switch to that branch until they are modified to be compatible with master.
 
 Check out this repository and run:
 
@@ -22,6 +24,8 @@ Check out this repository and run:
 You may need to install Elixir and Erlang, on a Mac you can use homebrew:
 
     brew install elixir
+
+*Master* is currently being refactored and a lot of code being removed and replaced with Elixir 1.4 features such as Registry.
 
 # Run
 
@@ -84,7 +88,7 @@ Copy the artefacts into the local folder which is served by the game webserver:
 
 Inspect source code for bad practice:
 
-    mix credo
+    mix credo --strict
 
 Run tests whenever source changes:
 
@@ -99,7 +103,7 @@ How to install to an Ubuntu 14.04 LTS server:
 
 ```
 sudo apt-get -y update
-wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb 
+wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
 sudo dpkg -i erlang-solutions_1.0_all.deb
 sudo apt-get -y update
 sudo apt-get -y install esl-erlang
@@ -162,7 +166,7 @@ Run:
 
 # Licence
 
-This software is published under the [MIT License](LICENSE) and copyright [devstopfix](https://github.com/devstopfix). UI is copyright [lachok](https://github.com/lachok). Audio code is copyright [jrothwell][5].
+This software is published under the [MIT License](LICENSE) and Copyright ©2016 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5].
 
 
 [1]: https://en.wikipedia.org/wiki/Asteroids_(video_game)
@@ -170,3 +174,4 @@ This software is published under the [MIT License](LICENSE) and copyright [devst
 [3]: https://github.com/lachok/asteroids
 [4]: https://github.com/jrothwell/sonic-asteroids
 [5]: https://github.com/jrothwell
+[6]: https://vimeo.com/330017229
