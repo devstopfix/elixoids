@@ -37,12 +37,11 @@ defmodule Game.Server do
 
   alias Asteroid.Server, as: Asteroid
   alias Bullet.Server, as: Bullet
-  alias Ship.Server, as: Ship
-  import Game.Identifiers
   alias Game.Collision
+  alias Ship.Server, as: Ship
   alias World.Clock
-  alias World.Point
   alias World.Velocity
+  import Game.Identifiers
 
   def start_link(args = [game_id: game_id, fps: _, asteroids: _]) do
     {:ok, _pid} = GenServer.start_link(__MODULE__, args, name: via(game_id))
@@ -468,27 +467,34 @@ defmodule Game.Server do
   end
 
   def handle_call({:state_of_ship, ship_tag}, _from, game) do
-    ship = only_ship(game.state.ships, ship_tag)
-
-    if ship != nil do
-      {_, ship_tag, x, y, _, theta, _} = ship
-
-      ship_state = %{
-        :status => 200,
-        :tag => ship_tag,
-        :theta => theta,
-        :ships => ships_relative(game.state.ships, ship_tag, x, y),
-        :rocks => asteroids_relative(game.state.asteroids, x, y)
-      }
-
-      if Map.has_key?(game.kby, ship_tag) do
-        {:reply, Map.put(ship_state, :kby, game.kby[ship_tag]), game}
-      else
-        {:reply, ship_state, game}
-      end
-    else
-      {:reply, %{:status => 404}, game}
+    case only_ship(game.state.ships, ship_tag) do
+      nil -> {:reply, %{:error => "ship_not_found"}, game}
+      ship -> fetch_ship_state(ship, game)
     end
+  end
+
+  defp fetch_ship_state({_, ship_tag, x, y, _, theta, _}, game) do
+    asteroids = game.state.asteroids |> Map.values()
+    ships = game.state.ships |> Map.values() |> ships_except(ship_tag)
+
+    ship_state = %{
+      :tag => ship_tag,
+      :theta => theta,
+      :ships => ships,
+      :rocks => asteroids,
+      :origin => {x, y}
+    }
+
+    if Map.has_key?(game.kby, ship_tag) do
+      {:reply, Map.put(ship_state, :kby, game.kby[ship_tag]), game}
+    else
+      {:reply, ship_state, game}
+    end
+  end
+
+  def ships_except(ships, tag) do
+    ships
+    |> Enum.reject(fn s -> ship_state_has_tag(s, tag) end)
   end
 
   @doc """
@@ -555,66 +561,6 @@ defmodule Game.Server do
       [s] -> s
       [s, _] -> s
     end
-  end
-
-  def ships_except(ships, tag) do
-    ships
-    |> Map.values()
-    |> Enum.reject(fn s -> ship_state_has_tag(s, tag) end)
-  end
-
-  def ship_relative(ship, ox, oy) do
-    {_, tag, sx, sy, _, _, _} = ship
-
-    d = Point.distance(ox, oy, sx, sy)
-
-    theta = :math.atan2(sy - oy, sx - ox)
-
-    theta
-    |> Velocity.wrap_angle()
-    |> Velocity.round_theta()
-
-    [tag, theta, Point.round(d)]
-  end
-
-  @doc """
-      {:ok, game} = Game.Server.start_link(60)
-      Game.Server.show(game)
-      Game.Server.spawn_player(game, "OUR")
-      Game.Server.state_of_ship(game, "OUR")
-  """
-  def ships_relative(ships, ship_tag, ship_x, ship_y) do
-    ships
-    |> ships_except(ship_tag)
-    |> Enum.map(fn s -> ship_relative(s, ship_x, ship_y) end)
-    |> Enum.filter(fn s -> Bullet.in_range?(List.last(s)) end)
-  end
-
-  def asteroid_relative(asteroid, ox, oy) do
-    {id, ax, ay, r} = asteroid
-
-    d = World.Point.distance(ox, oy, ax, ay)
-
-    theta = :math.atan2(ay - oy, ax - ox)
-
-    theta
-    |> Velocity.wrap_angle()
-    |> Velocity.round_theta()
-
-    [id, theta, r, Point.round(d)]
-  end
-
-  @doc """
-      {:ok, game} = Game.Server.start_link(60, 4, 4)
-      Game.Server.show(game)
-      Game.Server.spawn_player(game, "OUR")
-      Game.Server.state_of_ship(game, "OUR")
-  """
-  def asteroids_relative(rocks, ship_x, ship_y) do
-    rocks
-    |> Map.values()
-    |> Enum.map(fn a -> asteroid_relative(a, ship_x, ship_y) end)
-    |> Enum.filter(fn s -> Bullet.in_range?(List.last(s)) end)
   end
 
   # Game state

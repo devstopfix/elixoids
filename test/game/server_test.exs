@@ -94,7 +94,6 @@ defmodule Game.ServerTest do
 
     ship_state = Game.state_of_ship(game, player_tag)
 
-    assert ship_state.status == 200
     assert ship_state.tag == player_tag
     assert ship_state.theta == theta
   end
@@ -122,12 +121,12 @@ defmodule Game.ServerTest do
   end
 
   test "We can filter out ship id" do
-    ships = %{
-      9 => {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
-      14 => {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
-      15 => {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
-      16 => {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}
-    }
+    ships = [
+      {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},
+      {14, "LPE", 1797.0, 1067.0, 20.0, 2.0466, "FFFFFF"},
+      {15, "SYX", 2612.0, 933.0, 20.0, 0.7888, "FFFFFF"},
+      {16, "IGA", 2065.0, 1446.0, 20.0, 2.7704, "FFFFFF"}
+    ]
 
     assert [
              {9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"},

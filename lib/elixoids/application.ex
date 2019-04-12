@@ -9,7 +9,7 @@ defmodule Elixoids.Application do
       {Registry, keys: :unique, name: Registry.Elixoids.Games},
       Elixoids.Api,
       Elixoids.Game.Supervisor,
-      # TODO remove game zero
+      # TODO remove game zero #32
       {Game.Server, [game_id: 0, fps: 24, asteroids: 4]}
     ]
 
