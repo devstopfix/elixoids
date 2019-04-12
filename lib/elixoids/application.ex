@@ -7,8 +7,8 @@ defmodule Elixoids.Application do
     children = [
       {Registry, keys: :duplicate, name: Registry.Elixoids.News},
       {Registry, keys: :unique, name: Registry.Elixoids.Games},
+      Elixoids.Api,
       Elixoids.Game.Supervisor,
-      Elixoids.Server,
       # TODO remove game zero
       {Game.Server, [game_id: 0, fps: 24, asteroids: 4]}
     ]
