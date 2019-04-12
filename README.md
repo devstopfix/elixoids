@@ -4,13 +4,14 @@
 
 ![Elixoids](docs/elixoids-8fps.gif)
 
-Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids) Stable v1: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=v1)](https://travis-ci.org/devstopfix/elixoids)
-
 The UI is rendered by [asteroids-ui][3]. Audio provided by [SonicAsteroids][4]. See the original [Arcade Asteroids Video](https://www.youtube.com/watch?v=WYSupJ5r2zo)
 
 [![Elixoids](docs/elixoids.vimeo.JPG)][6]
 
 Watch the [Elixoids movie][6] on [Vimeo](https://vimeo.com) recorded at a Coding Night. Participants were given one hour to write an AI bot that could pilot a ship and play the game!
+
+Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids) Stable v1: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=v1)](https://travis-ci.org/devstopfix/elixoids)
+
 
 # Build
 
