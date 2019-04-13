@@ -9,7 +9,10 @@ defmodule Elixoids.News do
     {:ok, _} = Registry.register(Registry.Elixoids.News, key(game_id), true)
   end
 
-  def publish_audio(game_id, audio), do: publish(game_id, {:audio, audio})
+  def publish_audio(game_id, audio) do
+    audio_gt = Map.put(audio, :gt, World.Clock.now_ms())
+    publish(game_id, {:audio, audio_gt})
+  end
 
   def publish_explosion(game_id, audio), do: publish(game_id, {:explosion, audio})
 

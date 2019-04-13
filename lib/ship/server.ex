@@ -18,6 +18,7 @@ defmodule Ship.Server do
   alias World.Point
   alias World.Velocity
 
+
   # Ship radius (m)
   @ship_radius_m 20.0
 
@@ -142,7 +143,7 @@ defmodule Ship.Server do
       {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, ship.game_pid)
       Game.bullet_fired(ship.game_pid, id, bullet_pid)
       Game.broadcast(ship.game_pid, id, [ship.tag, "fires"])
-      Elixoids.News.publish_audio(0, %{fires: World.Clock.now_ms(), pan: 0.0})
+      Elixoids.News.publish_audio(0, %{snd: "f", pan: 0.0})
       {:noreply, recharge_laser(ship)}
     else
       {:noreply, ship}
@@ -179,7 +180,7 @@ defmodule Ship.Server do
       :pos => random_ship_point(),
       :theta => 0.0,
       :target_theta => 0.0,
-      :laser_charged_at => Clock.now_ms()
+      :laser_charged_at => Clock.now_ms() - 1
     }
   end
 
