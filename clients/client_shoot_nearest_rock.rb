@@ -22,7 +22,7 @@ $SERVER = ENV['ELIXOIDS_SERVER'] || 'localhost:8065'
 
 def pointing_at(rock_theta, ship_theta)
   delta = (rock_theta-ship_theta).abs
-  (delta <= 0.1) || (delta >= 6.2)
+  (delta <= 0.2) || (delta >= 6.08)
 end
 
 def sort_by_size(rocks)
@@ -68,7 +68,8 @@ def start_ship(tag, retry_count)
       unless rocks.empty?
         candidates = sort_by_size(rocks)
         id, theta, radius, dist = candidates.first
-        ws.send({'theta'=>round(theta)}.to_json)
+        theta_rnd = round(theta + (rand() * 0.2))
+        ws.send({'theta'=>theta_rnd}.to_json)
         if (id != target_id)
           @logger.info(sprintf("%s Targeting %d at %f (of %d targets)", tag, id, theta, candidates.size))
           target_id = id
