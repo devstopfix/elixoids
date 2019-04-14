@@ -10,7 +10,7 @@ defmodule Elixoids.Application do
       Elixoids.Api,
       Elixoids.Game.Supervisor,
       # TODO remove game zero #32
-      {Game.Server, [game_id: 0, fps: 12, asteroids: 4]}
+      {Game.Server, [game_id: 0, fps: 12, asteroids: 1]}
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)

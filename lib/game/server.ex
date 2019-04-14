@@ -37,6 +37,7 @@ defmodule Game.Server do
 
   alias Asteroid.Server, as: Asteroid
   alias Bullet.Server, as: Bullet
+  alias Elixoids.Api.SoundEvent
   alias Game.Collision
   alias Ship.Server, as: Ship
   alias World.Clock
@@ -355,8 +356,10 @@ defmodule Game.Server do
   """
   def handle_cast({:explosion, x, y}, state) do
     # TODO pan
-    Elixoids.News.publish_audio(0, %{snd: "x", pan: -1.0}) # TODO not game 0
-    Elixoids.News.publish_explosion(0, [x, y]) # TODO not game 0
+    # TODO not game 0
+    Elixoids.News.publish_audio(0, SoundEvent.explosion(-0.8))
+    # TODO not game 0
+    Elixoids.News.publish_explosion(0, [x, y])
     {:noreply, state}
   end
 

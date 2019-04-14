@@ -4,8 +4,10 @@ defmodule Elixoids.SoundsTest do
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
   alias Game.Server, as: Game
+  import World.Clock
 
   test "When a player shoots we receive a sound event" do
+    start_of_game = now_ms()
     tag = "FIR"
     {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
 
@@ -19,10 +21,11 @@ defmodule Elixoids.SoundsTest do
     assert_receive {:news, fire_msg}, 100
     assert String.contains?(fire_msg, tag)
     assert String.contains?(fire_msg, "fires")
-    assert_receive {:audio, %{snd: "f", gt: _, pan: pan }}, 100
+    assert_receive {:audio, %{snd: "f", gt: gt, pan: pan}}, 100
 
     assert pan >= -1.0
     assert pan <= 1.0
+    assert gt >= start_of_game
 
     Process.exit(game, :normal)
   end
