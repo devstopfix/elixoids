@@ -56,7 +56,9 @@ defmodule Elixoids.Api.WebsocketSoundHandler do
   end
 
   defp format(state) do
-    case Jason.encode(state) do
+    ordered_events = Enum.reverse(state)
+
+    case Jason.encode(ordered_events) do
       {:ok, message} -> message
     end
   end
