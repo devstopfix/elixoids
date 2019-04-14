@@ -42,6 +42,10 @@ def round(theta)
   end
 end
 
+def perturb(theta)
+  theta - 0.2 + (rand() * 0.4)
+end
+
 def start_ship(tag, retry_count)
   abort() unless retry_count > 0
 
@@ -68,7 +72,7 @@ def start_ship(tag, retry_count)
       unless rocks.empty?
         candidates = sort_by_size(rocks)
         id, theta, radius, dist = candidates.first
-        theta_rnd = round(theta + (rand() * 0.2))
+        theta_rnd = round(perturb(theta))
         ws.send({'theta'=>theta_rnd}.to_json)
         if (id != target_id)
           @logger.info(sprintf("%s Targeting %d at %f (of %d targets)", tag, id, theta, candidates.size))
