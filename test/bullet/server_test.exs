@@ -3,6 +3,7 @@ defmodule Bullet.ServerTest do
   doctest Bullet.Server
 
   alias Bullet.Server, as: Bullet
+  alias Elixoids.Game.Supervisor, as: GameSupervisor
 
   test "Bullet live 2-3 seconds" do
     now = World.Clock.now_ms()
@@ -22,13 +23,15 @@ defmodule Bullet.ServerTest do
   end
 
   test "Stop a bullet" do
+    {:ok, game, game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+
     {:ok, b} =
       Bullet.start_link(
         999,
         %World.Point{:x => 0.0, :y => 0.0},
         1.0,
         "OOO",
-        self()
+        game_id
       )
 
     assert Process.alive?(b)

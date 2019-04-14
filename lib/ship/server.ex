@@ -140,7 +140,8 @@ defmodule Ship.Server do
     if Clock.past?(ship.laser_charged_at) do
       id = next_id()
       pos = calculate_nose(ship)
-      {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, ship.game_pid)
+      # TODO ship.game_pid should be game_id)
+      {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, 0)
       Game.bullet_fired(ship.game_pid, id, bullet_pid)
       Game.broadcast(ship.game_pid, id, [ship.tag, "fires"])
       Elixoids.News.publish_audio(0, SoundEvent.fire(0.8))

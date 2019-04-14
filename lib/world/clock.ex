@@ -33,4 +33,9 @@ defmodule World.Clock do
   def ms_between_frames(fps \\ @default_fps) when is_integer(fps) and fps > 0 do
     div(1000, fps)
   end
+
+  @doc """
+  Seconds to milliseconds.
+  """
+  def s_to_ms(s), do: trunc(s * 1000.0)
 end

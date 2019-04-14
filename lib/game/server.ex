@@ -82,12 +82,12 @@ defmodule Game.Server do
     GenServer.cast(pid, {:bullet_fired, bullet_id, bullet_pid})
   end
 
-  def update_bullet(pid, new_state) do
-    GenServer.cast(pid, {:update_bullet, new_state})
+  def update_bullet(game_id, new_state) do
+    GenServer.cast(via(game_id), {:update_bullet, new_state})
   end
 
-  def bullet_missed(pid, {id, shooter}) do
-    GenServer.cast(pid, {:bullet_missed, id, shooter})
+  def bullet_missed(game_id, {id, shooter}) do
+    GenServer.cast(via(game_id), {:bullet_missed, id, shooter})
   end
 
   def stop_bullet(pid, id) do
@@ -106,8 +106,8 @@ defmodule Game.Server do
     GenServer.cast(pid, {:say_player_shot_ship, bullet_id, victim_id})
   end
 
-  def player_shot_player(pid, bullet_id, shooter_tag, victim_tag) do
-    GenServer.cast(pid, {:player_shot_player, bullet_id, shooter_tag, victim_tag})
+  def player_shot_player(game_id, bullet_id, shooter_tag, victim_tag) do
+    GenServer.cast(via(game_id), {:player_shot_player, bullet_id, shooter_tag, victim_tag})
   end
 
   def hyperspace_ship(pid, ship_id) do
@@ -155,8 +155,9 @@ defmodule Game.Server do
   ## Server Callbacks
 
   def init(game_id: game_id, fps: fps, asteroids: asteroid_count) do
-    game_state = initial_game_state(fps, asteroid_count)
+    game_state = initial_game_state(fps, asteroid_count, game_id)
 
+    # TODO remove warning
     if fps > 0 do
       Process.send(self(), :tick, [])
     end
@@ -171,10 +172,11 @@ defmodule Game.Server do
     {:ok, game_state}
   end
 
-  defp initial_game_state(fps, asteroid_count) do
+  defp initial_game_state(fps, asteroid_count, game_id) do
     {:ok, collision_pid} = Collision.start_link(self())
 
     %{
+      :game_id => game_id,
       :pids => %{:asteroids => generate_asteroids(asteroid_count), :bullets => %{}, :ships => %{}},
       :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
       :players => %{},
@@ -249,9 +251,10 @@ defmodule Game.Server do
 
   @doc """
   Remove bullet from Game.
+  TODO this can be achieved with trapped process exit?
+  TODO remove shooter
   """
-  def handle_cast({:bullet_missed, id, shooter}, game) do
-    broadcast(self(), id, [shooter, "misses"])
+  def handle_cast({:bullet_missed, id, _shooter}, game) do
     {:noreply, remove_bullet_from_game(game, id)}
   end
 
@@ -311,7 +314,7 @@ defmodule Game.Server do
 
     if bullet_pid != nil && victim != nil do
       victim_tag = elem(victim, 1)
-      Bullet.hit_ship(bullet_pid, victim_tag, self())
+      Bullet.hit_ship(bullet_pid, victim_tag, game.game_id)
     end
 
     {:noreply, game}
