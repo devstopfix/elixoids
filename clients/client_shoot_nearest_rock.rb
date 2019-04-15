@@ -94,4 +94,4 @@ def default_tag
   (0...3).map { (65 + rand(26)).chr }.join
 end
 
-start_ship(ARGV.first || default_tag, 5)
+start_ship(ARGV.first || default_tag, 3)
