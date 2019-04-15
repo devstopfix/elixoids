@@ -14,18 +14,16 @@ Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=ma
 
 # Build
 
-There are two versions of this game. Branch [v1](//github.com/devstopfix/elixoids/tree/v1) contains the version compatible with the UI and Sonic repositories. Switch to that branch until they are modified to be compatible with master.
+There are two versions of this game, v3 on master, and v1 which was released in 2016.
 
 Check out this repository and run:
 
-    git checkout v1
+    brew install elixir
     mix deps.get
 
-You may need to install Elixir and Erlang, on a Mac you can use homebrew:
-
-    brew install elixir
-
 *Master* is currently being refactored and a lot of code being removed and replaced with Elixir 1.4 features such as Registry.
+
+Branch [v1](//github.com/devstopfix/elixoids/tree/v1) contains the version compatible with the UI and original [Sonic][[4]] repositories.
 
 # Run
 
@@ -41,7 +39,7 @@ Open the UI in your browser:
 
 The game runs well in full screen, on Chrome this can be enabled with `[cmd]-[↩]`
 
-To hear the sound effects on a Mac, download and run [SonicAsteroids.app](https://github.com/jrothwell/sonic-asteroids/releases) and set the address to listen to as:
+To hear the sound effects on a Mac, download and run [v3 of the SonicAsteroids.app][7] and set the address to listen to as:
 
     ws://localhost:8065/sound
 
@@ -57,8 +55,8 @@ Sound events can be received at `ws://example.com/sound` and are a JSON list of 
 
 ```json
 [
-  {"snd"=>"x", "pan"=>-0.8, "gt"=>83802},
-  {"snd"=>"f", "pan"=>0.2,  "gt"=>84010}
+  {"snd": "x", "pan": -0.8, "gt": 83802},
+  {"snd": "f", "pan":  0.2, "gt": 84010}
 ]
 ...
 ```
@@ -70,7 +68,8 @@ The sound types are:
 
 The pan is a float from -1 to +1 where -1 is hard left and zero is center. See the [pan property](https://developer.apple.com/documentation/avfoundation/avaudioplayer/1390884-pan)
 
-`gt` is the game time in milliseconds and can be used for ordering or delaying events
+* `gt` is the game time in milliseconds and can be used for ordering or delaying events
+
 
 ### Java Client
 
@@ -200,3 +199,4 @@ This software is published under the [MIT License](LICENSE) and Copyright ©2016
 [4]: https://github.com/jrothwell/sonic-asteroids
 [5]: https://github.com/jrothwell
 [6]: https://vimeo.com/330017229
+[7]: https://github.com/devstopfix/sonic-asteroids/releases/tag/v3.19.105

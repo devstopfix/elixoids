@@ -6,7 +6,8 @@ defmodule Elixoids.Api.WebsocketSoundHandler do
 
   import Logger
 
-  @ms_between_frames div(1000, 12)
+  @fps 12
+  @ms_between_frames div(1000, @fps)
   @opts %{idle_timeout: 60 * 60 * 1000}
 
   @behaviour :cowboy_handler
