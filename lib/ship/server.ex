@@ -144,7 +144,8 @@ defmodule Ship.Server do
       {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, 0)
       Game.bullet_fired(ship.game.pid, id, bullet_pid)
       Game.broadcast(ship.game.pid, id, [ship.tag, "fires"])
-      Elixoids.News.publish_audio(0, SoundEvent.fire(0.8, ship.game.time.()))
+      pan = Elixoids.Space.frac_x(ship.pos.x)
+      Elixoids.News.publish_audio(0, SoundEvent.fire(pan, ship.game.time.()))
       {:noreply, recharge_laser(ship)}
     else
       {:noreply, ship}
