@@ -23,13 +23,17 @@ Check out this repository and run:
 
 *Master* is currently being refactored and a lot of code being removed and replaced with Elixir 1.4 features such as Registry.
 
-Branch [v1](//github.com/devstopfix/elixoids/tree/v1) contains the version compatible with the UI and original [Sonic][[4]] repositories.
+Branch [v1](//github.com/devstopfix/elixoids/tree/v1) contains the version compatible with the UI and original [Sonic][4] repositories.
 
 # Run
 
 This repo contains the game engine, a webserver, and a recent version of the [asteroids-ui][3].
 
 To start a game:
+
+    mix run --no-halt
+
+or a REPL:
 
     iex -S mix
 
@@ -118,7 +122,6 @@ Run tests whenever source changes:
 
     mix test.watch
 
-
 # Deploy
 
 How to install to an Ubuntu 14.04 LTS server:
@@ -190,7 +193,7 @@ Run:
 
 # Licence
 
-This software is published under the [MIT License](LICENSE) and Copyright ©2016 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5].
+This software is published under the [MIT License](LICENSE) and Copyright ©2019 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5].
 
 
 [1]: https://en.wikipedia.org/wiki/Asteroids_(video_game)
