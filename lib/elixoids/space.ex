@@ -12,6 +12,7 @@ defmodule Elixoids.Space do
   # 4km
   @width 4000.0
   @height @width / @ratio
+  @half_width @width / 2.0
 
   @doc """
   Wrap point p so that its coordinates remain inside the world.
@@ -79,5 +80,17 @@ defmodule Elixoids.Space do
     x = rand_grid_position(@gx)
     y = rand_grid_position(@gy)
     %Point{x: x, y: y}
+  end
+
+  @doc """
+  Return the x ordinate as a fraction -1..1 of the screen width
+  """
+  def frac_x(x) do
+    cond do
+      x < 0.0 -> 0.0
+      x > @width -> 0.0
+      true -> (x - @half_width) / @width
+    end
+    |> Float.round(2)
   end
 end

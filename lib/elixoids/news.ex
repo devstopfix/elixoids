@@ -9,9 +9,11 @@ defmodule Elixoids.News do
     {:ok, _} = Registry.register(Registry.Elixoids.News, key(game_id), true)
   end
 
-  def publish_audio(game_id, audio), do: publish(game_id, {:audio, audio})
+  def publish_audio(game_id, audio) do
+    publish(game_id, {:audio, audio})
+  end
 
-  def publish_explosion(game_id, audio), do: publish(game_id, {:explosion, audio})
+  def publish_explosion(game_id, point), do: publish(game_id, {:explosion, point})
 
   def publish_news(game_id, audio), do: publish(game_id, {:news, audio})
 

@@ -10,6 +10,7 @@ defmodule Ship.Server do
   use GenServer
 
   alias Bullet.Server, as: Bullet
+  alias Elixoids.Api.SoundEvent
   alias Elixoids.Player
   alias Elixoids.Space
   import Game.Identifiers
@@ -31,12 +32,12 @@ defmodule Ship.Server do
   @laser_recharge_ms 500
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
 
-  def start_link(id, game_pid, tag \\ Player.random_tag()) do
+  def start_link(id, game_info, tag \\ Player.random_tag()) do
     ship =
       Map.merge(random_ship(), %{
         :id => id,
         :tag => tag,
-        :game_pid => game_pid,
+        :game => game_info,
         :clock_ms => Clock.now_ms(),
         :tick_ms => Clock.ms_between_frames()
       })
@@ -107,7 +108,7 @@ defmodule Ship.Server do
       |> rotate_ship(delta_t_ms)
       |> Map.put(:clock_ms, Clock.now_ms())
 
-    Game.update_ship(ship.game_pid, state_tuple(new_ship))
+    Game.update_ship(ship.game.pid, state_tuple(new_ship))
     {:noreply, new_ship}
   end
 
@@ -139,10 +140,12 @@ defmodule Ship.Server do
     if Clock.past?(ship.laser_charged_at) do
       id = next_id()
       pos = calculate_nose(ship)
-      {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, ship.game_pid)
-      Game.bullet_fired(ship.game_pid, id, bullet_pid)
-      Game.broadcast(ship.game_pid, id, [ship.tag, "fires"])
-      Elixoids.News.publish_audio(0, %{fires: World.Clock.now_ms(), pan: 0.0})
+      # TODO ship.game_pid should be game_id)
+      {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, 0)
+      Game.bullet_fired(ship.game.pid, id, bullet_pid)
+      Game.broadcast(ship.game.pid, id, [ship.tag, "fires"])
+      pan = Elixoids.Space.frac_x(ship.pos.x)
+      Elixoids.News.publish_audio(0, SoundEvent.fire(pan, ship.game.time.()))
       {:noreply, recharge_laser(ship)}
     else
       {:noreply, ship}
@@ -179,7 +182,7 @@ defmodule Ship.Server do
       :pos => random_ship_point(),
       :theta => 0.0,
       :target_theta => 0.0,
-      :laser_charged_at => Clock.now_ms()
+      :laser_charged_at => Clock.now_ms() - 1
     }
   end
 

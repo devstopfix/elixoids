@@ -9,20 +9,22 @@ defmodule Bullet.Server do
   use GenServer
 
   alias Elixoids.Space
-  alias World.Clock
+  alias Game.Server, as: GameServer
   alias World.Point
+  import World.Clock
 
   @bullet_range_m 2000.0
   @bullet_speed_m_per_s 750.0
 
+  @fly_time_ms s_to_ms(@bullet_range_m / @bullet_speed_m_per_s)
+
   @doc """
   Fire a bullet with:
 
-      {:ok, game} = Game.Server.start_link()
-      {:ok, b} = Bullet.Server.start_link(999, %World.Point{:x=>0.0, :y=>0.0}, 1.0, "XXX", game)
-      Process.alive?(b)
+      {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
+      {:ok, b} = Bullet.Server.start_link(999, %World.Point{:x=>0.0, :y=>0.0}, 1.0, "XXX", game_id)
   """
-  def start_link(id, pos, theta, shooter, game_pid) do
+  def start_link(id, pos, theta, shooter, game_id) when is_integer(game_id) do
     v = %World.Velocity{:theta => theta, :speed => @bullet_speed_m_per_s}
 
     b = %{
@@ -30,10 +32,10 @@ defmodule Bullet.Server do
       :pos => pos,
       :velocity => v,
       :shooter => shooter,
-      :game_pid => game_pid,
+      :game_id => game_id,
       :expire_at => calculate_ttl(),
-      :clock_ms => Clock.now_ms(),
-      :tick_ms => Clock.ms_between_frames()
+      :clock_ms => now_ms(),
+      :tick_ms => ms_between_frames()
     }
 
     GenServer.start_link(__MODULE__, b)
@@ -44,6 +46,7 @@ defmodule Bullet.Server do
   """
   def stop(pid) do
     GenServer.cast(pid, :stop)
+    # TODO this can be a normal process exit?
   end
 
   def hit_asteroid(pid) do
@@ -53,8 +56,8 @@ defmodule Bullet.Server do
   @doc """
   Stop the bullet, and tell the game who fired the bullet.
   """
-  def hit_ship(pid, victim_tag, game_pid) do
-    GenServer.cast(pid, {:hit_ship, victim_tag, game_pid})
+  def hit_ship(pid, victim_tag, game_id) do
+    GenServer.cast(pid, {:hit_ship, victim_tag, game_id})
   end
 
   # GenServer callbacks
@@ -68,14 +71,14 @@ defmodule Bullet.Server do
   Update the position of the bullet and broadcast to the game
   """
   def handle_cast(:move, bullet) do
-    delta_t_ms = Clock.since(bullet.clock_ms)
+    delta_t_ms = since(bullet.clock_ms)
 
     moved_bullet =
       bullet
       |> move_bullet(delta_t_ms)
-      |> Map.put(:clock_ms, Clock.now_ms())
+      |> Map.put(:clock_ms, now_ms())
 
-    Game.Server.update_bullet(bullet.game_pid, state_tuple(moved_bullet))
+    GameServer.update_bullet(bullet.game_id, state_tuple(moved_bullet))
     {:noreply, moved_bullet}
   end
 
@@ -103,19 +106,19 @@ defmodule Bullet.Server do
     {:noreply, b}
   end
 
-  def handle_cast({:hit_ship, victim_tag, game_pid}, bullet) do
-    Game.Server.player_shot_player(game_pid, bullet.id, bullet.shooter, victim_tag)
+  def handle_cast({:hit_ship, victim_tag, game_id}, bullet) do
+    GameServer.player_shot_player(game_id, bullet.id, bullet.shooter, victim_tag)
     {:stop, :normal, bullet}
   end
 
   @doc """
   Tick event occurs at approximately 60fps until the bullet expires.
-  If the bullet is still travelling, tell it to move, and enque the next tick.
+  If the bullet is still travelling, tell it to move, and enqueue the next tick.
   Otherwise stop.
   """
   def handle_info(:tick, bullet) do
-    if Clock.past?(bullet.expire_at) do
-      Game.Server.bullet_missed(bullet.game_pid, {bullet.id, bullet.shooter})
+    if past?(bullet.expire_at) do
+      GameServer.bullet_missed(bullet.game_id, {bullet.id, bullet.shooter})
       {:stop, :normal, bullet}
     else
       GenServer.cast(self(), :move)
@@ -150,16 +153,10 @@ defmodule Bullet.Server do
   Calculate the time to live (in ms) of a bullet
   from the distance it can cover and it's velocity.
   """
-  def calculate_ttl do
-    bullet_speed_m_per_ms = @bullet_speed_m_per_s / 1000.0
-    fly_time_ms = trunc(@bullet_range_m / bullet_speed_m_per_ms)
-    Clock.now_ms() + fly_time_ms
-  end
+  def calculate_ttl, do: now_ms() + @fly_time_ms
 
   @doc """
   Is distance d in metres within the range of a bullet?
   """
-  def in_range?(d) do
-    d < @bullet_range_m
-  end
+  def in_range?(d), do: d < @bullet_range_m
 end

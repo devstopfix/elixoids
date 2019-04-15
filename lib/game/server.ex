@@ -37,6 +37,8 @@ defmodule Game.Server do
 
   alias Asteroid.Server, as: Asteroid
   alias Bullet.Server, as: Bullet
+  alias Elixoids.Api.SoundEvent
+  alias Elixoids.Game.Info
   alias Game.Collision
   alias Ship.Server, as: Ship
   alias World.Clock
@@ -81,12 +83,12 @@ defmodule Game.Server do
     GenServer.cast(pid, {:bullet_fired, bullet_id, bullet_pid})
   end
 
-  def update_bullet(pid, new_state) do
-    GenServer.cast(pid, {:update_bullet, new_state})
+  def update_bullet(game_id, new_state) do
+    GenServer.cast(via(game_id), {:update_bullet, new_state})
   end
 
-  def bullet_missed(pid, {id, shooter}) do
-    GenServer.cast(pid, {:bullet_missed, id, shooter})
+  def bullet_missed(game_id, {id, shooter}) do
+    GenServer.cast(via(game_id), {:bullet_missed, id, shooter})
   end
 
   def stop_bullet(pid, id) do
@@ -105,8 +107,8 @@ defmodule Game.Server do
     GenServer.cast(pid, {:say_player_shot_ship, bullet_id, victim_id})
   end
 
-  def player_shot_player(pid, bullet_id, shooter_tag, victim_tag) do
-    GenServer.cast(pid, {:player_shot_player, bullet_id, shooter_tag, victim_tag})
+  def player_shot_player(game_id, bullet_id, shooter_tag, victim_tag) do
+    GenServer.cast(via(game_id), {:player_shot_player, bullet_id, shooter_tag, victim_tag})
   end
 
   def hyperspace_ship(pid, ship_id) do
@@ -154,8 +156,9 @@ defmodule Game.Server do
   ## Server Callbacks
 
   def init(game_id: game_id, fps: fps, asteroids: asteroid_count) do
-    game_state = initial_game_state(fps, asteroid_count)
+    game_state = initial_game_state(fps, asteroid_count, game_id)
 
+    # TODO remove warning
     if fps > 0 do
       Process.send(self(), :tick, [])
     end
@@ -170,17 +173,18 @@ defmodule Game.Server do
     {:ok, game_state}
   end
 
-  defp initial_game_state(fps, asteroid_count) do
+  defp initial_game_state(fps, asteroid_count, game_id) do
     {:ok, collision_pid} = Collision.start_link(self())
 
     %{
+      :game_id => game_id,
+      :info => info(self(), game_id),
       :pids => %{:asteroids => generate_asteroids(asteroid_count), :bullets => %{}, :ships => %{}},
       :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
       :players => %{},
       :collision_pid => collision_pid,
       :min_asteroid_count => asteroid_count,
-      :tick_ms => Clock.ms_between_frames(fps),
-      :kby => %{}
+      :tick_ms => Clock.ms_between_frames(fps)
     }
   end
 
@@ -248,9 +252,10 @@ defmodule Game.Server do
 
   @doc """
   Remove bullet from Game.
+  TODO this can be achieved with trapped process exit?
+  TODO remove shooter
   """
-  def handle_cast({:bullet_missed, id, shooter}, game) do
-    broadcast(self(), id, [shooter, "misses"])
+  def handle_cast({:bullet_missed, id, _shooter}, game) do
     {:noreply, remove_bullet_from_game(game, id)}
   end
 
@@ -310,7 +315,7 @@ defmodule Game.Server do
 
     if bullet_pid != nil && victim != nil do
       victim_tag = elem(victim, 1)
-      Bullet.hit_ship(bullet_pid, victim_tag, self())
+      Bullet.hit_ship(bullet_pid, victim_tag, game.game_id)
     end
 
     {:noreply, game}
@@ -318,7 +323,7 @@ defmodule Game.Server do
 
   def handle_cast({:player_shot_player, bullet_id, shooter_tag, victim_tag}, game) do
     broadcast(self(), bullet_id, [shooter_tag, "kills", victim_tag])
-    {:noreply, put_in(game.kby[victim_tag], shooter_tag)}
+    {:noreply, game}
   end
 
   def handle_cast({:hyperspace_ship, ship_id}, game) do
@@ -355,7 +360,10 @@ defmodule Game.Server do
   """
   def handle_cast({:explosion, x, y}, state) do
     # TODO pan
-    Elixoids.News.publish_audio(0, next_id())
+    # TODO not game 0
+    pan = Elixoids.Space.frac_x(x)
+    Elixoids.News.publish_audio(0, SoundEvent.explosion(pan, state.info.time.()))
+    # TODO not game 0
     Elixoids.News.publish_explosion(0, [x, y])
     {:noreply, state}
   end
@@ -367,7 +375,7 @@ defmodule Game.Server do
   def handle_cast({:spawn_player, player_tag}, game) do
     if ship_id_of_player(game, player_tag) == nil do
       id = next_id()
-      {:ok, ship_pid} = Ship.start_link(id, self(), player_tag)
+      {:ok, ship_pid} = Ship.start_link(id, game.info, player_tag)
 
       new_game =
         game
@@ -459,8 +467,7 @@ defmodule Game.Server do
       :dim => Elixoids.Space.dimensions(),
       :a => game.state.asteroids |> map_of_tuples_to_list,
       :s => game.state.ships |> map_of_tuples_to_list |> map_rest,
-      :b => game.state.bullets |> map_of_tuples_to_list,
-      :kby => game.kby
+      :b => game.state.bullets |> map_of_tuples_to_list
     }
 
     {:reply, game_state, game}
@@ -485,11 +492,7 @@ defmodule Game.Server do
       :origin => {x, y}
     }
 
-    if Map.has_key?(game.kby, ship_tag) do
-      {:reply, Map.put(ship_state, :kby, game.kby[ship_tag]), game}
-    else
-      {:reply, ship_state, game}
-    end
+    {:reply, ship_state, game}
   end
 
   def ships_except(ships, tag) do
@@ -607,4 +610,14 @@ defmodule Game.Server do
       id -> get_in(game, [:pids, :ships, id])
     end
   end
+
+  # Partial function that returns number of ms since game began
+  @spec game_time() :: (() -> integer())
+  defp game_time do
+    epoch = Clock.now_ms()
+    fn -> Clock.now_ms() - epoch end
+  end
+
+  # TODO remove pid
+  defp info(pid, game_id), do: Info.new(pid, game_id, game_time())
 end
