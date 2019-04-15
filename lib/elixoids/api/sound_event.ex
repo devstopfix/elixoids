@@ -15,5 +15,5 @@ defmodule Elixoids.Api.SoundEvent do
 
   def explosion(pan) when is_float(pan), do: %__MODULE__{snd: "x", pan: pan}
 
-  def fire(pan) when is_float(pan), do: %__MODULE__{snd: "f", pan: pan}
+  def fire(pan, t) when is_float(pan), do: %__MODULE__{snd: "f", pan: pan, gt: t}
 end

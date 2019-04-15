@@ -10,8 +10,7 @@ defmodule Elixoids.News do
   end
 
   def publish_audio(game_id, audio) do
-    audio_gt = Map.put(audio, :gt, World.Clock.now_ms())
-    publish(game_id, {:audio, audio_gt})
+    publish(game_id, {:audio, audio})
   end
 
   def publish_explosion(game_id, audio), do: publish(game_id, {:explosion, audio})

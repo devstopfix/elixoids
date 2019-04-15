@@ -38,6 +38,7 @@ defmodule Game.Server do
   alias Asteroid.Server, as: Asteroid
   alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
+  alias Elixoids.Game.Info
   alias Game.Collision
   alias Ship.Server, as: Ship
   alias World.Clock
@@ -177,6 +178,7 @@ defmodule Game.Server do
 
     %{
       :game_id => game_id,
+      :info => info(self(), game_id),
       :pids => %{:asteroids => generate_asteroids(asteroid_count), :bullets => %{}, :ships => %{}},
       :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
       :players => %{},
@@ -373,7 +375,7 @@ defmodule Game.Server do
   def handle_cast({:spawn_player, player_tag}, game) do
     if ship_id_of_player(game, player_tag) == nil do
       id = next_id()
-      {:ok, ship_pid} = Ship.start_link(id, self(), player_tag)
+      {:ok, ship_pid} = Ship.start_link(id, game.info, player_tag)
 
       new_game =
         game
@@ -613,4 +615,14 @@ defmodule Game.Server do
       id -> get_in(game, [:pids, :ships, id])
     end
   end
+
+  # Partial function that returns number of ms since game began
+  @spec game_time() :: (() -> integer())
+  defp game_time do
+    epoch = Clock.now_ms()
+    fn -> Clock.now_ms() - epoch end
+  end
+
+  # TODO remove pid
+  defp info(pid, game_id), do: Info.new(pid, game_id, game_time())
 end

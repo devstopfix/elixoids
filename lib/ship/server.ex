@@ -32,12 +32,12 @@ defmodule Ship.Server do
   @laser_recharge_ms 500
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
 
-  def start_link(id, game_pid, tag \\ Player.random_tag()) do
+  def start_link(id, game_info, tag \\ Player.random_tag()) do
     ship =
       Map.merge(random_ship(), %{
         :id => id,
         :tag => tag,
-        :game_pid => game_pid,
+        :game => game_info,
         :clock_ms => Clock.now_ms(),
         :tick_ms => Clock.ms_between_frames()
       })
@@ -108,7 +108,7 @@ defmodule Ship.Server do
       |> rotate_ship(delta_t_ms)
       |> Map.put(:clock_ms, Clock.now_ms())
 
-    Game.update_ship(ship.game_pid, state_tuple(new_ship))
+    Game.update_ship(ship.game.pid, state_tuple(new_ship))
     {:noreply, new_ship}
   end
 
@@ -142,9 +142,9 @@ defmodule Ship.Server do
       pos = calculate_nose(ship)
       # TODO ship.game_pid should be game_id)
       {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, 0)
-      Game.bullet_fired(ship.game_pid, id, bullet_pid)
-      Game.broadcast(ship.game_pid, id, [ship.tag, "fires"])
-      Elixoids.News.publish_audio(0, SoundEvent.fire(0.8))
+      Game.bullet_fired(ship.game.pid, id, bullet_pid)
+      Game.broadcast(ship.game.pid, id, [ship.tag, "fires"])
+      Elixoids.News.publish_audio(0, SoundEvent.fire(0.8, ship.game.time.()))
       {:noreply, recharge_laser(ship)}
     else
       {:noreply, ship}

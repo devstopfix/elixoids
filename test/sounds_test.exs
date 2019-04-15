@@ -25,7 +25,7 @@ defmodule Elixoids.SoundsTest do
 
     assert pan >= -1.0
     assert pan <= 1.0
-    assert gt >= start_of_game
+    assert gt >= 0
 
     Process.exit(game, :normal)
   end
