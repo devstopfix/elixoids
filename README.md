@@ -57,8 +57,8 @@ Sound events can be received at `ws://example.com/sound` and are a JSON list of 
 
 ```json
 [
-  {"snd"=>"x", "pan"=>-0.8, "gt"=>1555221883802},
-  {"snd"=>"f", "pan"=>0.2,  "gt"=>1555221884010}
+  {"snd"=>"x", "pan"=>-0.8, "gt"=>83802},
+  {"snd"=>"f", "pan"=>0.2,  "gt"=>84010}
 ]
 ...
 ```

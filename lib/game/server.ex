@@ -184,8 +184,7 @@ defmodule Game.Server do
       :players => %{},
       :collision_pid => collision_pid,
       :min_asteroid_count => asteroid_count,
-      :tick_ms => Clock.ms_between_frames(fps),
-      :kby => %{}
+      :tick_ms => Clock.ms_between_frames(fps)
     }
   end
 
@@ -324,7 +323,7 @@ defmodule Game.Server do
 
   def handle_cast({:player_shot_player, bullet_id, shooter_tag, victim_tag}, game) do
     broadcast(self(), bullet_id, [shooter_tag, "kills", victim_tag])
-    {:noreply, put_in(game.kby[victim_tag], shooter_tag)}
+    {:noreply, game}
   end
 
   def handle_cast({:hyperspace_ship, ship_id}, game) do
@@ -468,8 +467,7 @@ defmodule Game.Server do
       :dim => Elixoids.Space.dimensions(),
       :a => game.state.asteroids |> map_of_tuples_to_list,
       :s => game.state.ships |> map_of_tuples_to_list |> map_rest,
-      :b => game.state.bullets |> map_of_tuples_to_list,
-      :kby => game.kby
+      :b => game.state.bullets |> map_of_tuples_to_list
     }
 
     {:reply, game_state, game}
@@ -494,11 +492,7 @@ defmodule Game.Server do
       :origin => {x, y}
     }
 
-    if Map.has_key?(game.kby, ship_tag) do
-      {:reply, Map.put(ship_state, :kby, game.kby[ship_tag]), game}
-    else
-      {:reply, ship_state, game}
-    end
+    {:reply, ship_state, game}
   end
 
   def ships_except(ships, tag) do
