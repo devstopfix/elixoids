@@ -362,7 +362,7 @@ defmodule Game.Server do
   def handle_cast({:explosion, x, y}, state) do
     # TODO pan
     # TODO not game 0
-    Elixoids.News.publish_audio(0, SoundEvent.explosion(-0.8))
+    Elixoids.News.publish_audio(0, SoundEvent.explosion(-0.8, state.info.time.()))
     # TODO not game 0
     Elixoids.News.publish_explosion(0, [x, y])
     {:noreply, state}
