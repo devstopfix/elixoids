@@ -13,11 +13,12 @@ defmodule Ship.Server do
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Player
   alias Elixoids.Space
-  import Game.Identifiers
-  alias Game.Server, as: Game
+  alias Game.Server, as: GameServer
   alias World.Clock
   alias World.Point
   alias World.Velocity
+  import Elixoids.News
+  import Game.Identifiers
   use Elixoids.Game.Heartbeat
 
   # Ship radius (m)
@@ -125,8 +126,8 @@ defmodule Ship.Server do
       pos = calculate_nose(ship)
       # TODO ship.game_pid should be game_id)
       {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, 0)
-      Game.bullet_fired(ship.game.pid, id, bullet_pid)
-      Game.broadcast(ship.game.pid, id, [ship.tag, "fires"])
+      GameServer.bullet_fired(ship.game.pid, id, bullet_pid)
+      publish_news(ship.game.id, [ship.tag, "fires"])
       pan = Elixoids.Space.frac_x(ship.pos.x)
       Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan, ship.game.time.()))
       {:noreply, recharge_laser(ship)}
@@ -215,7 +216,7 @@ defmodule Ship.Server do
   def handle_tick(_pid, delta_t_ms, ship) do
     new_ship = ship |> __MODULE__.rotate_ship(delta_t_ms)
 
-    Game.update_ship(ship.game.pid, __MODULE__.state_tuple(new_ship))
+    GameServer.update_ship(ship.game.pid, __MODULE__.state_tuple(new_ship))
     {:ok, new_ship}
   end
 end

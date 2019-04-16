@@ -15,7 +15,10 @@ defmodule Elixoids.News do
 
   def publish_explosion(game_id, point), do: publish(game_id, {:explosion, point})
 
-  def publish_news(game_id, audio), do: publish(game_id, {:news, audio})
+  def publish_news(game_id, news) when is_binary(news), do: publish(game_id, {:news, news})
+
+  def publish_news(game_id, news) when is_list(news),
+    do: publish(game_id, {:news, Enum.join(news, " ")})
 
   defp publish(game_id, news) when is_integer(game_id) do
     :ok =

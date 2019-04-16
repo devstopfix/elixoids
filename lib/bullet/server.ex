@@ -13,6 +13,7 @@ defmodule Bullet.Server do
   alias World.Point
   import World.Clock
   use Elixoids.Game.Heartbeat
+  import Elixoids.News
 
   @bullet_range_m 2000.0
   @bullet_speed_m_per_s 750.0
@@ -101,12 +102,12 @@ defmodule Bullet.Server do
   """
   def handle_cast(:hit_asteroid, b) do
     msg = Enum.join([b.shooter, "shot", "ASTEROID"], " ")
-    Elixoids.News.publish_news(0, msg)
+    publish_news(b.game_id, msg)
     {:noreply, b}
   end
 
   def handle_cast({:hit_ship, victim_tag, game_id}, bullet) do
-    GameServer.player_shot_player(game_id, bullet.id, bullet.shooter, victim_tag)
+    publish_news(game_id, [bullet.shooter, "kills", victim_tag])
     {:stop, :normal, bullet}
   end
 

@@ -109,20 +109,12 @@ defmodule Game.Server do
     GenServer.cast(pid, {:say_player_shot_ship, bullet_id, victim_id})
   end
 
-  def player_shot_player(game_id, bullet_id, shooter_tag, victim_tag) do
-    GenServer.cast(via(game_id), {:player_shot_player, bullet_id, shooter_tag, victim_tag})
-  end
-
   def hyperspace_ship(pid, ship_id) do
     GenServer.cast(pid, {:hyperspace_ship, ship_id})
   end
 
   def say_ship_hit_by_asteroid(pid, ship_id) do
     GenServer.cast(pid, {:say_ship_hit_by_asteroid, ship_id})
-  end
-
-  def broadcast(pid, id, msg) do
-    GenServer.cast(pid, {:broadcast, id, msg})
   end
 
   def spawn_player(pid, player_tag) do
@@ -322,11 +314,6 @@ defmodule Game.Server do
     {:noreply, game}
   end
 
-  def handle_cast({:player_shot_player, bullet_id, shooter_tag, victim_tag}, game) do
-    broadcast(self(), bullet_id, [shooter_tag, "kills", victim_tag])
-    {:noreply, game}
-  end
-
   def handle_cast({:hyperspace_ship, ship_id}, game) do
     case game.pids.ships[ship_id] do
       nil ->
@@ -344,16 +331,10 @@ defmodule Game.Server do
         {:noreply, game}
 
       {_ship_id, tag, x, y, _, _, _} ->
-        broadcast(self(), ship_id, ["ASTEROID", "hit", tag])
+        Elixoids.News.publish_news(game.game_id, ["ASTEROID", "hit", tag])
         Game.Server.explosion(self(), x, y)
         {:noreply, game}
     end
-  end
-
-  def handle_cast({:broadcast, id, msg}, game) do
-    txt = Enum.join([id] ++ msg, " ")
-    Elixoids.News.publish_news(game.game_id, txt)
-    {:noreply, game}
   end
 
   @doc """
