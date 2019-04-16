@@ -42,11 +42,7 @@ defmodule Ship.Server do
         :tick_ms => Clock.ms_between_frames()
       })
 
-    GenServer.start_link(__MODULE__, ship, name: process_name(id, tag))
-  end
-
-  defp process_name(id, tag) do
-    ["ship", String.downcase(tag), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom()
+    GenServer.start_link(__MODULE__, ship)
   end
 
   @doc """

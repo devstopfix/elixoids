@@ -22,6 +22,8 @@ defmodule Elixoids.Game.Supervisor do
 
   @doc """
   Start a new supervised game.
+
+      Elixoids.Game.Supervisor.start_game([fps: 4, asteroids: 4])
   """
   @spec start_game(fps: integer(), asteroids: integer()) :: {:ok, pid(), integer()}
   def start_game(args = [fps: fps, asteroids: asteroid_count])
