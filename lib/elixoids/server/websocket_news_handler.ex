@@ -31,15 +31,19 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
     {:ok, state}
   end
 
-  def websocket_info({:timeout, _ref, _}, state) do
+  # No news to transmit
+  def websocket_info({:timeout, _ref, _}, []) do
     :erlang.start_timer(@ms_between_frames, self(), [])
-
-    case state do
-      [] -> {:ok, state}
-      lines -> {:reply, {:text, Enum.join(lines, "\n")}, []}
-    end
+    {:ok, []}
   end
 
+  # News to transmit
+  def websocket_info({:timeout, _ref, _}, state) do
+    :erlang.start_timer(@ms_between_frames, self(), [])
+    {:reply, {:text, format(state)}, []}
+  end
+
+  # Record news event
   def websocket_info({:news, news}, state) do
     {:ok, [news | state]}
   end
@@ -47,4 +51,6 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
   def websocket_info(_, state) do
     {:ok, state}
   end
+
+  defp format(lines), do: lines |> Enum.reverse  |> Enum.join("\n")
 end

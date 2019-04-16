@@ -74,8 +74,23 @@ The pan is a float from -1 to +1 where -1 is hard left and zero is center. See t
 
 * `gt` is the game time in milliseconds and can be used for ordering or delaying events
 
+### News Client
 
-### Java Client
+There is a sample Python news client at [cat_news.py](client/cat_news.py):
+
+The news stream is a stream of lines of the form:
+
+    PLAYER VERB [SUBJECT]
+
+Examples:
+
+```
+PLY fires
+PLY hit ASTEROID
+PLY hit OTH
+```
+
+### Java Ship Client
 
 See [Elixoids Java Client](https://github.com/jrothwell/asteroids-client) by [J Rothwell][5].
 
@@ -95,6 +110,8 @@ To run a simple client that instructs a ship to [shoot the nearest asteroid](cli
 If you are running the game other than at localhost, specify the websocket in the environment:
 
     export ELIXOIDS_SERVER=rocks.example.com:8065
+
+NB The websocket library is troublesome. It will often fail to connect after a reboot. Keep trying and it will eventually connect and stay connected! These scripts will be migrated to Python3.
 
 ## Refresh UI
 
