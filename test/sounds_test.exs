@@ -7,7 +7,6 @@ defmodule Elixoids.SoundsTest do
   import World.Clock
 
   test "When a player shoots we receive a sound event" do
-    start_of_game = now_ms()
     tag = "FIR"
     {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
 

@@ -23,7 +23,7 @@ defmodule Bullet.ServerTest do
   end
 
   test "Stop a bullet" do
-    {:ok, game, game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+    {:ok, _, game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
 
     {:ok, b} =
       Bullet.start_link(

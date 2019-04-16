@@ -67,8 +67,8 @@ defmodule Game.Server do
     GenServer.call(via(game_id), {:state_of_ship, ship_tag})
   end
 
-  def update_asteroid(pid, new_state) do
-    GenServer.cast(pid, {:update_asteroid, new_state})
+  def update_asteroid(game_id, new_state) do
+    GenServer.cast(via(game_id), {:update_asteroid, new_state})
   end
 
   def asteroid_hit(pid, id) do
@@ -145,10 +145,10 @@ defmodule Game.Server do
   Generate n new asteroids and store as a map of their
   identifier to a tuple of their {pid, state}.
   """
-  def generate_asteroids(n) do
+  def generate_asteroids(n, game_info) do
     Enum.reduce(1..n, %{}, fn _i, rocks ->
       id = next_id()
-      {:ok, pid} = Asteroid.start_link(id, self())
+      {:ok, pid} = Asteroid.start_link(id, game_info)
       Map.put(rocks, id, pid)
     end)
   end
@@ -176,14 +176,19 @@ defmodule Game.Server do
   defp initial_game_state(fps, asteroid_count, game_id) do
     {:ok, collision_pid} = Collision.start_link(self())
 
+    game_info = info(self(), game_id)
+    asteroids = generate_asteroids(asteroid_count, game_info)
+
     %{
       :game_id => game_id,
-      :info => info(self(), game_id),
-      :pids => %{:asteroids => generate_asteroids(asteroid_count), :bullets => %{}, :ships => %{}},
+      :info => game_info,
+      :pids => %{:asteroids => asteroids, :bullets => %{}, :ships => %{}},
       :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
       :players => %{},
+      # TODO link with Registry
       :collision_pid => collision_pid,
       :min_asteroid_count => asteroid_count,
+      # TODO heartbeat?
       :tick_ms => Clock.ms_between_frames(fps)
     }
   end
@@ -284,8 +289,7 @@ defmodule Game.Server do
     if pid != nil do
       fragments = Asteroid.split(pid)
 
-      new_game =
-        Enum.reduce(fragments, game, fn f, game -> new_asteroid_in_game(f, game, self()) end)
+      new_game = Enum.reduce(fragments, game, fn f, game -> new_asteroid_in_game(f, game) end)
 
       Asteroid.stop(pid)
 
@@ -431,9 +435,7 @@ defmodule Game.Server do
   def handle_cast(:next_frame, game) do
     Collision.collision_tests(game.collision_pid, game)
 
-    next_game_state =
-      game
-      |> maybe_spawn_asteroid(self())
+    next_game_state = maybe_spawn_asteroid(game)
 
     {:noreply, next_game_state}
   end
@@ -525,17 +527,17 @@ defmodule Game.Server do
 
   # Asteroids
 
-  def new_asteroid_in_game(a, game, game_pid) do
+  def new_asteroid_in_game(a, game) do
     id = next_id()
-    {:ok, pid} = Asteroid.start_link(id, game_pid, a)
+    {:ok, pid} = Asteroid.start_link(id, game.info, a)
     put_in(game.pids.asteroids[id], pid)
   end
 
-  defp maybe_spawn_asteroid(game, game_pid) do
+  defp maybe_spawn_asteroid(game) do
     active_asteroid_count = length(Map.keys(game.pids.asteroids))
 
     if active_asteroid_count < game.min_asteroid_count do
-      new_asteroid_in_game(Asteroid.random_asteroid(), game, game_pid)
+      new_asteroid_in_game(Asteroid.random_asteroid(), game)
     else
       game
     end

@@ -8,6 +8,7 @@ defmodule Asteroid.Server do
   use Elixoids.Game.Heartbeat
 
   alias Elixoids.Space
+  alias Game.Server, as: GameServer
   alias World.Point
   alias World.Velocity
 
@@ -23,11 +24,11 @@ defmodule Asteroid.Server do
   # Initial speed of asteroid
   @asteroid_speed_m_per_s 20.0
 
-  def start_link(id, game_pid, asteroid \\ random_asteroid()) do
+  def start_link(id, game_info, asteroid \\ random_asteroid()) do
     a =
       Map.merge(asteroid, %{
         :id => id,
-        :game_pid => game_pid
+        :game => game_info
       })
 
     GenServer.start_link(__MODULE__, a)
@@ -71,7 +72,7 @@ defmodule Asteroid.Server do
 
   def handle_tick(_pid, delta_t_ms, asteroid) do
     moved_asteroid = asteroid |> move_asteroid(delta_t_ms)
-    Game.Server.update_asteroid(asteroid.game_pid, state_tuple(moved_asteroid))
+    GameServer.update_asteroid(asteroid.game.id, state_tuple(moved_asteroid))
     {:ok, moved_asteroid}
   end
 
@@ -104,10 +105,6 @@ defmodule Asteroid.Server do
       {:reply, [], a}
     end
   end
-
-  # {:ok, a} = Asteroid.Server.start_link(1)
-  # Asteroid.Server.position(a)
-  # Asteroid.Server.move(a,1)
 
   def random_asteroid do
     p = Elixoids.Space.random_point_on_border()
