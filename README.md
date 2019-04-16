@@ -88,6 +88,7 @@ Examples:
 PLY fires
 PLY hit ASTEROID
 PLY hit OTH
+ASTEROID hits PLY
 ```
 
 ### Java Ship Client

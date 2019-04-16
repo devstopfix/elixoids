@@ -52,5 +52,5 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
     {:ok, state}
   end
 
-  defp format(lines), do: lines |> Enum.reverse  |> Enum.join("\n")
+  defp format(lines), do: lines |> Enum.reverse() |> Enum.join("\n")
 end
