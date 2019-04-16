@@ -18,6 +18,7 @@ defmodule Ship.Server do
   alias World.Clock
   alias World.Point
   alias World.Velocity
+  use Elixoids.Game.Heartbeat
 
   # Ship radius (m)
   @ship_radius_m 20.0
@@ -37,9 +38,7 @@ defmodule Ship.Server do
       Map.merge(random_ship(), %{
         :id => id,
         :tag => tag,
-        :game => game_info,
-        :clock_ms => Clock.now_ms(),
-        :tick_ms => Clock.ms_between_frames()
+        :game => game_info
       })
 
     GenServer.start_link(__MODULE__, ship)
@@ -85,7 +84,7 @@ defmodule Ship.Server do
   # GenServer callbacks
 
   def init(ship) do
-    Process.send(self(), :tick, [])
+    start_heartbeat()
     {:ok, ship}
   end
 
@@ -96,18 +95,6 @@ defmodule Ship.Server do
   @doc """
   Rotate the ship and broadcast new state to the game.
   """
-  def handle_cast(:move, ship) do
-    delta_t_ms = Clock.since(ship.clock_ms)
-
-    new_ship =
-      ship
-      |> rotate_ship(delta_t_ms)
-      |> Map.put(:clock_ms, Clock.now_ms())
-
-    Game.update_ship(ship.game.pid, state_tuple(new_ship))
-    {:noreply, new_ship}
-  end
-
   def handle_cast(:hyperspace, ship) do
     p = random_ship_point()
     theta = Velocity.random_direction()
@@ -152,15 +139,6 @@ defmodule Ship.Server do
     ship_centre = ship.pos
     v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
     Point.apply_velocity(ship_centre, v, 1000.0)
-  end
-
-  @doc """
-  Heartbeat. Causes ship to update itself at given interval.
-  """
-  def handle_info(:tick, a) do
-    GenServer.cast(self(), :move)
-    Process.send_after(self(), :tick, a.tick_ms)
-    {:noreply, a}
   end
 
   # Data
@@ -231,5 +209,13 @@ defmodule Ship.Server do
 
   def discharge_laser(ship) do
     %{ship | :laser_charged_at => Clock.now_ms() + @laser_recharge_penalty_ms}
+  end
+
+  # defimpl Elixoids.Game.Heartbeat.Tick do
+  def handle_tick(_pid, delta_t_ms, ship) do
+    new_ship = ship |> __MODULE__.rotate_ship(delta_t_ms)
+
+    Game.update_ship(ship.game.pid, __MODULE__.state_tuple(new_ship))
+    {:ok, new_ship}
   end
 end

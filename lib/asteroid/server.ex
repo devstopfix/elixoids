@@ -5,9 +5,9 @@ defmodule Asteroid.Server do
   """
 
   use GenServer
+  use Elixoids.Game.Heartbeat
 
   alias Elixoids.Space
-  alias World.Clock
   alias World.Point
   alias World.Velocity
 
@@ -27,9 +27,7 @@ defmodule Asteroid.Server do
     a =
       Map.merge(asteroid, %{
         :id => id,
-        :game_pid => game_pid,
-        :clock_ms => Clock.now_ms(),
-        :tick_ms => Clock.ms_between_frames()
+        :game_pid => game_pid
       })
 
     GenServer.start_link(__MODULE__, a)
@@ -67,30 +65,18 @@ defmodule Asteroid.Server do
   # GenServer callbacks
 
   def init(a) do
-    Process.send(self(), :tick, [])
+    start_heartbeat()
     {:ok, a}
   end
 
-  def handle_cast(:move, a) do
-    delta_t_ms = Clock.since(a.clock_ms)
-
-    moved_asteroid =
-      a
-      |> move_asteroid(delta_t_ms)
-      |> Map.put(:clock_ms, Clock.now_ms())
-
-    Game.Server.update_asteroid(a.game_pid, state_tuple(moved_asteroid))
-    {:noreply, moved_asteroid}
+  def handle_tick(_pid, delta_t_ms, asteroid) do
+    moved_asteroid = asteroid |> move_asteroid(delta_t_ms)
+    Game.Server.update_asteroid(asteroid.game_pid, state_tuple(moved_asteroid))
+    {:ok, moved_asteroid}
   end
 
   def handle_cast(:stop, b) do
     {:stop, :normal, b}
-  end
-
-  def handle_info(:tick, a) do
-    GenServer.cast(self(), :move)
-    Process.send_after(self(), :tick, a.tick_ms)
-    {:noreply, a}
   end
 
   @doc """

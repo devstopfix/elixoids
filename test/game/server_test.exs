@@ -6,8 +6,8 @@ defmodule Game.ServerTest do
   alias Elixoids.Game.Supervisor, as: GameSupervisor
 
   test "We can retrieve game state of Asteroids" do
-    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 2)
-    :timer.sleep(10)
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+    :timer.sleep(200)
     game_state = Game.state(game)
     assert [_, _, _, 120.0] = List.first(game_state[:a])
     Process.exit(game, :normal)
@@ -30,17 +30,6 @@ defmodule Game.ServerTest do
     assert game2_id != game1_id
     assert game1 != game2
   end
-
-  # test "We can retrieve sound state of eXplosions" do
-  #   {:ok, game} = Game.start_link(1)
-  #   :timer.sleep(10)
-
-  #   Elixoids.News.subscribe(0)
-
-  #   # TODO check for sound
-
-  #   assert true
-  # end
 
   test "We can retrieve viewport dimensions from game state" do
     {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)

@@ -12,6 +12,7 @@ defmodule Bullet.Server do
   alias Game.Server, as: GameServer
   alias World.Point
   import World.Clock
+  use Elixoids.Game.Heartbeat
 
   @bullet_range_m 2000.0
   @bullet_speed_m_per_s 750.0
@@ -33,9 +34,7 @@ defmodule Bullet.Server do
       :velocity => v,
       :shooter => shooter,
       :game_id => game_id,
-      :expire_at => calculate_ttl(),
-      :clock_ms => now_ms(),
-      :tick_ms => ms_between_frames()
+      :expire_at => calculate_ttl()
     }
 
     GenServer.start_link(__MODULE__, b)
@@ -63,23 +62,23 @@ defmodule Bullet.Server do
   # GenServer callbacks
 
   def init(state) do
-    Process.send(self(), :tick, [])
+    start_heartbeat()
     {:ok, state}
   end
 
   @doc """
   Update the position of the bullet and broadcast to the game
   """
-  def handle_cast(:move, bullet) do
-    delta_t_ms = since(bullet.clock_ms)
-
-    moved_bullet =
-      bullet
-      |> move_bullet(delta_t_ms)
-      |> Map.put(:clock_ms, now_ms())
-
-    GameServer.update_bullet(bullet.game_id, state_tuple(moved_bullet))
-    {:noreply, moved_bullet}
+  def handle_tick(_pid, delta_t_ms, bullet) do
+    if past?(bullet.expire_at) do
+      # TODO this should be a stop signal seen by game and collision process
+      GameServer.bullet_missed(bullet.game_id, {bullet.id, bullet.shooter})
+      {:stop, :normal, bullet}
+    else
+      moved_bullet = bullet |> move_bullet(delta_t_ms)
+      GameServer.update_bullet(bullet.game_id, state_tuple(moved_bullet))
+      {:ok, moved_bullet}
+    end
   end
 
   @doc """
@@ -109,22 +108,6 @@ defmodule Bullet.Server do
   def handle_cast({:hit_ship, victim_tag, game_id}, bullet) do
     GameServer.player_shot_player(game_id, bullet.id, bullet.shooter, victim_tag)
     {:stop, :normal, bullet}
-  end
-
-  @doc """
-  Tick event occurs at approximately 60fps until the bullet expires.
-  If the bullet is still travelling, tell it to move, and enqueue the next tick.
-  Otherwise stop.
-  """
-  def handle_info(:tick, bullet) do
-    if past?(bullet.expire_at) do
-      GameServer.bullet_missed(bullet.game_id, {bullet.id, bullet.shooter})
-      {:stop, :normal, bullet}
-    else
-      GenServer.cast(self(), :move)
-      Process.send_after(self(), :tick, bullet.tick_ms)
-      {:noreply, bullet}
-    end
   end
 
   # Functions
