@@ -45,6 +45,7 @@ defmodule Game.Server do
   alias World.Clock
   alias World.Velocity
   import Game.Identifiers
+  import Logger
 
   def start_link(args = [game_id: game_id, fps: _, asteroids: _]) do
     {:ok, _pid} = GenServer.start_link(__MODULE__, args, name: via(game_id))
@@ -174,12 +175,12 @@ defmodule Game.Server do
   defp initial_game_state(asteroid_count, game_id) do
     {:ok, collision_pid} = Collision.start_link(self())
 
-    game_info = info(self(), game_id)
-    asteroids = generate_asteroids(asteroid_count, game_info)
+    info = game_info(self(), game_id)
+    asteroids = generate_asteroids(asteroid_count, info)
 
     %{
       :game_id => game_id,
-      :info => game_info,
+      :info => info,
       :pids => %{:asteroids => asteroids, :bullets => %{}, :ships => %{}},
       :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
       :players => %{},
@@ -440,7 +441,7 @@ defmodule Game.Server do
   def handle_info(msg, state) do
     case msg do
       {:EXIT, _pid, :normal} -> nil
-      _ -> IO.puts(inspect(msg))
+      _ -> [:EXIT, msg, state] |> inspect |> error()
     end
 
     {:noreply, state}
@@ -606,5 +607,5 @@ defmodule Game.Server do
   end
 
   # TODO remove pid
-  defp info(pid, game_id), do: Info.new(pid, game_id, game_time())
+  defp game_info(pid, game_id), do: Info.new(pid, game_id, game_time())
 end
