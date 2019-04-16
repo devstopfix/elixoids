@@ -4,7 +4,6 @@ defmodule Elixoids.SoundsTest do
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
   alias Game.Server, as: Game
-  import World.Clock
 
   test "When a player shoots we receive a sound event" do
     tag = "FIR"

@@ -34,6 +34,7 @@ defmodule Game.Server do
   """
 
   use GenServer
+  use Elixoids.Game.Heartbeat
 
   alias Asteroid.Server, as: Asteroid
   alias Bullet.Server, as: Bullet
@@ -155,13 +156,8 @@ defmodule Game.Server do
 
   ## Server Callbacks
 
-  def init(game_id: game_id, fps: fps, asteroids: asteroid_count) do
-    game_state = initial_game_state(fps, asteroid_count, game_id)
-
-    # TODO remove warning
-    if fps > 0 do
-      Process.send(self(), :tick, [])
-    end
+  def init(game_id: game_id, fps: _fps, asteroids: asteroid_count) do
+    game_state = initial_game_state(asteroid_count, game_id)
 
     if game_id == 0 do
       Process.register(self(), :game)
@@ -170,10 +166,12 @@ defmodule Game.Server do
 
     Process.flag(:trap_exit, true)
 
+    start_heartbeat()
+
     {:ok, game_state}
   end
 
-  defp initial_game_state(fps, asteroid_count, game_id) do
+  defp initial_game_state(asteroid_count, game_id) do
     {:ok, collision_pid} = Collision.start_link(self())
 
     game_info = info(self(), game_id)
@@ -187,9 +185,7 @@ defmodule Game.Server do
       :players => %{},
       # TODO link with Registry
       :collision_pid => collision_pid,
-      :min_asteroid_count => asteroid_count,
-      # TODO heartbeat?
-      :tick_ms => Clock.ms_between_frames(fps)
+      :min_asteroid_count => asteroid_count
     }
   end
 
@@ -429,25 +425,17 @@ defmodule Game.Server do
   @doc """
   Update the game state and check for collisions.
   """
-  def handle_cast(:next_frame, game) do
+  def handle_tick(_pid, _delta_t_ms, game) do
     Collision.collision_tests(game.collision_pid, game)
-
     next_game_state = maybe_spawn_asteroid(game)
-
-    {:noreply, next_game_state}
-  end
-
-  # Information
-
-  def handle_info(:tick, state) do
-    GenServer.cast(self(), :next_frame)
-    Process.send_after(self(), :tick, state.tick_ms)
-    {:noreply, state}
+    {:ok, next_game_state}
   end
 
   @doc """
   Echo any unsual messages to the console.
   Ignore processes that stop normally.
+
+  TODO remove processes that exit from state
   """
   def handle_info(msg, state) do
     case msg do
