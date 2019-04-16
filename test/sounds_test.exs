@@ -10,8 +10,7 @@ defmodule Elixoids.SoundsTest do
     tag = "FIR"
     {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
 
-    # TODO publish events to correct game News.subscribe(game_id)
-    News.subscribe(0)
+    News.subscribe(game_id)
 
     :ok = Game.spawn_player(game, tag)
 

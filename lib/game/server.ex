@@ -355,21 +355,18 @@ defmodule Game.Server do
 
   def handle_cast({:broadcast, id, msg}, game) do
     txt = Enum.join([id] ++ msg, " ")
-    Elixoids.News.publish_news(0, txt)
+    Elixoids.News.publish_news(game.game_id, txt)
     {:noreply, game}
   end
 
   @doc """
   Append an Explosion to the game state at given co-ordinates.
   """
-  def handle_cast({:explosion, x, y}, state) do
-    # TODO pan
-    # TODO not game 0
+  def handle_cast({:explosion, x, y}, game) do
     pan = Elixoids.Space.frac_x(x)
-    Elixoids.News.publish_audio(0, SoundEvent.explosion(pan, state.info.time.()))
-    # TODO not game 0
-    Elixoids.News.publish_explosion(0, [x, y])
-    {:noreply, state}
+    Elixoids.News.publish_audio(game.game_id, SoundEvent.explosion(pan, game.info.time.()))
+    Elixoids.News.publish_explosion(game.game_id, [x, y])
+    {:noreply, game}
   end
 
   @doc """

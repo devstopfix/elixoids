@@ -128,7 +128,7 @@ defmodule Ship.Server do
       Game.bullet_fired(ship.game.pid, id, bullet_pid)
       Game.broadcast(ship.game.pid, id, [ship.tag, "fires"])
       pan = Elixoids.Space.frac_x(ship.pos.x)
-      Elixoids.News.publish_audio(0, SoundEvent.fire(pan, ship.game.time.()))
+      Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan, ship.game.time.()))
       {:noreply, recharge_laser(ship)}
     else
       {:noreply, ship}
