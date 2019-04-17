@@ -37,6 +37,7 @@ defmodule Game.Server do
   use Elixoids.Game.Heartbeat
 
   alias Asteroid.Server, as: Asteroid
+  alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Game.Info
   alias Game.Collision
@@ -78,8 +79,8 @@ defmodule Game.Server do
     GenServer.cast(pid, {:update_ship, new_state})
   end
 
-  def bullet_fired(game_id, bullet_pid) do
-    GenServer.cast(via(game_id), {:bullet_fired, bullet_pid})
+  def bullet_fired(game_id, shooter_tag, pos, theta) do
+    GenServer.call(via(game_id), {:bullet_fired, shooter_tag, pos, theta})
   end
 
   def update_bullet(game_id, new_state) do
@@ -185,14 +186,6 @@ defmodule Game.Server do
   end
 
   @doc """
-  Put a marker for the spawned bullet into the game
-  """
-  def handle_cast({:bullet_fired, bullet_pid}, game) do
-    Process.link(bullet_pid)
-    {:noreply, put_in(game.state.bullets[bullet_pid], :spawn)}
-  end
-
-  @doc """
   Update the game state with the position of a bullet.
   The bullet broadcasts its state at a given fps.
   """
@@ -274,16 +267,24 @@ defmodule Game.Server do
   """
   def handle_info(msg, state) do
     case msg do
-      {:EXIT, pid, :normal} ->
+      {:EXIT, pid, :shutdown} ->
         {:noreply, remove_pid_from_game_state(pid, state)}
 
-      {:EXIT, pid, :shutdown} ->
+      {:EXIT, pid, :normal} ->
         {:noreply, remove_pid_from_game_state(pid, state)}
 
       _ ->
         [:EXIT, msg, state] |> inspect |> error()
         {:noreply, state}
     end
+  end
+
+  @doc """
+  Put a marker for the spawned bullet into the game
+  """
+  def handle_call({:bullet_fired, shooter_tag, pos, theta}, _from, game) do
+    {:ok, bullet_pid} = Bullet.start_link(game.game_id, shooter_tag, pos, theta)
+    {:reply, {:ok, bullet_pid}, put_in(game.state.bullets[bullet_pid], :spawn)}
   end
 
   @doc """
@@ -411,6 +412,8 @@ defmodule Game.Server do
     game
     |> remove_bullet_from_game(pid)
     |> remove_asteroid_from_game(pid)
+
+    # TODO remove ship!
   end
 
   defp remove_bullet_from_game(game, bullet_pid) do

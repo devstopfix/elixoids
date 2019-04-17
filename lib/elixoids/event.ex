@@ -21,7 +21,7 @@ defmodule Elixoids.Event do
         tag: victim_tag,
         pos: %{x: x, y: y}
       }) do
-    Process.exit(bullet_pid, :normal)
+    Process.exit(bullet_pid, :shutdown)
     Game.Server.explosion(game_id, x, y)
     Ship.Server.hyperspace(ship_pid)
     publish_news(game_id, [shooter_tag, "kills", victim_tag])
@@ -32,7 +32,7 @@ defmodule Elixoids.Event do
         %{pid: bullet_pid, shooter: shooter_tag, pos: %{x: x, y: y}},
         %{pid: asteroid_pid}
       ) do
-    Process.exit(bullet_pid, :normal)
+    Process.exit(bullet_pid, :shutdown)
     Game.Server.explosion(game_id, x, y)
     Game.Server.asteroid_hit(game_id, asteroid_pid)
     publish_news(game_id, [shooter_tag, "shot", "ASTEROID"])

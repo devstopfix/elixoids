@@ -126,7 +126,7 @@ defmodule Game.Collision do
     bullet_asteroids = detect_bullets_hitting_asteroids(all_bullets, all_asteroids)
     handle_bullets_hitting_asteroids(bullet_asteroids, game_id)
 
-    stop_bullets(unique_bullets(bullet_ships))
+    # TODO we could not check bullets against ships and rocks
   end
 
   defp remove_spawns(xs), do: Enum.reject(xs, fn b -> b == :spawn end)
@@ -154,11 +154,5 @@ defmodule Game.Collision do
     |> Enum.group_by(fn {b, _} -> b end)
     |> Map.values()
     |> Enum.map(&List.first/1)
-  end
-
-  defp stop_bullets(bullets) do
-    Enum.each(bullets, fn b ->
-      Process.exit(b.pid, :normal)
-    end)
   end
 end
