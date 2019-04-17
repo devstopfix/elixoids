@@ -25,7 +25,7 @@ defmodule Game.Collision do
   """
   def bullet_hits_ship?(bullet, ship) do
     %{pos: %{x: bx, y: by}} = bullet
-    {_ship_id, _tag, sx, sy, sr, _, _} = ship
+    %{pos: %{x: sx, y: sy}, radius: sr} = ship
 
     sq(bx - sx) + sq(by - sy) < sq(sr)
   end
@@ -78,7 +78,7 @@ defmodule Game.Collision do
   """
   def asteroid_hits_ship?(asteroid, ship) do
     %{pos: %{x: ax, y: ay}, radius: ar} = asteroid
-    {_ship_id, _tag, sx, sy, sr, _, _} = ship
+    %{pos: %{x: sx, y: sy}, radius: sr} = ship
 
     :math.sqrt(sq(ax - sx) + sq(ay - sy)) <= sr + ar
   end
@@ -109,10 +109,10 @@ defmodule Game.Collision do
   end
 
   defp check_for_collisions(game, game_pid) do
-    all_asteroids = Map.values(game.state.asteroids)
-    # TODO move to game process
-    all_bullets = Map.values(game.state.bullets) |> Enum.reject(fn b -> b == :spawn end)
-    all_ships = Map.values(game.state.ships)
+    # TODO move to game process (remove spawns)
+    all_asteroids = Map.values(game.state.asteroids) |> remove_spawns()
+    all_bullets = Map.values(game.state.bullets) |> remove_spawns()
+    all_ships = Map.values(game.state.ships) |> remove_spawns()
 
     bullet_ships = detect_bullets_hitting_ships(all_bullets, all_ships)
     # List of {BulletLoc, Ship Tuple}
@@ -134,11 +134,14 @@ defmodule Game.Collision do
     stop_bullets(dud_bullets)
   end
 
+  defp remove_spawns(xs), do: Enum.reject(xs, fn b -> b == :spawn end)
+
   defp handle_asteroid_hitting_ships(asteroid_ships, game_pid) do
     Enum.map(asteroid_ships, fn {a, s} ->
-      Game.Server.say_ship_hit_by_asteroid(game_pid, s)
+      Game.Server.say_ship_hit_by_asteroid(game_pid, s.is)
       # TODO send to ship directly
-      Game.Server.hyperspace_ship(game_pid, elem(s, 0))
+      Game.Server.hyperspace_ship(game_pid, s.id
+      # TODO send to Asteroid directly
       Game.Server.asteroid_hit(game_pid, a.id)
     end)
   end
@@ -147,7 +150,7 @@ defmodule Game.Collision do
 
   defp handle_bullets_hitting_ships(game, bullet_ships, game_pid) do
     Enum.each(bullet_ships, fn {b, s} ->
-      Game.Server.say_player_shot_ship(game_pid, b.id, s)
+      Game.Server.say_player_shot_ship(game_pid, b.id, s.id)
     end)
 
     bullet_ships
