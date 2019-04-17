@@ -101,8 +101,7 @@ defmodule Bullet.Server do
       Bullet.Server.hit_asteroid(:c.pid(0,19,0))
   """
   def handle_cast(:hit_asteroid, b) do
-    msg = Enum.join([b.shooter, "shot", "ASTEROID"], " ")
-    publish_news(b.game_id, msg)
+    publish_news(b.game_id, [b.shooter, "shot", "ASTEROID"])
     {:noreply, b}
   end
 
