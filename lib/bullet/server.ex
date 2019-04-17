@@ -12,7 +12,6 @@ defmodule Bullet.Server do
   alias Elixoids.Space
   alias Game.Server, as: GameServer
   alias World.Point
-  import Elixoids.News
   import Game.Identifiers
   import World.Clock
   use Elixoids.Game.Heartbeat
@@ -47,13 +46,6 @@ defmodule Bullet.Server do
     GenServer.start_link(__MODULE__, b)
   end
 
-  @doc """
-  Stop the bullet, and tell the game who fired the bullet.
-  """
-  def hit_ship(pid, victim_tag, game_id) do
-    GenServer.cast(pid, {:hit_ship, victim_tag, game_id})
-  end
-
   # GenServer callbacks
 
   def init(state) do
@@ -72,12 +64,6 @@ defmodule Bullet.Server do
       GameServer.update_bullet(bullet.game_id, state_tuple(moved_bullet))
       {:ok, moved_bullet}
     end
-  end
-
-
-  def handle_cast({:hit_ship, victim_tag, game_id}, bullet) do
-    publish_news(game_id, [bullet.shooter, "kills", victim_tag])
-    {:stop, :normal, bullet}
   end
 
   # Functions

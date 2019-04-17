@@ -137,23 +137,10 @@ defmodule Game.Collision do
 
   # List of {BulletLoc, Ship Tuple}
 
-  defp handle_bullets_hitting_ships(game, bullet_ships, game_id) do
-    Enum.each(bullet_ships, fn {b, s} ->
-      Game.Server.say_player_shot_ship(game_id, b.id, s.id)
-    end)
-
+  defp handle_bullets_hitting_ships(_game, bullet_ships, game_id) do
     bullet_ships
-    |> unique_bullets
-    |> Enum.each(fn b ->
-      %{pos: %{x: x, y: y}} = game.state.bullets[b.pid]
-      Game.Server.explosion(game_id, x, y)
-    end)
-
-    Enum.each(bullet_ships, fn {_, s} ->
-      # TODO send this to the ship, not the game
-      # TODO this should be the full ship pid
-      Ship.Server.hyperspace(s.pid)
-    end)
+    |> bullets_hit_single_target()
+    |> Enum.each(fn {b, s} -> bullet_hit_ship(game_id, b, s) end)
   end
 
   defp handle_bullets_hitting_asteroids(bullet_asteroids, game_id) do

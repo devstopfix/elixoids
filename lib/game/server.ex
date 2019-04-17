@@ -37,7 +37,6 @@ defmodule Game.Server do
   use Elixoids.Game.Heartbeat
 
   alias Asteroid.Server, as: Asteroid
-  alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Game.Info
   alias Game.Collision
@@ -89,10 +88,6 @@ defmodule Game.Server do
 
   def explosion(game_id, x, y) do
     GenServer.cast(via(game_id), {:explosion, x, y})
-  end
-
-  def say_player_shot_ship(game_id, bullet_id, victim_id) do
-    GenServer.cast(via(game_id), {:say_player_shot_ship, bullet_id, victim_id})
   end
 
   @spec spawn_player(pid(), String.t()) :: {:ok, pid(), term()} | {:error, :tag_in_use}
@@ -227,18 +222,6 @@ defmodule Game.Server do
     else
       {:noreply, game}
     end
-  end
-
-  def handle_cast({:say_player_shot_ship, bullet_id, victim_id}, game) do
-    bullet_pid = game.pids.bullets[bullet_id]
-    victim = game.state.ships[victim_id]
-
-    if bullet_pid != nil && victim != nil do
-      victim_tag = elem(victim, 1)
-      Bullet.hit_ship(bullet_pid, victim_tag, game.game_id)
-    end
-
-    {:noreply, game}
   end
 
   def handle_cast({:hyperspace_ship, ship_id}, game) do

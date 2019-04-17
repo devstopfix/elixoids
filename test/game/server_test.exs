@@ -69,35 +69,6 @@ defmodule Game.ServerTest do
   end
 
   # test "We record who shot a player" do
-  #   {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
-  #   :timer.sleep(10)
-
-  #   # {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-  #   :timer.sleep(10)
-
-  #   Game.ship_fires_bullet(game, 9)
-  #   :timer.sleep(10)
-
-  #   {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-  #   :timer.sleep(10)
-
-  #   :timer.sleep(10)
-
-  #   Game.say_player_shot_ship(game, 17, 10)
-  #   :timer.sleep(10)
-  #   {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-
-  #   :timer.sleep(10)
-
-  #   state = Game.state(game)
-
-  #   [player_9_tag,_,_,_,_,_] = hd(state.s)
-  #   [player_10_tag,_,_,_,_,_] = hd(tl(state.s))
-
-  #   assert player_9_tag == state.kby[player_10_tag]
-
-  #   ship_state = Game.state_of_ship(game, player_10_tag)
-  #   assert player_9_tag == ship_state.kby
   # end
 
   # test "We can filter on ship id" do
