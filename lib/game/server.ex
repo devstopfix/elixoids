@@ -71,8 +71,8 @@ defmodule Game.Server do
     GenServer.cast(via(game_id), {:update_asteroid, new_state})
   end
 
-  def asteroid_hit(pid, id) do
-    GenServer.cast(pid, {:asteroid_hit, id})
+  def asteroid_hit(game_id, id) do
+    GenServer.cast(via(game_id), {:asteroid_hit, id})
   end
 
   def update_ship(pid, new_state) do
@@ -87,20 +87,16 @@ defmodule Game.Server do
     GenServer.cast(via(game_id), {:update_bullet, new_state})
   end
 
-  def explosion(pid, x, y) do
-    GenServer.cast(pid, {:explosion, x, y})
+  def explosion(game_id, x, y) do
+    GenServer.cast(via(game_id), {:explosion, x, y})
   end
 
-  def say_player_shot_asteroid(pid, bullet_id) do
-    GenServer.cast(pid, {:say_player_shot_asteroid, bullet_id})
+  def say_player_shot_asteroid(game_id, bullet_id) do
+    GenServer.cast(via(game_id), {:say_player_shot_asteroid, bullet_id})
   end
 
-  def say_player_shot_ship(pid, bullet_id, victim_id) do
-    GenServer.cast(pid, {:say_player_shot_ship, bullet_id, victim_id})
-  end
-
-  def say_ship_hit_by_asteroid(pid, ship_id) do
-    GenServer.cast(pid, {:say_ship_hit_by_asteroid, ship_id})
+  def say_player_shot_ship(game_id, bullet_id, victim_id) do
+    GenServer.cast(via(game_id), {:say_player_shot_ship, bullet_id, victim_id})
   end
 
   @spec spawn_player(pid(), String.t()) :: {:ok, pid(), term()} | {:error, :tag_in_use}
@@ -143,7 +139,8 @@ defmodule Game.Server do
   end
 
   defp initial_game_state(asteroid_count, game_id) do
-    {:ok, collision_pid} = Collision.start_link(self())
+    # TODO start in supervisor
+    {:ok, collision_pid} = Collision.start_link(game_id)
 
     info = game_info(self(), game_id)
     asteroids = generate_asteroids(asteroid_count, info)
@@ -270,18 +267,6 @@ defmodule Game.Server do
 
       pid ->
         Ship.hyperspace(pid)
-        {:noreply, game}
-    end
-  end
-
-  def handle_cast({:say_ship_hit_by_asteroid, ship_id}, game) do
-    case game.state.ships[ship_id] do
-      nil ->
-        {:noreply, game}
-
-      {_ship_id, tag, x, y, _, _, _} ->
-        Elixoids.News.publish_news(game.game_id, ["ASTEROID", "hit", tag])
-        Game.Server.explosion(self(), x, y)
         {:noreply, game}
     end
   end
