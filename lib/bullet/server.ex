@@ -79,13 +79,6 @@ defmodule Bullet.Server do
   end
 
   @doc """
-  Test
-      {:ok, game} = Game.Server.start_link()
-      Game.Server.tick(game)
-      Game.Server.show(game)
-      Game.Server.ship_fires_bullet(game, 12)
-      Game.Server.show(game)
-      Bullet.Server.hit_asteroid(:c.pid(0,19,0))
   """
   def handle_cast(:hit_asteroid, b) do
     publish_news(b.game_id, [b.shooter, "shot", "ASTEROID"])

@@ -12,12 +12,14 @@ defmodule Ship.Server do
   alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Player
+  alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
   alias Game.Server, as: GameServer
   alias World.Clock
   alias World.Point
   alias World.Velocity
   import Elixoids.News
+  import Game.Identifiers
   use Elixoids.Game.Heartbeat
 
   # Ship radius (m)
@@ -33,52 +35,67 @@ defmodule Ship.Server do
   @laser_recharge_ms 500
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
 
-  def start_link(id, game_info, tag \\ Player.random_tag()) do
+  def start_link(game_info, tag \\ Player.random_tag()) do
     ship =
       Map.merge(random_ship(), %{
-        :id => id,
+        :id => next_id(),
         :tag => tag,
         :game => game_info
       })
 
-    GenServer.start_link(__MODULE__, ship)
+    ship_id = {game_info.id, tag}
+
+    {:ok, pid} = GenServer.start_link(__MODULE__, ship, name: via(ship_id))
+    {:ok, pid, ship_id}
   end
+
+  defp via(ship_id = {_, _}),
+    do: {:via, Registry, {Registry.Elixoids.Ships, ship_id}}
 
   @doc """
   Player requests turn to given theta.
   """
-  def new_heading(pid, theta) do
-    GenServer.cast(pid, {:new_heading, theta})
+  def new_heading(ship_id, theta) do
+    GenServer.cast(via(ship_id), {:new_heading, theta})
   end
 
   @doc """
   Move the ship to a random position on the map
   and prevent it firing.
   """
-  def hyperspace(pid) do
-    GenServer.cast(pid, :hyperspace)
+  def hyperspace(ship_pid) when is_pid(ship_pid) do
+    GenServer.cast(ship_pid, :hyperspace)
+  end
+
+  def hyperspace(ship_id) do
+    GenServer.cast(via(ship_id), :hyperspace)
   end
 
   @doc """
   Update laser recharge rate
   """
-  def fire(pid) do
-    GenServer.cast(pid, :fire)
+  def fire(ship_id) do
+    GenServer.cast(via(ship_id), :fire)
   end
 
   @doc """
   Stop the process.
   """
-  def stop(pid) do
-    GenServer.cast(pid, :stop)
+  def stop(ship_id) do
+    # TODO just use Process.exit(, :normal)
+    GenServer.cast(via(ship_id), :stop)
   end
 
   @doc """
   Player pulls trigger, which may fire a bullet
   if the ship is recharged.
   """
-  def player_pulls_trigger(pid) do
-    GenServer.cast(pid, :player_pulls_trigger)
+  def player_pulls_trigger(ship_id) do
+    GenServer.cast(via(ship_id), :player_pulls_trigger)
+  end
+
+  def game_state(ship_id) do
+    GenServer.call(via(ship_id), :game_state)
   end
 
   # GenServer callbacks
@@ -111,8 +128,12 @@ defmodule Ship.Server do
   end
 
   def handle_cast({:new_heading, theta}, ship) do
-    new_ship = %{ship | :target_theta => Velocity.wrap_angle(theta)}
-    {:noreply, new_ship}
+    if Velocity.valid_theta(theta) do
+      new_ship = %{ship | :target_theta => Velocity.wrap_angle(theta)}
+      {:noreply, new_ship}
+    else
+      {:noreply, ship}
+    end
   end
 
   @doc """
@@ -126,6 +147,10 @@ defmodule Ship.Server do
     else
       {:noreply, ship}
     end
+  end
+
+  def handle_call(:game_state, _from, ship = %{game: %{id: game_id}}) do
+    {:reply, Game.Server.state_of_ship(game_id, self()), ship}
   end
 
   # TODO ship.game_pid should be game_id)
@@ -150,8 +175,14 @@ defmodule Ship.Server do
   The tuple that will be shown to the UI for rendering.
   """
   def state_tuple(ship) do
-    {ship.id, ship.tag, Point.round(ship.pos.x), Point.round(ship.pos.y),
-     Point.round(@ship_radius_m), Velocity.round_theta(ship.theta), "FFFFFF"}
+    %ShipLoc{
+      pid: self(),
+      id: ship.id,
+      tag: ship.tag,
+      pos: ship.pos,
+      radius: @ship_radius_m,
+      theta: Velocity.round_theta(ship.theta)
+    }
   end
 
   def random_ship do

@@ -25,7 +25,7 @@ defmodule Game.Collision do
   """
   def bullet_hits_ship?(bullet, ship) do
     %{pos: %{x: bx, y: by}} = bullet
-    {_ship_id, _tag, sx, sy, sr, _, _} = ship
+    %{pos: %{x: sx, y: sy}, radius: sr} = ship
 
     sq(bx - sx) + sq(by - sy) < sq(sr)
   end
@@ -41,7 +41,7 @@ defmodule Game.Collision do
 
   def bullet_hits_asteroid?(bullet, asteroid) do
     %{pos: %{x: bx, y: by}} = bullet
-    {_asteroid_id, ax, ay, ar} = asteroid
+    %{pos: %{x: ax, y: ay}, radius: ar} = asteroid
 
     sq(bx - ax) + sq(by - ay) < sq(ar)
   end
@@ -53,7 +53,7 @@ defmodule Game.Collision do
   def detect_bullets_hitting_asteroids(bullets, asteroids) do
     l = for b <- bullets, a <- asteroids, bullet_hits_asteroid?(b, a), do: {b, a}
 
-    Enum.uniq_by(l, fn {b, _s} -> b.pid end)
+    Enum.uniq_by(l, fn {b, _a} -> b.pid end)
   end
 
   @doc """
@@ -77,8 +77,8 @@ defmodule Game.Collision do
   distances between their centres
   """
   def asteroid_hits_ship?(asteroid, ship) do
-    {_asteroid_id, ax, ay, ar} = asteroid
-    {_ship_id, _tag, sx, sy, sr, _, _} = ship
+    %{pos: %{x: ax, y: ay}, radius: ar} = asteroid
+    %{pos: %{x: sx, y: sy}, radius: sr} = ship
 
     :math.sqrt(sq(ax - sx) + sq(ay - sy)) <= sr + ar
   end
@@ -87,7 +87,7 @@ defmodule Game.Collision do
   Return a tuple of {asteroid_id, ship_id} for each collision.
   """
   def detect_asteroids_hitting_ships(asteroids, ships) do
-    l = for a <- asteroids, s <- ships, asteroid_hits_ship?(a, s), do: {elem(a, 0), elem(s, 0)}
+    l = for a <- asteroids, s <- ships, asteroid_hits_ship?(a, s), do: {a, s}
     Enum.uniq_by(l, fn {_a, s} -> s end)
   end
 
@@ -109,10 +109,10 @@ defmodule Game.Collision do
   end
 
   defp check_for_collisions(game, game_pid) do
-    all_asteroids = Map.values(game.state.asteroids)
-    # TODO move to game process
-    all_bullets = Map.values(game.state.bullets) |> Enum.reject(fn b -> b == :spawn end)
-    all_ships = Map.values(game.state.ships)
+    # TODO move to game process (remove spawns)
+    all_asteroids = Map.values(game.state.asteroids) |> remove_spawns()
+    all_bullets = Map.values(game.state.bullets) |> remove_spawns()
+    all_ships = Map.values(game.state.ships) |> remove_spawns()
 
     bullet_ships = detect_bullets_hitting_ships(all_bullets, all_ships)
     # List of {BulletLoc, Ship Tuple}
@@ -134,11 +134,15 @@ defmodule Game.Collision do
     stop_bullets(dud_bullets)
   end
 
+  defp remove_spawns(xs), do: Enum.reject(xs, fn b -> b == :spawn end)
+
   defp handle_asteroid_hitting_ships(asteroid_ships, game_pid) do
     Enum.map(asteroid_ships, fn {a, s} ->
-      Game.Server.say_ship_hit_by_asteroid(game_pid, s)
-      Game.Server.hyperspace_ship(game_pid, s)
-      Game.Server.asteroid_hit(game_pid, a)
+      Game.Server.say_ship_hit_by_asteroid(game_pid, s.id)
+      # TODO send to ship directly
+      Ship.Server.hyperspace(s.pid)
+      # TODO send to Asteroid directly
+      Game.Server.asteroid_hit(game_pid, a.id)
     end)
   end
 
@@ -146,7 +150,7 @@ defmodule Game.Collision do
 
   defp handle_bullets_hitting_ships(game, bullet_ships, game_pid) do
     Enum.each(bullet_ships, fn {b, s} ->
-      Game.Server.say_player_shot_ship(game_pid, b.id, s)
+      Game.Server.say_player_shot_ship(game_pid, b.id, s.id)
     end)
 
     bullet_ships
@@ -159,7 +163,7 @@ defmodule Game.Collision do
     Enum.each(bullet_ships, fn {_, s} ->
       # TODO send this to the ship, not the game
       # TODO this should be the full ship pid
-      Game.Server.hyperspace_ship(game_pid, elem(s, 0))
+      Ship.Server.hyperspace(s.pid)
     end)
   end
 
@@ -170,10 +174,9 @@ defmodule Game.Collision do
 
     bullet_asteroids
     |> unique_targets
-    |> Enum.each(fn {asteroid_id, x, y, _r} ->
-      # {asteroid_id, x, y, _r} = game.state.asteroids[hd(a)]
+    |> Enum.each(fn %{pid: asteroid_pid, pos: %{x: x, y: y}} ->
       Game.Server.explosion(game_pid, x, y)
-      Game.Server.asteroid_hit(game_pid, asteroid_id)
+      Game.Server.asteroid_hit(game_pid, asteroid_pid)
     end)
   end
 

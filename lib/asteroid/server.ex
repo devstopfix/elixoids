@@ -7,10 +7,12 @@ defmodule Asteroid.Server do
   use GenServer
   use Elixoids.Game.Heartbeat
 
+  alias Elixoids.Asteroid.Location, as: AsteroidLoc
   alias Elixoids.Space
   alias Game.Server, as: GameServer
   alias World.Point
   alias World.Velocity
+  import Game.Identifiers
 
   # Radius of random asteroid
   @asteroid_radius_m 120.0
@@ -24,10 +26,10 @@ defmodule Asteroid.Server do
   # Initial speed of asteroid
   @asteroid_speed_m_per_s 20.0
 
-  def start_link(id, game_info, asteroid \\ random_asteroid()) do
+  def start_link(game_info, asteroid \\ random_asteroid()) do
     a =
       Map.merge(asteroid, %{
-        :id => id,
+        :id => next_id(),
         :game => game_info
       })
 
@@ -127,7 +129,7 @@ defmodule Asteroid.Server do
   The tuple that will be shown to the UI for rendering.
   """
   def state_tuple(a) do
-    {a.id, Point.round(a.pos.x), Point.round(a.pos.y), Point.round(a.radius)}
+    %AsteroidLoc{pid: self(), id: a.id, pos: a.pos, radius: a.radius}
   end
 
   @doc """

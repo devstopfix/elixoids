@@ -9,7 +9,6 @@ defmodule Elixir.Translate do
 
   @doc """
       {:ok, game} = Elixoids.Game.Supervisor.start_game([fps: 4, asteroids: 2])
-      Game.Server.show(game)
       Game.Server.spawn_player(game, "OUR")
       Game.Server.state_of_ship(game, "OUR")
   """
@@ -21,7 +20,7 @@ defmodule Elixir.Translate do
   end
 
   defp asteroid_relative(asteroid, ox, oy) do
-    {id, ax, ay, r} = asteroid
+    %{id: id, pos: %{x: ax, y: ay}, radius: r} = asteroid
 
     d = Point.distance(ox, oy, ax, ay)
 
@@ -41,7 +40,7 @@ defmodule Elixir.Translate do
   end
 
   defp ship_relative(ship, ox, oy) do
-    {_, tag, sx, sy, _, _, _} = ship
+    %{tag: tag, pos: %{x: sx, y: sy}} = ship
 
     d = Point.distance(ox, oy, sx, sy)
 

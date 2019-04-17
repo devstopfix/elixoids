@@ -4,6 +4,7 @@ defmodule Elixoids.SoundsTest do
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
   alias Game.Server, as: Game
+  alias Ship.Server, as: Ship
 
   test "When a player shoots we receive a sound event" do
     tag = "FIR"
@@ -11,9 +12,9 @@ defmodule Elixoids.SoundsTest do
 
     News.subscribe(game_id)
 
-    :ok = Game.spawn_player(game, tag)
+    {:ok, _, ship_id} = Game.spawn_player(game, tag)
 
-    :ok = Game.player_pulls_trigger(game_id, tag)
+    :ok = Ship.player_pulls_trigger(ship_id)
 
     assert_receive {:news, fire_msg}, 100
     assert String.contains?(fire_msg, tag)
