@@ -91,10 +91,6 @@ defmodule Game.Server do
     GenServer.cast(via(game_id), {:explosion, x, y})
   end
 
-  def say_player_shot_asteroid(game_id, bullet_id) do
-    GenServer.cast(via(game_id), {:say_player_shot_asteroid, bullet_id})
-  end
-
   def say_player_shot_ship(game_id, bullet_id, victim_id) do
     GenServer.cast(via(game_id), {:say_player_shot_ship, bullet_id, victim_id})
   end
@@ -231,21 +227,6 @@ defmodule Game.Server do
     else
       {:noreply, game}
     end
-  end
-
-  @doc """
-      {:ok, game} = Game.Server.start_link(60)
-      Game.Server.show(game)
-      Game.Server.say_player_shot_asteroid(game, 55)
-  """
-  def handle_cast({:say_player_shot_asteroid, bullet_id}, game) do
-    # TODO change from bullet_id to pid
-    case game.pids.bullets[bullet_id] do
-      nil -> nil
-      bullet_pid -> Bullet.hit_asteroid(bullet_pid)
-    end
-
-    {:noreply, game}
   end
 
   def handle_cast({:say_player_shot_ship, bullet_id, victim_id}, game) do

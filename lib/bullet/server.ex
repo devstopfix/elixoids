@@ -47,10 +47,6 @@ defmodule Bullet.Server do
     GenServer.start_link(__MODULE__, b)
   end
 
-  def hit_asteroid(pid) do
-    GenServer.cast(pid, :hit_asteroid)
-  end
-
   @doc """
   Stop the bullet, and tell the game who fired the bullet.
   """
@@ -78,12 +74,6 @@ defmodule Bullet.Server do
     end
   end
 
-  @doc """
-  """
-  def handle_cast(:hit_asteroid, b) do
-    publish_news(b.game_id, [b.shooter, "shot", "ASTEROID"])
-    {:noreply, b}
-  end
 
   def handle_cast({:hit_ship, victim_tag, game_id}, bullet) do
     publish_news(game_id, [bullet.shooter, "kills", victim_tag])

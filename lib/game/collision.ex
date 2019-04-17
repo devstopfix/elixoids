@@ -124,15 +124,9 @@ defmodule Game.Collision do
     |> handle_asteroid_hitting_ships(game_id)
 
     bullet_asteroids = detect_bullets_hitting_asteroids(all_bullets, all_asteroids)
-    handle_bullets_hitting_asteroids(game, bullet_asteroids, game_id)
+    handle_bullets_hitting_asteroids(bullet_asteroids, game_id)
 
-    dud_bullets =
-      Enum.uniq(
-        unique_bullets(bullet_ships) ++
-          unique_bullets(bullet_asteroids)
-      )
-
-    stop_bullets(dud_bullets)
+    stop_bullets(unique_bullets(bullet_ships))
   end
 
   defp remove_spawns(xs), do: Enum.reject(xs, fn b -> b == :spawn end)
@@ -162,17 +156,17 @@ defmodule Game.Collision do
     end)
   end
 
-  defp handle_bullets_hitting_asteroids(_game, bullet_asteroids, game_id) do
+  defp handle_bullets_hitting_asteroids(bullet_asteroids, game_id) do
     bullet_asteroids
-    |> unique_bullets
-    |> Enum.each(fn b -> Game.Server.say_player_shot_asteroid(game_id, b.id) end)
+    |> bullets_hit_single_target()
+    |> Enum.each(fn {b, a} -> bullet_hit_asteroid(game_id, b, a) end)
+  end
 
-    bullet_asteroids
-    |> unique_targets
-    |> Enum.each(fn %{pid: asteroid_pid, pos: %{x: x, y: y}} ->
-      Game.Server.explosion(game_id, x, y)
-      Game.Server.asteroid_hit(game_id, asteroid_pid)
-    end)
+  defp bullets_hit_single_target(bxs) do
+    bxs
+    |> Enum.group_by(fn {b, _} -> b end)
+    |> Map.values()
+    |> Enum.map(&List.first/1)
   end
 
   defp stop_bullets(bullets) do
