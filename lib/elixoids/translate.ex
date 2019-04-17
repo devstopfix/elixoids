@@ -21,7 +21,7 @@ defmodule Elixir.Translate do
   end
 
   defp asteroid_relative(asteroid, ox, oy) do
-    {id, ax, ay, r} = asteroid
+    %{id: id, pos: %{x: ax, y: ay}, radius: r} = asteroid
 
     d = Point.distance(ox, oy, ax, ay)
 

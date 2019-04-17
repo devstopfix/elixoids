@@ -41,7 +41,7 @@ defmodule Game.Collision do
 
   def bullet_hits_asteroid?(bullet, asteroid) do
     %{pos: %{x: bx, y: by}} = bullet
-    {_asteroid_id, ax, ay, ar} = asteroid
+    %{pos: %{x: ax, y: ay}, radius: ar} = asteroid
 
     sq(bx - ax) + sq(by - ay) < sq(ar)
   end
@@ -53,7 +53,7 @@ defmodule Game.Collision do
   def detect_bullets_hitting_asteroids(bullets, asteroids) do
     l = for b <- bullets, a <- asteroids, bullet_hits_asteroid?(b, a), do: {b, a}
 
-    Enum.uniq_by(l, fn {b, _s} -> b.pid end)
+    Enum.uniq_by(l, fn {b, _a} -> b.pid end)
   end
 
   @doc """
@@ -77,7 +77,7 @@ defmodule Game.Collision do
   distances between their centres
   """
   def asteroid_hits_ship?(asteroid, ship) do
-    {_asteroid_id, ax, ay, ar} = asteroid
+    %{pos: %{x: ax, y: ay}, radius: ar} = asteroid
     {_ship_id, _tag, sx, sy, sr, _, _} = ship
 
     :math.sqrt(sq(ax - sx) + sq(ay - sy)) <= sr + ar
@@ -87,7 +87,7 @@ defmodule Game.Collision do
   Return a tuple of {asteroid_id, ship_id} for each collision.
   """
   def detect_asteroids_hitting_ships(asteroids, ships) do
-    l = for a <- asteroids, s <- ships, asteroid_hits_ship?(a, s), do: {elem(a, 0), elem(s, 0)}
+    l = for a <- asteroids, s <- ships, asteroid_hits_ship?(a, s), do: {a, s}
     Enum.uniq_by(l, fn {_a, s} -> s end)
   end
 
@@ -138,7 +138,7 @@ defmodule Game.Collision do
     Enum.map(asteroid_ships, fn {a, s} ->
       Game.Server.say_ship_hit_by_asteroid(game_pid, s)
       Game.Server.hyperspace_ship(game_pid, s)
-      Game.Server.asteroid_hit(game_pid, a)
+      Game.Server.asteroid_hit(game_pid, a.id)
     end)
   end
 
@@ -170,10 +170,9 @@ defmodule Game.Collision do
 
     bullet_asteroids
     |> unique_targets
-    |> Enum.each(fn {asteroid_id, x, y, _r} ->
-      # {asteroid_id, x, y, _r} = game.state.asteroids[hd(a)]
+    |> Enum.each(fn %{pid: asteroid_pid, pos: %{x: x, y: y}} ->
       Game.Server.explosion(game_pid, x, y)
-      Game.Server.asteroid_hit(game_pid, asteroid_id)
+      Game.Server.asteroid_hit(game_pid, asteroid_pid)
     end)
   end
 

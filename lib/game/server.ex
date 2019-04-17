@@ -134,9 +134,8 @@ defmodule Game.Server do
   """
   def generate_asteroids(n, game_info) do
     Enum.reduce(1..n, %{}, fn _i, rocks ->
-      id = next_id()
-      {:ok, pid} = Asteroid.start_link(id, game_info)
-      Map.put(rocks, id, pid)
+      {:ok, pid} = Asteroid.start_link(game_info)
+      Map.put(rocks, pid, :spawn)
     end)
   end
 
@@ -167,7 +166,7 @@ defmodule Game.Server do
       :game_id => game_id,
       :info => info,
       :pids => %{:asteroids => asteroids, :bullets => %{}, :ships => %{}},
-      :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
+      :state => %{:asteroids => asteroids, :bullets => %{}, :ships => %{}},
       :players => %{},
       # TODO link with Registry
       :collision_pid => collision_pid,
@@ -190,11 +189,9 @@ defmodule Game.Server do
     {:noreply, game}
   end
 
-  def handle_cast({:update_asteroid, asteroid_state}, game) do
-    id = elem(asteroid_state, 0)
-
-    if Map.has_key?(game.pids.asteroids, id) do
-      new_game = put_in(game.state.asteroids[id], asteroid_state)
+  def handle_cast({:update_asteroid, asteroid}, game) do
+    if Map.has_key?(game.state.asteroids, asteroid.pid) do
+      new_game = put_in(game.state.asteroids[asteroid.pid], asteroid)
       {:noreply, new_game}
     else
       {:noreply, game}
@@ -245,17 +242,12 @@ defmodule Game.Server do
 
       Game.Server.asteroid_hit(:game, 1)
   """
-  def handle_cast({:asteroid_hit, id}, game) do
-    pid = game.pids.asteroids[id]
-
-    if pid != nil do
-      fragments = Asteroid.split(pid)
-
+  def handle_cast({:asteroid_hit, asteroid_pid}, game) do
+    if Map.has_key?(game.state.asteroids, asteroid_pid) do
+      fragments = Asteroid.split(asteroid_pid)
       new_game = Enum.reduce(fragments, game, fn f, game -> new_asteroid_in_game(f, game) end)
-
-      Asteroid.stop(pid)
-
-      {:noreply, remove_asteroid_from_game(new_game, id)}
+      Asteroid.stop(asteroid_pid)
+      {:noreply, new_game}
     else
       {:noreply, game}
     end
@@ -404,10 +396,6 @@ defmodule Game.Server do
     end
   end
 
-  defp remove_pid_from_game_state(pid, game) do
-    remove_bullet_from_game(game, pid)
-  end
-
   @doc """
   Return the current state of the game to the UI websocket.
   """
@@ -475,9 +463,8 @@ defmodule Game.Server do
   # Asteroids
 
   def new_asteroid_in_game(a, game) do
-    id = next_id()
-    {:ok, pid} = Asteroid.start_link(id, game.info, a)
-    put_in(game.pids.asteroids[id], pid)
+    {:ok, pid} = Asteroid.start_link(game.info, a)
+    put_in(game.state.asteroids[pid], :spawn)
   end
 
   defp maybe_spawn_asteroid(game) do
@@ -517,6 +504,12 @@ defmodule Game.Server do
 
   # Game state
 
+  defp remove_pid_from_game_state(pid, game) do
+    game
+    |> remove_bullet_from_game(pid)
+    |> remove_asteroid_from_game(pid)
+  end
+
   defp remove_bullet_from_game(game, bullet_pid) do
     case pop_in(game, [:state, :bullets, bullet_pid]) do
       {nil, _} -> game
@@ -524,9 +517,11 @@ defmodule Game.Server do
     end
   end
 
-  defp remove_asteroid_from_game(game, id) do
-    game2 = update_in(game.pids.asteroids, &Map.delete(&1, id))
-    update_in(game2.state.asteroids, &Map.delete(&1, id))
+  defp remove_asteroid_from_game(game, asteroid_pid) do
+    case pop_in(game, [:state, :asteroids, asteroid_pid]) do
+      {nil, _} -> game
+      {_, new_state} -> new_state
+    end
   end
 
   defp remove_ship_from_game(game, id) do

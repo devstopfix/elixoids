@@ -7,30 +7,34 @@ defmodule Game.CollisionTest do
 
   test "No collision between asteroid and rock" do
     ship = {1, "AAA", 1020.0, 0, 20, 5.8957, "FFFFFF"}
-    asteroid = {2, 899.0, 0, 80}
+    asteroid = %{id: 2, pos: %{x: 899.0, y: 0}, radius: 80}
 
     assert false == Collision.asteroid_hits_ship?(asteroid, ship)
   end
 
   test "Collision between touching asteroid and rock" do
     ship = {1, "AAA", 1020.0, 0, 20.0, 5.8957, "FFFFFF"}
-    asteroid = {2, 920.0, 0, 80.0}
+    asteroid = %{id: 2, pos: %{x: 920.0, y: 0}, radius: 80}
 
     assert Collision.asteroid_hits_ship?(asteroid, ship)
   end
 
   test "Collision between overlapping asteroid and rock" do
     ship = {1, "AAA", 1000.0, 0, 20, 5.8957, "FFFFFF"}
-    asteroid = {2, 1000.0, 0, 80}
+    asteroid = %{id: 2, pos: %{x: 1000.0, y: 0}, radius: 80}
 
     assert Collision.asteroid_hits_ship?(asteroid, ship)
   end
 
   test "Detect between overlapping asteroid and rock" do
-    ships = [{51, "AAA", 1000.0, 0, 20, 5.8957, "FFFFFF"}]
-    asteroids = [{73, 1000.0, 0, 80}, {99, 1000.0, 200, 80}]
+    ship = {51, "AAA", 1000.0, 0, 20, 5.8957, "FFFFFF"}
 
-    assert [{73, 51}] == Collision.detect_asteroids_hitting_ships(asteroids, ships)
+    asteroid1 = %{id: 73, pos: %{x: 1000.0, y: 0}, radius: 80}
+    asteroid2 = %{id: 99, pos: %{x: 1000.0, y: 200}, radius: 80}
+
+    asteroids = [asteroid1, asteroid2]
+
+    assert [{asteroid1, ship}] == Collision.detect_asteroids_hitting_ships(asteroids, [ship])
   end
 
   test "No collision" do
@@ -68,7 +72,9 @@ defmodule Game.CollisionTest do
   end
 
   test "Collision between bullet and asteroid" do
-    assert Collision.bullet_hits_asteroid?(%{pos: %{x: 5, y: 5}}, {1, 4, 4, 20})
+    asteroid = %{id: 2, pos: %{x: 4.0, y: 4.0}, radius: 20}
+
+    assert Collision.bullet_hits_asteroid?(%{pos: %{x: 5, y: 5}}, asteroid)
   end
 
   test "No Collision" do
