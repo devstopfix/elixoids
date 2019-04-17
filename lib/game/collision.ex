@@ -157,7 +157,9 @@ defmodule Game.Collision do
     end)
 
     Enum.each(bullet_ships, fn {_, s} ->
-      Game.Server.hyperspace_ship(game_pid, s)
+      # TODO send this to the ship, not the game
+      # TODO this should be the full ship pid
+      Game.Server.hyperspace_ship(game_pid, elem(s, 0))
     end)
   end
 

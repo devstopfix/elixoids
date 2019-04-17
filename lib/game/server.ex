@@ -101,7 +101,8 @@ defmodule Game.Server do
     GenServer.cast(pid, {:say_player_shot_ship, bullet_id, victim_id})
   end
 
-  def hyperspace_ship(pid, ship_id) do
+  # TODO remove from game
+  def hyperspace_ship(pid, ship_id) when is_integer(ship_id) do
     GenServer.cast(pid, {:hyperspace_ship, ship_id})
   end
 
@@ -231,8 +232,6 @@ defmodule Game.Server do
       new_game = put_in(game.state.bullets[b.pid], b)
       {:noreply, new_game}
     else
-      # TODO remove
-      [:IGNORE, b] |> inspect |> debug()
       {:noreply, game}
     end
   end
@@ -389,10 +388,7 @@ defmodule Game.Server do
   end
 
   @doc """
-  Echo any unsual messages to the console.
-  Ignore processes that stop normally.
-
-  TODO remove processes that exit from state
+  Remove processes that exit from the game state
   """
   def handle_info(msg, state) do
     case msg do

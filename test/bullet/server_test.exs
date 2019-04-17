@@ -3,7 +3,7 @@ defmodule Bullet.ServerTest do
   doctest Bullet.Server
 
   alias Bullet.Server, as: Bullet
-  alias Elixoids.Game.Supervisor, as: GameSupervisor
+  # alias Elixoids.Game.Supervisor, as: GameSupervisor
 
   test "Bullet live 2-3 seconds" do
     now = World.Clock.now_ms()
