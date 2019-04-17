@@ -81,20 +81,12 @@ defmodule Game.Server do
     GenServer.cast(pid, {:update_ship, new_state})
   end
 
-  def bullet_fired(pid, bullet_id, bullet_pid) do
-    GenServer.cast(pid, {:bullet_fired, bullet_id, bullet_pid})
+  def bullet_fired(game_id, bullet_pid) do
+    GenServer.cast(via(game_id), {:bullet_fired, bullet_pid})
   end
 
   def update_bullet(game_id, new_state) do
     GenServer.cast(via(game_id), {:update_bullet, new_state})
-  end
-
-  def bullet_missed(game_id, {id, shooter}) do
-    GenServer.cast(via(game_id), {:bullet_missed, id, shooter})
-  end
-
-  def stop_bullet(pid, id) do
-    GenServer.cast(pid, {:stop_bullet, id})
   end
 
   def explosion(pid, x, y) do
@@ -223,10 +215,11 @@ defmodule Game.Server do
   end
 
   @doc """
-  Put the bullet into the game.
+  Put a marker for the spawned bullet into the game
   """
-  def handle_cast({:bullet_fired, bullet_id, bullet_pid}, game) do
-    {:noreply, put_in(game.pids.bullets[bullet_id], bullet_pid)}
+  def handle_cast({:bullet_fired, bullet_pid}, game) do
+    Process.link(bullet_pid)
+    {:noreply, put_in(game.state.bullets[bullet_pid], :spawn)}
   end
 
   @doc """
@@ -234,33 +227,14 @@ defmodule Game.Server do
   The bullet broadcasts its state at a given fps.
   """
   def handle_cast({:update_bullet, b}, game) do
-    {id, _, _} = b
-
-    if Map.has_key?(game.pids.bullets, id) do
-      new_game = put_in(game.state.bullets[id], b)
+    if Map.has_key?(game.state.bullets, b.pid) do
+      new_game = put_in(game.state.bullets[b.pid], b)
       {:noreply, new_game}
     else
+      # TODO remove
+      [:IGNORE, b] |> inspect |> debug()
       {:noreply, game}
     end
-  end
-
-  @doc """
-  Remove bullet from Game.
-  TODO this can be achieved with trapped process exit?
-  TODO remove shooter
-  """
-  def handle_cast({:bullet_missed, id, _shooter}, game) do
-    {:noreply, remove_bullet_from_game(game, id)}
-  end
-
-  def handle_cast({:stop_bullet, id}, game) do
-    pid = game.pids.bullets[id]
-
-    if pid != nil do
-      Bullet.stop(pid)
-    end
-
-    {:noreply, remove_bullet_from_game(game, id)}
   end
 
   @doc """
@@ -294,6 +268,7 @@ defmodule Game.Server do
       Game.Server.say_player_shot_asteroid(game, 55)
   """
   def handle_cast({:say_player_shot_asteroid, bullet_id}, game) do
+    # TODO change from bullet_id to pid
     case game.pids.bullets[bullet_id] do
       nil -> nil
       bullet_pid -> Bullet.hit_asteroid(bullet_pid)
@@ -421,11 +396,20 @@ defmodule Game.Server do
   """
   def handle_info(msg, state) do
     case msg do
-      {:EXIT, _pid, :normal} -> nil
-      _ -> [:EXIT, msg, state] |> inspect |> error()
-    end
+      {:EXIT, pid, :normal} ->
+        {:noreply, remove_pid_from_game_state(pid, state)}
 
-    {:noreply, state}
+      {:EXIT, pid, :shutdown} ->
+        {:noreply, remove_pid_from_game_state(pid, state)}
+
+      _ ->
+        [:EXIT, msg, state] |> inspect |> error()
+        {:noreply, state}
+    end
+  end
+
+  defp remove_pid_from_game_state(pid, game) do
+    remove_bullet_from_game(game, pid)
   end
 
   @doc """
@@ -482,7 +466,7 @@ defmodule Game.Server do
   def map_of_tuples_to_list(m) do
     m
     |> Map.values()
-    |> Enum.map(fn t -> Tuple.to_list(t) end)
+    |> Enum.map(fn t -> Elixoids.Api.State.JSON.to_json_list(t) end)
   end
 
   @doc """
@@ -537,9 +521,11 @@ defmodule Game.Server do
 
   # Game state
 
-  defp remove_bullet_from_game(game, id) do
-    game2 = update_in(game.pids.bullets, &Map.delete(&1, id))
-    update_in(game2.state.bullets, &Map.delete(&1, id))
+  defp remove_bullet_from_game(game, bullet_pid) do
+    case pop_in(game, [:state, :bullets, bullet_pid]) do
+      {nil, _} -> game
+      {_, new_state} -> new_state
+    end
   end
 
   defp remove_asteroid_from_game(game, id) do

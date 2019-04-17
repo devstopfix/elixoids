@@ -18,7 +18,6 @@ defmodule Ship.Server do
   alias World.Point
   alias World.Velocity
   import Elixoids.News
-  import Game.Identifiers
   use Elixoids.Game.Heartbeat
 
   # Ship radius (m)
@@ -122,18 +121,21 @@ defmodule Ship.Server do
   """
   def handle_cast(:player_pulls_trigger, ship) do
     if Clock.past?(ship.laser_charged_at) do
-      id = next_id()
-      pos = calculate_nose(ship)
-      # TODO ship.game_pid should be game_id)
-      {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, 0)
-      GameServer.bullet_fired(ship.game.pid, id, bullet_pid)
-      publish_news(ship.game.id, [ship.tag, "fires"])
-      pan = Elixoids.Space.frac_x(ship.pos.x)
-      Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan, ship.game.time.()))
+      fire_bullet(ship)
       {:noreply, recharge_laser(ship)}
     else
       {:noreply, ship}
     end
+  end
+
+  # TODO ship.game_pid should be game_id)
+  defp fire_bullet(ship) do
+    pos = calculate_nose(ship)
+    {:ok, bullet_pid} = Bullet.start_link(ship.game.id, ship.tag, pos, ship.theta)
+    GameServer.bullet_fired(ship.game.id, bullet_pid)
+    publish_news(ship.game.id, [ship.tag, "fires"])
+    pan = Elixoids.Space.frac_x(ship.pos.x)
+    Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan, ship.game.time.()))
   end
 
   defp calculate_nose(ship) do

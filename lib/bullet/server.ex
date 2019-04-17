@@ -8,12 +8,14 @@ defmodule Bullet.Server do
 
   use GenServer
 
+  alias Elixoids.Bullet.Location, as: BulletLoc
   alias Elixoids.Space
   alias Game.Server, as: GameServer
   alias World.Point
+  import Elixoids.News
+  import Game.Identifiers
   import World.Clock
   use Elixoids.Game.Heartbeat
-  import Elixoids.News
 
   @bullet_range_m 2000.0
   @bullet_speed_m_per_s 750.0
@@ -24,13 +26,17 @@ defmodule Bullet.Server do
   Fire a bullet with:
 
       {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
-      {:ok, b} = Bullet.Server.start_link(999, %World.Point{:x=>0.0, :y=>0.0}, 1.0, "XXX", game_id)
+      {:ok, b} = Bullet.Server.start_link(0, "XXX", %World.Point{:x=>0.0, :y=>0.0}, 1.0)
   """
-  def start_link(id, pos, theta, shooter, game_id) when is_integer(game_id) do
+  def start_link(game_id, shooter, pos, theta)
+      when is_integer(game_id) and
+             is_map(pos) and
+             is_number(theta) and
+             is_binary(shooter) do
     v = %World.Velocity{:theta => theta, :speed => @bullet_speed_m_per_s}
 
     b = %{
-      :id => id,
+      :id => next_id(),
       :pos => pos,
       :velocity => v,
       :shooter => shooter,
@@ -39,14 +45,6 @@ defmodule Bullet.Server do
     }
 
     GenServer.start_link(__MODULE__, b)
-  end
-
-  @doc """
-  The bullet has expired and should be removed from the game.
-  """
-  def stop(pid) do
-    GenServer.cast(pid, :stop)
-    # TODO this can be a normal process exit?
   end
 
   def hit_asteroid(pid) do
@@ -72,23 +70,12 @@ defmodule Bullet.Server do
   """
   def handle_tick(_pid, delta_t_ms, bullet) do
     if past?(bullet.expire_at) do
-      # TODO this should be a stop signal seen by game and collision process
-      GameServer.bullet_missed(bullet.game_id, {bullet.id, bullet.shooter})
       {:stop, :normal, bullet}
     else
       moved_bullet = bullet |> move_bullet(delta_t_ms)
       GameServer.update_bullet(bullet.game_id, state_tuple(moved_bullet))
       {:ok, moved_bullet}
     end
-  end
-
-  @doc """
-  Game tells the bullet to stop. Maybe it hit something.
-  The game will receive the exit message and remove the bullet
-  from it's list of active bullets.
-  """
-  def handle_cast(:stop, b) do
-    {:stop, :normal, b}
   end
 
   @doc """
@@ -129,7 +116,7 @@ defmodule Bullet.Server do
   The tuple that will be shown to the UI for rendering.
   """
   def state_tuple(b) do
-    {b.id, Point.round(b.pos.x), Point.round(b.pos.y)}
+    %BulletLoc{pid: self(), id: b.id, shooter: b.shooter, pos: b.pos}
   end
 
   @doc """

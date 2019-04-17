@@ -24,7 +24,7 @@ defmodule Game.Collision do
   We use points (bullets) inside circles (ships)
   """
   def bullet_hits_ship?(bullet, ship) do
-    {_bullet_id, bx, by} = bullet
+    %{pos: %{x: bx, y: by}} = bullet
     {_ship_id, _tag, sx, sy, sr, _, _} = ship
 
     sq(bx - sx) + sq(by - sy) < sq(sr)
@@ -32,14 +32,15 @@ defmodule Game.Collision do
 
   @doc """
   Return a tuple of {bullet_id, ship_id} for each collision.
+  A single bullet can only hit a single ship
   """
   def detect_bullets_hitting_ships(bullets, ships) do
-    l = for b <- bullets, s <- ships, bullet_hits_ship?(b, s), do: {elem(b, 0), elem(s, 0)}
-    Enum.uniq_by(l, fn {b, _s} -> b end)
+    l = for b <- bullets, s <- ships, bullet_hits_ship?(b, s), do: {b, s}
+    Enum.uniq_by(l, fn {b, _s} -> b.pid end)
   end
 
   def bullet_hits_asteroid?(bullet, asteroid) do
-    {_bullet_id, bx, by} = bullet
+    %{pos: %{x: bx, y: by}} = bullet
     {_asteroid_id, ax, ay, ar} = asteroid
 
     sq(bx - ax) + sq(by - ay) < sq(ar)
@@ -47,21 +48,19 @@ defmodule Game.Collision do
 
   @doc """
   Return a tuple of {bullet_id, asteroid_id} for each collision.
+  A single bullet can only hit a single asteroid
   """
   def detect_bullets_hitting_asteroids(bullets, asteroids) do
-    l =
-      for b <- bullets, a <- asteroids, bullet_hits_asteroid?(b, a), do: {elem(b, 0), elem(a, 0)}
+    l = for b <- bullets, a <- asteroids, bullet_hits_asteroid?(b, a), do: {b, a}
 
-    Enum.uniq_by(l, fn {b, _s} -> b end)
+    Enum.uniq_by(l, fn {b, _s} -> b.pid end)
   end
 
   @doc """
   List of bullets (bullet_ids) to stop.
   """
   def unique_bullets(collisions) do
-    collisions
-    |> Enum.map(fn {b, _} -> b end)
-    |> Enum.uniq()
+    collisions |> Enum.map(fn {b, _} -> b end) |> Enum.uniq()
   end
 
   @doc """
@@ -111,10 +110,12 @@ defmodule Game.Collision do
 
   defp check_for_collisions(game, game_pid) do
     all_asteroids = Map.values(game.state.asteroids)
-    all_bullets = Map.values(game.state.bullets)
+    # TODO move to game process
+    all_bullets = Map.values(game.state.bullets) |> Enum.reject(fn b -> b == :spawn end)
     all_ships = Map.values(game.state.ships)
 
     bullet_ships = detect_bullets_hitting_ships(all_bullets, all_ships)
+    # List of {BulletLoc, Ship Tuple}
     handle_bullets_hitting_ships(game, bullet_ships, game_pid)
 
     all_asteroids
@@ -130,7 +131,7 @@ defmodule Game.Collision do
           unique_bullets(bullet_asteroids)
       )
 
-    stop_bullets(dud_bullets, game_pid)
+    stop_bullets(dud_bullets)
   end
 
   defp handle_asteroid_hitting_ships(asteroid_ships, game_pid) do
@@ -141,15 +142,17 @@ defmodule Game.Collision do
     end)
   end
 
+  # List of {BulletLoc, Ship Tuple}
+
   defp handle_bullets_hitting_ships(game, bullet_ships, game_pid) do
     Enum.each(bullet_ships, fn {b, s} ->
-      Game.Server.say_player_shot_ship(game_pid, b, s)
+      Game.Server.say_player_shot_ship(game_pid, b.id, s)
     end)
 
     bullet_ships
     |> unique_bullets
     |> Enum.each(fn b ->
-      {_, x, y} = game.state.bullets[b]
+      %{pos: %{x: x, y: y}} = game.state.bullets[b.pid]
       Game.Server.explosion(game_pid, x, y)
     end)
 
@@ -158,23 +161,23 @@ defmodule Game.Collision do
     end)
   end
 
-  defp handle_bullets_hitting_asteroids(game, bullet_asteroids, game_pid) do
+  defp handle_bullets_hitting_asteroids(_game, bullet_asteroids, game_pid) do
     bullet_asteroids
     |> unique_bullets
-    |> Enum.each(fn b -> Game.Server.say_player_shot_asteroid(game_pid, b) end)
+    |> Enum.each(fn b -> Game.Server.say_player_shot_asteroid(game_pid, b.id) end)
 
     bullet_asteroids
     |> unique_targets
-    |> Enum.each(fn a ->
-      {_, x, y, _r} = game.state.asteroids[a]
+    |> Enum.each(fn {asteroid_id, x, y, _r} ->
+      # {asteroid_id, x, y, _r} = game.state.asteroids[hd(a)]
       Game.Server.explosion(game_pid, x, y)
-      Game.Server.asteroid_hit(game_pid, a)
+      Game.Server.asteroid_hit(game_pid, asteroid_id)
     end)
   end
 
-  defp stop_bullets(bullets, game_pid) do
+  defp stop_bullets(bullets) do
     Enum.each(bullets, fn b ->
-      Game.Server.stop_bullet(game_pid, b)
+      Process.exit(b.pid, :normal)
     end)
   end
 end

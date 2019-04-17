@@ -2,8 +2,38 @@ defmodule Game.ServerTest do
   use ExUnit.Case, async: false
   doctest Game.Server
 
+  alias Bullet.Server, as: Bullet
   alias Game.Server, as: Game
   alias Elixoids.Game.Supervisor, as: GameSupervisor
+
+  test "When we stop a bullet it is removed from game" do
+    tag = "DUD"
+    {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
+    :ok = Game.spawn_player(game, tag)
+
+    {:ok, bullet_pid} = Bullet.start_link(game_id, tag, %{x: 0, y: 0}, 0.0)
+    Game.bullet_fired(game_id, bullet_pid)
+
+    IO.inspect([bullet_pid: bullet_pid])
+
+    :timer.sleep(100)
+
+    state = Game.state(game)
+
+    assert 1 == Enum.count(state.b)
+
+    Process.exit(bullet_pid, :normal)
+
+    :timer.sleep(1000)
+
+    state = Game.state(game)
+
+    Game.show(game)
+    assert Enum.empty?(state.b)
+
+    Process.exit(game, :normal)
+  end
+
 
   test "We can retrieve game state of Asteroids" do
     {:ok, game, _game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
