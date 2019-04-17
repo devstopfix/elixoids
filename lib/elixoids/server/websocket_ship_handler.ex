@@ -10,7 +10,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   import Elixir.Translate
   import Logger
 
-  @ms_between_frames div(1000, 4)
+  @ms_between_frames div(1000, 1)
   @pause_ms 1000
 
   @behaviour :cowboy_handler
@@ -25,7 +25,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   def websocket_init(state = %{url_tag: tag, game_id: _game_id}) do
     if Player.valid_player_tag?(tag) do
       case Game.spawn_player(:game, tag) do
-        {:ok, ship_pid, ship_id} -> connected(%{tag: tag, ship_id: ship_id})
+        {:ok, _ship_pid, ship_id} -> connected(%{tag: tag, ship_id: ship_id})
         # TODO log error
         _ -> {:stop, state}
       end
@@ -45,17 +45,16 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     {:ok, state}
   end
 
-  def terminate(_reason, _partial_req, %{tag: tag, game_id: game_id}) do
+  def terminate(_reason, _partial_req, _) do
     # TODO send to ship Game.remove_player(game_id, tag)
-    [:ws_disconnect, tag] |> inspect |> info()
+    # [:ws_disconnect, tag] |> inspect |> info()
     :ok
   end
 
   def websocket_handle({:text, content}, state = %{tag: tag}) do
     case Jason.decode(content) do
       {:ok, player_input} ->
-        # TODO send to ship handle_input(player_input, state)
-        {:ok, state}
+        handle_input(player_input, state)
 
       {:error, e} ->
         [:badjson, tag, content, e] |> inspect |> Logger.info()
@@ -67,17 +66,16 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     {:ok, state}
   end
 
-  def websocket_info({:timeout, _ref, _}, state = %{ship_pid: ship_pid, game_id: game_id}) do
-    # ship_state = Game.state_of_ship(game_id, ship_pid)
+  def websocket_info({:timeout, _ref, _}, state = %{ship_id: ship_id}) do
+    ship_state = Ship.game_state(ship_id)
 
-    # {x, y} = ship_state.origin
+    %{x: x, y: y} = ship_state.origin
 
-    # send_state =
-    #   ship_state
-    #   |> Map.update(:rocks, %{}, &asteroids_relative(&1, x, y))
-    #   |> Map.update(:ships, %{}, &ships_relative(&1, x, y))
-    #   |> Map.delete(:origin)
-    send_state = %{rocks: [], ships: []}
+    send_state =
+      ship_state
+      |> Map.update(:rocks, %{}, &asteroids_relative(&1, x, y))
+      |> Map.update(:ships, %{}, &ships_relative(&1, x, y))
+      |> Map.delete(:origin)
 
     :erlang.start_timer(@ms_between_frames, self(), [])
 
@@ -97,7 +95,8 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     for {k, v} <- player_input do
       handle_input(k, v, state)
     end
-    |> Enum.any?()
+
+    {:ok, state}
   end
 
   defp handle_input("fire", true, state), do: player_pulls_trigger(state)

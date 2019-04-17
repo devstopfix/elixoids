@@ -43,7 +43,6 @@ defmodule Game.Server do
   alias Game.Collision
   alias Ship.Server, as: Ship
   alias World.Clock
-  alias World.Velocity
   import Logger
 
   def start_link(args = [game_id: game_id, fps: _, asteroids: _]) do
@@ -100,11 +99,6 @@ defmodule Game.Server do
     GenServer.cast(pid, {:say_player_shot_ship, bullet_id, victim_id})
   end
 
-  # TODO remove from game
-  def hyperspace_ship(pid, ship_id) when is_integer(ship_id) do
-    GenServer.cast(pid, {:hyperspace_ship, ship_id})
-  end
-
   def say_ship_hit_by_asteroid(pid, ship_id) do
     GenServer.cast(pid, {:say_ship_hit_by_asteroid, ship_id})
   end
@@ -112,10 +106,6 @@ defmodule Game.Server do
   @spec spawn_player(pid(), String.t()) :: {:ok, pid(), term()} | {:error, :tag_in_use}
   def spawn_player(pid, player_tag) do
     GenServer.call(pid, {:spawn_player, player_tag})
-  end
-
-  def player_pulls_trigger(game_id, player_tag) do
-    GenServer.cast(via(game_id), {:player_pulls_trigger, player_tag})
   end
 
   def remove_player(game_id, player_tag) do
@@ -229,7 +219,6 @@ defmodule Game.Server do
 
   @doc """
       {:ok, game} = Game.Server.start_link(60)
-      Game.Server.show(game)
       Game.Server.asteroid_hit(game, 1)
 
   If the game is identified by the atom :game then:

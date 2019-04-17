@@ -140,7 +140,7 @@ defmodule Game.Collision do
     Enum.map(asteroid_ships, fn {a, s} ->
       Game.Server.say_ship_hit_by_asteroid(game_pid, s.id)
       # TODO send to ship directly
-      Game.Server.hyperspace_ship(game_pid, s.id)
+      Ship.Server.hyperspace(s.pid)
       # TODO send to Asteroid directly
       Game.Server.asteroid_hit(game_pid, a.id)
     end)
@@ -163,7 +163,7 @@ defmodule Game.Collision do
     Enum.each(bullet_ships, fn {_, s} ->
       # TODO send this to the ship, not the game
       # TODO this should be the full ship pid
-      Game.Server.hyperspace_ship(game_pid, elem(s, 0))
+      Ship.Server.hyperspace(s.pid)
     end)
   end
 

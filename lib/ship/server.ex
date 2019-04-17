@@ -63,6 +63,10 @@ defmodule Ship.Server do
   Move the ship to a random position on the map
   and prevent it firing.
   """
+  def hyperspace(ship_pid) when is_pid(ship_pid) do
+    GenServer.cast(ship_pid, :hyperspace)
+  end
+
   def hyperspace(ship_id) do
     GenServer.cast(via(ship_id), :hyperspace)
   end
@@ -88,6 +92,10 @@ defmodule Ship.Server do
   """
   def player_pulls_trigger(ship_id) do
     GenServer.cast(via(ship_id), :player_pulls_trigger)
+  end
+
+  def game_state(ship_id) do
+    GenServer.call(via(ship_id), :game_state)
   end
 
   # GenServer callbacks
@@ -139,6 +147,10 @@ defmodule Ship.Server do
     else
       {:noreply, ship}
     end
+  end
+
+  def handle_call(:game_state, _from, ship = %{game: %{id: game_id}}) do
+    {:reply, Game.Server.state_of_ship(game_id, self()), ship}
   end
 
   # TODO ship.game_pid should be game_id)

@@ -46,7 +46,6 @@ defmodule Game.ServerTest do
     Game.spawn_player(game, "AST")
     :timer.sleep(200)
 
-    Game.show(game)
     game_state = Game.state(game)
     assert [_, _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
 
