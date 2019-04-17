@@ -12,12 +12,14 @@ defmodule Ship.Server do
   alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Player
+  alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
   alias Game.Server, as: GameServer
   alias World.Clock
   alias World.Point
   alias World.Velocity
   import Elixoids.News
+  import Game.Identifiers
   use Elixoids.Game.Heartbeat
 
   # Ship radius (m)
@@ -33,16 +35,23 @@ defmodule Ship.Server do
   @laser_recharge_ms 500
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
 
-  def start_link(id, game_info, tag \\ Player.random_tag()) do
+  def start_link(game_info, tag \\ Player.random_tag()) do
     ship =
       Map.merge(random_ship(), %{
-        :id => id,
+        :id => next_id(),
         :tag => tag,
         :game => game_info
       })
 
-    GenServer.start_link(__MODULE__, ship)
+    ship_id = {game_info.id, tag}
+
+    {:ok, pid} = GenServer.start_link(__MODULE__, ship, name: via(ship_id))
+    {:ok, pid, ship_id}
   end
+
+  defp via(ship_id={_, _}),
+    do: {:via, Registry, {Registry.Elixoids.Ships, ship_id}}
+
 
   @doc """
   Player requests turn to given theta.
@@ -150,8 +159,14 @@ defmodule Ship.Server do
   The tuple that will be shown to the UI for rendering.
   """
   def state_tuple(ship) do
-    {ship.id, ship.tag, Point.round(ship.pos.x), Point.round(ship.pos.y),
-     Point.round(@ship_radius_m), Velocity.round_theta(ship.theta), "FFFFFF"}
+    %ShipLoc{
+      pid: self(),
+      id: ship.id,
+      tag: ship.tag,
+      pos: ship.pos,
+      radius: @ship_radius_m,
+      theta: Velocity.round_theta(ship.theta)
+    }
   end
 
   def random_ship do
