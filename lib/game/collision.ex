@@ -138,9 +138,9 @@ defmodule Game.Collision do
 
   defp handle_asteroid_hitting_ships(asteroid_ships, game_pid) do
     Enum.map(asteroid_ships, fn {a, s} ->
-      Game.Server.say_ship_hit_by_asteroid(game_pid, s.is)
+      Game.Server.say_ship_hit_by_asteroid(game_pid, s.id)
       # TODO send to ship directly
-      Game.Server.hyperspace_ship(game_pid, s.id
+      Game.Server.hyperspace_ship(game_pid, s.id)
       # TODO send to Asteroid directly
       Game.Server.asteroid_hit(game_pid, a.id)
     end)

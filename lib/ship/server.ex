@@ -49,45 +49,45 @@ defmodule Ship.Server do
     {:ok, pid, ship_id}
   end
 
-  defp via(ship_id={_, _}),
+  defp via(ship_id = {_, _}),
     do: {:via, Registry, {Registry.Elixoids.Ships, ship_id}}
-
 
   @doc """
   Player requests turn to given theta.
   """
-  def new_heading(pid, theta) do
-    GenServer.cast(pid, {:new_heading, theta})
+  def new_heading(ship_id, theta) do
+    GenServer.cast(via(ship_id), {:new_heading, theta})
   end
 
   @doc """
   Move the ship to a random position on the map
   and prevent it firing.
   """
-  def hyperspace(pid) do
-    GenServer.cast(pid, :hyperspace)
+  def hyperspace(ship_id) do
+    GenServer.cast(via(ship_id), :hyperspace)
   end
 
   @doc """
   Update laser recharge rate
   """
-  def fire(pid) do
-    GenServer.cast(pid, :fire)
+  def fire(ship_id) do
+    GenServer.cast(via(ship_id), :fire)
   end
 
   @doc """
   Stop the process.
   """
-  def stop(pid) do
-    GenServer.cast(pid, :stop)
+  def stop(ship_id) do
+    # TODO just use Process.exit(, :normal)
+    GenServer.cast(via(ship_id), :stop)
   end
 
   @doc """
   Player pulls trigger, which may fire a bullet
   if the ship is recharged.
   """
-  def player_pulls_trigger(pid) do
-    GenServer.cast(pid, :player_pulls_trigger)
+  def player_pulls_trigger(ship_id) do
+    GenServer.cast(via(ship_id), :player_pulls_trigger)
   end
 
   # GenServer callbacks
@@ -120,8 +120,12 @@ defmodule Ship.Server do
   end
 
   def handle_cast({:new_heading, theta}, ship) do
-    new_ship = %{ship | :target_theta => Velocity.wrap_angle(theta)}
-    {:noreply, new_ship}
+    if Velocity.valid_theta(theta) do
+      new_ship = %{ship | :target_theta => Velocity.wrap_angle(theta)}
+      {:noreply, new_ship}
+    else
+      {:noreply, ship}
+    end
   end
 
   @doc """
