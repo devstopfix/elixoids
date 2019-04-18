@@ -66,6 +66,7 @@ defmodule Game.Server do
     GenServer.call(pid, :state)
   end
 
+  @spec state_of_ship(integer(), pid()) :: map()
   def state_of_ship(game_id, ship_pid) do
     GenServer.call(via(game_id), {:state_of_ship, ship_pid})
   end
@@ -285,7 +286,8 @@ defmodule Game.Server do
 
   def handle_call({:state_of_ship, ship_pid}, _from, game) do
     case game.state.ships[ship_pid] do
-      nil -> {:reply, %{:error => "ship_not_found"}, game}
+      # TODO fail better
+      nil -> {:reply, %Snapshot{}, game}
       ship -> fetch_ship_state(ship, game)
     end
   end
@@ -338,10 +340,11 @@ defmodule Game.Server do
   end
 
   defp fetch_ship_state(shiploc, game) do
-    asteroids = game.state.asteroids |> Map.values()
-    ships = game.state.ships |> Map.values() |> ships_except(shiploc.tag)
+    asteroids = game.state.asteroids |> filter_active()
+    ships = game.state.ships |> filter_active() |> ships_except(shiploc.tag)
 
     ship_state = %{
+      # TODO remove they know their own tag - it is in WS URL
       :tag => shiploc.tag,
       :theta => shiploc.theta,
       :ships => ships,
@@ -382,7 +385,7 @@ defmodule Game.Server do
 
   def check_next_wave(game = %{min_asteroid_count: min_asteroid_count}) do
     active_asteroid_count = length(Map.keys(game.state.asteroids))
-
+    # TODO do we have a race condition here? Adds too many rocks
     if active_asteroid_count < min_asteroid_count do
       Asteroid.random_asteroid()
       |> new_asteroid_in_game(game)
@@ -470,7 +473,7 @@ defmodule Game.Server do
     fn -> Clock.now_ms() - epoch end
   end
 
-  # TODO remove pid
+  # TODO remove pid?
   defp game_info(pid, game_id), do: Info.new(pid, game_id, game_time())
 
   @spec snapshot(map()) :: Snapshot.t()
