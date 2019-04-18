@@ -36,12 +36,33 @@ class Miner:
         return {rk: [theta, dist] for [rk, theta, radius, dist] in state['rocks']}
 
 
-miner = Miner()
+class ConstantBearingMiner(Miner):
+
+    prior_state = {}
+
+    def delta(self, s0, s1):
+        return [ (k,v0,v1) for k, v0 in s0.items() for k1,v1 in s1.items() if k==k1 ]
+
+    def handle(self, state):
+        if not self.prior_state:
+            self.prior_state = state
+            return {}
+        else:
+            print(self.delta(self.prior_state, state))
+            self.prior_state = state
+            return {'fire': True}
+
+
+miner = ConstantBearingMiner()
 
 def on_message(ws, message):
-    delta_t = miner.elapsed()
-    print(delta_t)
-    print(miner.rocks(json.loads(message)))
+    rocks = miner.rocks(json.loads(message))
+    if rocks:
+        miner.elapsed()
+        reply = miner.handle(rocks)
+        if reply:
+            print(reply)
+            ws.send(json.dumps(reply))
 
 def on_error(ws, error):
     sys.stderr.write("{}\n\n".format(str(error)))
