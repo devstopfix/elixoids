@@ -67,21 +67,22 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   end
 
   def websocket_info({:timeout, _ref, _}, state = %{ship_id: ship_id}) do
-    ship_state = Ship.game_state(ship_id)
+    # ship_state = Ship.game_state(ship_id)
 
-    %{x: x, y: y} = ship_state.origin
+    # %{x: x, y: y} = ship_state.origin
 
-    send_state =
-      ship_state
-      |> Map.update(:rocks, %{}, &asteroids_relative(&1, x, y))
-      |> Map.update(:ships, %{}, &ships_relative(&1, x, y))
-      |> Map.delete(:origin)
+    # send_state =
+    #   ship_state
+    #   |> Map.update(:rocks, %{}, &asteroids_relative(&1, x, y))
+    #   |> Map.update(:ships, %{}, &ships_relative(&1, x, y))
+    #   |> Map.delete(:origin)
 
     :erlang.start_timer(@ms_between_frames, self(), [])
 
-    case Jason.encode(send_state) do
-      {:ok, message} -> {:reply, {:text, message}, state}
-    end
+    # case Jason.encode(send_state) do
+    #   {:ok, message} -> {:reply, {:text, message}, state}
+    # end
+    {:noreply, state}
   end
 
   def websocket_info(_info, state) do

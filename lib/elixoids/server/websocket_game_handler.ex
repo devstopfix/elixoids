@@ -6,12 +6,14 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   1 hour idle timeout.
   """
 
+  alias Elixoids.Api.State
+
   import Logger
 
   @ms_between_frames div(1000, 24)
   @pause_ms 1000
   @opts %{idle_timeout: 60 * 60 * 1000, compress: false}
-  @explosions_per_frame 2
+  @explosions_per_frame 5
 
   @behaviour :cowboy_handler
 
@@ -42,11 +44,15 @@ defmodule Elixoids.Server.WebsocketGameHandler do
 
   def websocket_info({:timeout, _ref, _}, explosions) do
     :erlang.start_timer(@ms_between_frames, self(), [])
-    game_state = Game.Server.state(:game)
-    game_state_explosions = Map.put(game_state, :x, Enum.take(explosions, @explosions_per_frame))
 
-    case Jason.encode(game_state_explosions) do
-      {:ok, message} -> {:reply, {:text, message}, Enum.drop(explosions, @explosions_per_frame)}
+    game_state =
+      :game
+      |> Game.Server.state()
+      |> Map.put(:x, Enum.take(explosions, @explosions_per_frame))
+      |> convert()
+
+    case Jason.encode(game_state) do
+      {:ok, message} -> {:reply, {:text, message}, explosions}
       {:error, _} -> {:ok, explosions}
     end
   end
@@ -58,4 +64,14 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   def websocket_info(_info, state) do
     {:ok, state}
   end
+
+  defp convert(game_state) do
+    game_state
+    |> Map.update(:a, [], &to_json/1)
+    |> Map.update(:b, [], &to_json/1)
+    |> Map.update(:s, [], &to_json/1)
+    |> Map.update(:x, [], &to_json/1)
+  end
+
+  defp to_json(xs), do: Enum.map(xs, fn m -> State.WorldJSON.to_json_list(m) end)
 end

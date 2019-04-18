@@ -36,7 +36,7 @@ defmodule Game.ServerTest do
     {:ok, game, _game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
     :timer.sleep(200)
     game_state = Game.state(game)
-    assert [_, _, _, 120.0] = List.first(game_state[:a])
+    assert %{radius: 120.0} = List.first(game_state[:a])
     Process.exit(game, :normal)
   end
 
@@ -47,7 +47,7 @@ defmodule Game.ServerTest do
     :timer.sleep(200)
 
     game_state = Game.state(game)
-    assert [_, tag_, _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
+    assert %{tag: tag, radius: 20.0} = List.first(game_state[:s])
 
     Process.exit(game, :normal)
   end

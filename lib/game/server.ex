@@ -325,9 +325,9 @@ defmodule Game.Server do
   def handle_call(:state, _from, game) do
     game_state = %{
       :dim => Elixoids.Space.dimensions(),
-      :a => game.state.asteroids |> locations_for_players,
-      :s => game.state.ships |> locations_for_players,
-      :b => game.state.bullets |> locations_for_players
+      :a => game.state.asteroids |> filter_active(),
+      :s => game.state.ships |> filter_active(),
+      :b => game.state.bullets |> filter_active()
     }
 
     {:reply, game_state, game}
@@ -464,19 +464,5 @@ defmodule Game.Server do
   end
 
   # Remove actors that have a placeholder state of :spawn
-  defp filter_active(m) do
-    m
-    |> Map.values()
-    |> Enum.filter(&Kernel.is_map/1)
-  end
-
-  defp locations_for_players(m) do
-    locations_as_list(m, &Elixoids.Api.State.PlayerJSON.to_json_list/1)
-  end
-
-  defp locations_as_list(m, transform) do
-    m
-    |> filter_active()
-    |> Enum.map(transform)
-  end
+  defp filter_active(m), do: m |> Map.values() |> Enum.filter(&Kernel.is_map/1)
 end

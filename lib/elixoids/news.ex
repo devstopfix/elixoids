@@ -5,6 +5,8 @@ defmodule Elixoids.News do
   The subscriber may produce score table, statistics etc
   """
 
+  alias Elixoids.Explosion.Location, as: ExplosionLoc
+
   def subscribe(game_id) when is_integer(game_id) do
     {:ok, _} = Registry.register(Registry.Elixoids.News, key(game_id), true)
   end
@@ -13,7 +15,8 @@ defmodule Elixoids.News do
     publish(game_id, {:audio, audio})
   end
 
-  def publish_explosion(game_id, point), do: publish(game_id, {:explosion, point})
+  def publish_explosion(game_id, [x, y]),
+    do: publish(game_id, {:explosion, %ExplosionLoc{x: x, y: y}})
 
   def publish_news(game_id, news) when is_binary(news), do: publish(game_id, {:news, news})
 
