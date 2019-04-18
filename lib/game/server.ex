@@ -40,6 +40,7 @@ defmodule Game.Server do
   alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Game.Info
+  alias Elixoids.Game.Snapshot
   alias Game.Collision
   alias Ship.Server, as: Ship
   alias World.Clock
@@ -149,6 +150,7 @@ defmodule Game.Server do
     }
   end
 
+
   @doc """
   Echo the state of the game to the console.
 
@@ -257,7 +259,8 @@ defmodule Game.Server do
   Update the game state and check for collisions.
   """
   def handle_tick(_pid, _delta_t_ms, game) do
-    Collision.collision_tests(game.collision_pid, game)
+    snap = snapshot(game)
+    Collision.collision_tests(game.collision_pid, snap)
     next_game_state = maybe_spawn_asteroid(game)
     {:ok, next_game_state}
   end
@@ -276,6 +279,13 @@ defmodule Game.Server do
       _ ->
         [:EXIT, msg, state] |> inspect |> error()
         {:noreply, state}
+    end
+  end
+
+  def handle_call({:state_of_ship, ship_pid}, _from, game) do
+    case game.state.ships[ship_pid] do
+      nil -> {:reply, %{:error => "ship_not_found"}, game}
+      ship -> fetch_ship_state(ship, game)
     end
   end
 
@@ -313,6 +323,7 @@ defmodule Game.Server do
     game_state = %{
       :dim => Elixoids.Space.dimensions(),
       :a => game.state.asteroids |> map_of_tuples_to_list,
+      # TODO remove
       :s => game.state.ships |> map_of_tuples_to_list |> map_rest,
       :b => game.state.bullets |> map_of_tuples_to_list
     }
@@ -320,11 +331,9 @@ defmodule Game.Server do
     {:reply, game_state, game}
   end
 
-  def handle_call({:state_of_ship, ship_pid}, _from, game) do
-    case game.state.ships[ship_pid] do
-      nil -> {:reply, %{:error => "ship_not_found"}, game}
-      ship -> fetch_ship_state(ship, game)
-    end
+  # TODO remove
+  defp map_rest(m) do
+    Enum.map(m, fn [_h | t] -> t end)
   end
 
   defp fetch_ship_state(shiploc, game) do
@@ -361,13 +370,6 @@ defmodule Game.Server do
     m
     |> Map.values()
     |> Enum.map(fn t -> Elixoids.Api.State.JSON.to_json_list(t) end)
-  end
-
-  @doc """
-  Drop the head of each list in the given list.
-  """
-  def map_rest(m) do
-    Enum.map(m, fn [_h | t] -> t end)
   end
 
   # Asteroids
@@ -462,4 +464,20 @@ defmodule Game.Server do
 
   # TODO remove pid
   defp game_info(pid, game_id), do: Info.new(pid, game_id, game_time())
+
+  @spec snapshot(map()) :: Snapshot.t()
+  defp snapshot(game_state) do
+    %Snapshot{
+      asteroids: filter_active(game_state.state.asteroids),
+      bullets: filter_active(game_state.state.bullets),
+      ships: filter_active(game_state.state.ships)
+    }
+  end
+
+  # Remove actors that have a placeholder state of :spawn
+  defp filter_active(m) do
+    m
+    |> Map.values()
+    |> Enum.filter(&Kernel.is_map/1)
+  end
 end

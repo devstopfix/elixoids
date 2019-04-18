@@ -6,6 +6,8 @@ defmodule Game.Collision do
   """
 
   use GenServer
+
+  alias Elixoids.Game.Snapshot
   import Elixoids.Event
 
   def start_link(game_id) when is_integer(game_id) do
@@ -98,6 +100,7 @@ defmodule Game.Collision do
     {:ok, game_id}
   end
 
+  @spec collision_tests(pid(), Snapshot.t()) :: :ok
   def collision_tests(pid, game) do
     GenServer.cast(pid, {:collision_tests, game})
   end
@@ -110,26 +113,21 @@ defmodule Game.Collision do
   end
 
   defp check_for_collisions(game, game_id) do
-    # TODO move to game process (remove spawns)
-    all_asteroids = Map.values(game.state.asteroids) |> remove_spawns()
-    all_bullets = Map.values(game.state.bullets) |> remove_spawns()
-    all_ships = Map.values(game.state.ships) |> remove_spawns()
+    %Snapshot{asteroids: asteroids, bullets: bullets, ships: ships} = game
 
-    bullet_ships = detect_bullets_hitting_ships(all_bullets, all_ships)
+    bullet_ships = detect_bullets_hitting_ships(bullets, ships)
     # List of {BulletLoc, Ship Tuple}
     handle_bullets_hitting_ships(game, bullet_ships, game_id)
 
-    all_asteroids
-    |> detect_asteroids_hitting_ships(all_ships)
+    asteroids
+    |> detect_asteroids_hitting_ships(ships)
     |> handle_asteroid_hitting_ships(game_id)
 
-    bullet_asteroids = detect_bullets_hitting_asteroids(all_bullets, all_asteroids)
+    bullet_asteroids = detect_bullets_hitting_asteroids(bullets, asteroids)
     handle_bullets_hitting_asteroids(bullet_asteroids, game_id)
 
     # TODO we could not check bullets against ships and rocks
   end
-
-  defp remove_spawns(xs), do: Enum.reject(xs, fn b -> b == :spawn end)
 
   defp handle_asteroid_hitting_ships(asteroid_ships, game_id) do
     Enum.map(asteroid_ships, fn {a, s} -> asteroid_hit_ship(game_id, a, s) end)
