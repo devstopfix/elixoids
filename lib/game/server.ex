@@ -46,6 +46,8 @@ defmodule Game.Server do
   alias World.Clock
   import Logger
 
+  @max_asteroids 32
+
   def start_link(args = [game_id: game_id, fps: _, asteroids: _]) do
     {:ok, _pid} = GenServer.start_link(__MODULE__, args, name: via(game_id))
   end
@@ -149,7 +151,6 @@ defmodule Game.Server do
       :min_asteroid_count => asteroid_count
     }
   end
-
 
   @doc """
   Echo the state of the game to the console.
@@ -261,7 +262,7 @@ defmodule Game.Server do
   def handle_tick(_pid, _delta_t_ms, game) do
     snap = snapshot(game)
     Collision.collision_tests(game.collision_pid, snap)
-    next_game_state = maybe_spawn_asteroid(game)
+    next_game_state = check_next_wave(game)
     {:ok, next_game_state}
   end
 
@@ -379,14 +380,21 @@ defmodule Game.Server do
     put_in(game.state.asteroids[pid], :spawn)
   end
 
-  defp maybe_spawn_asteroid(game) do
-    active_asteroid_count = length(Map.keys(game.pids.asteroids))
+  def check_next_wave(game = %{min_asteroid_count: min_asteroid_count}) do
+    active_asteroid_count = length(Map.keys(game.state.asteroids))
 
-    if active_asteroid_count < game.min_asteroid_count do
-      new_asteroid_in_game(Asteroid.random_asteroid(), game)
+    if active_asteroid_count < min_asteroid_count do
+      Asteroid.random_asteroid()
+      |> new_asteroid_in_game(game)
+      |> next_wave()
     else
       game
     end
+  end
+
+  defp next_wave(game_state) do
+    game_state
+    |> Map.update!(:min_asteroid_count, &min(&1 + 1, @max_asteroids))
   end
 
   # Ships

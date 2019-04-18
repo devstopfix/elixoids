@@ -114,4 +114,32 @@ defmodule Game.ServerTest do
   # test "We do not find missing ship state by tag" do
   #   refute Game.ship_state_has_tag({9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"}, "XXX")
   # end
+
+  test "We do not spawn asteroid" do
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 1, asteroids: 1)
+
+    next_state = Game.check_next_wave(%{min_asteroid_count: 1, state: %{asteroids: %{1 => %{}}}})
+
+    assert 1 == next_state.min_asteroid_count
+    assert [1] == Map.keys(next_state.state.asteroids)
+    assert Process.exit(game, :normal)
+  end
+
+  test "We do spawn asteroid" do
+    min_asteroid_count = 2
+    {:ok, game, game_id} = GameSupervisor.start_game(fps: 1, asteroids: min_asteroid_count)
+
+    info = %{id: game_id}
+
+    next_state =
+      Game.check_next_wave(%{
+        min_asteroid_count: min_asteroid_count,
+        info: info,
+        state: %{asteroids: %{1 => %{}}}
+      })
+
+    assert 2 == next_state.state.asteroids |> Map.keys() |> length
+    assert min_asteroid_count + 1 == next_state.min_asteroid_count
+    assert Process.exit(game, :normal)
+  end
 end
