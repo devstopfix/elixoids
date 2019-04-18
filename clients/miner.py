@@ -40,8 +40,11 @@ def now():
 # Base class
 
 class Miner:
-    prior_t = now()
-    prior_state = {}
+
+    def __init__(self, name):
+        self.name = name
+        self.prior_t = now()
+        self.prior_state = {}
 
     def elapsed(self):
         delta_t = now() - self.prior_t
@@ -64,10 +67,6 @@ class Miner:
         else:
             return {}
 
-    # Generate a random name
-    def name(self):
-        return 'M' + ''.join(''.join(choices(ascii_uppercase, k=2)))
-
     # Subclasses should implement a strategy
     # Return {theta: radians , fire: True|False}
     def strategy(self, _delta_state, _ship_theta):
@@ -76,7 +75,8 @@ class Miner:
 
 class ConstantBearingMiner(Miner):
 
-    ANGULAR_SIZE=0.2
+    ANGULAR_SIZE=0.1
+    target_id = 0
 
     # Find the difference between thetas over successive game states
     # The dampen factor can be adjusted to stop switching targets too often
@@ -98,6 +98,9 @@ class ConstantBearingMiner(Miner):
 
     def strategy(self, delta_state, ship_theta):
         target = self.choose_target(delta_state)
+        if (target[0] != self.target_id):
+            self.target_id = target[0]
+            print("{} Switching target {}".format(self.name, self.target_id))
         target_theta = target[2][0]
         perturbed_theta = perturb(target_theta, self.ANGULAR_SIZE)
         if self.pointing_at(ship_theta, target_theta):
@@ -108,7 +111,12 @@ class ConstantBearingMiner(Miner):
 
 # Miner
 
-miner = ConstantBearingMiner()
+# Generate a random name
+def name():
+    return 'M' + ''.join(''.join(choices(ascii_uppercase, k=2)))
+
+
+miner = ConstantBearingMiner(name())
 
 def on_message(ws, message):
     state = json.loads(message)
@@ -139,7 +147,7 @@ def options():
 
 if __name__ == "__main__":
     args = options()
-    player_name = args.name or miner.name()
+    player_name = args.name or miner.name
     ws_url = news_url(args.host, player_name)
     ws = websocket.WebSocketApp(ws_url,
                               on_message = on_message,
