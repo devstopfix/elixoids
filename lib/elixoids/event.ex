@@ -5,9 +5,10 @@ defmodule Elixoids.Event do
 
   import Elixoids.News
 
-  def asteroid_hit_ship(game_id, %{pid: asteroid_pid, pos: %{x: x, y: y}}, %{
+  def asteroid_hit_ship(game_id, %{pid: asteroid_pid}, %{
         pid: ship_pid,
-        tag: tag
+        tag: tag,
+        pos: %{x: x, y: y}
       }) do
     Ship.Server.hyperspace(ship_pid)
     Game.Server.explosion(game_id, x, y)
