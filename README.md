@@ -95,6 +95,14 @@ ASTEROID hits PLY
 
 See [Elixoids Java Client](https://github.com/jrothwell/asteroids-client) by [J Rothwell][5].
 
+### Python Asteroid Miner Client
+
+The [CBDR](https://en.wikipedia.org/wiki/Constant_bearing,_decreasing_range) Python client at [miner.py](client/miner.py) will try and shoot the asteroid which is on the most constant bearing with it:
+
+    pip3 install websocket-client
+    python3 clients/miner.py --host localhost:8065 -n MCB
+
+
 ### Ruby Clients
 
 There are some sample clients, written in Ruby, in the [clients](clients) folder. They require two libraries (which may require *sudo* depending on your Ruby installation):
