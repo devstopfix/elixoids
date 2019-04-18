@@ -9,7 +9,6 @@ defmodule Ship.Server do
 
   use GenServer
 
-  alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Player
   alias Elixoids.Ship.Location, as: ShipLoc
@@ -153,11 +152,9 @@ defmodule Ship.Server do
     {:reply, Game.Server.state_of_ship(game_id, self()), ship}
   end
 
-  # TODO ship.game_pid should be game_id)
   defp fire_bullet(ship) do
     pos = calculate_nose(ship)
-    {:ok, bullet_pid} = Bullet.start_link(ship.game.id, ship.tag, pos, ship.theta)
-    GameServer.bullet_fired(ship.game.id, bullet_pid)
+    GameServer.bullet_fired(ship.game.id, ship.tag, pos, ship.theta)
     publish_news(ship.game.id, [ship.tag, "fires"])
     pan = Elixoids.Space.frac_x(ship.pos.x)
     Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan, ship.game.time.()))

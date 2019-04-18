@@ -2,7 +2,6 @@ defmodule Game.ServerTest do
   use ExUnit.Case, async: false
   doctest Game.Server
 
-  alias Bullet.Server, as: Bullet
   alias Game.Server, as: Game
   alias Elixoids.Game.Supervisor, as: GameSupervisor
 
@@ -11,16 +10,16 @@ defmodule Game.ServerTest do
     {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
     {:ok, _game_pid, _ship_id} = Game.spawn_player(game, tag)
 
-    {:ok, bullet_pid} = Bullet.start_link(game_id, tag, %{x: 0, y: 0}, 0.0)
-    Game.bullet_fired(game_id, bullet_pid)
+    # {:ok, bullet_pid} = Bullet.start_link(game_id, )
+    {:ok, _bullet_pid} = Game.bullet_fired(game_id, tag, %{x: 0, y: 0}, 0.0)
 
-    :timer.sleep(100)
+    # :timer.sleep(100)
 
-    state = Game.state(game)
+    # state = Game.state(game)
 
-    assert 1 == Enum.count(state.b)
+    # assert 1 == Enum.count(state.b)
 
-    Process.exit(bullet_pid, :normal)
+    # Process.exit(bullet_pid, :normal)
 
     # TODO
     # :timer.sleep(1000)
@@ -69,35 +68,6 @@ defmodule Game.ServerTest do
   end
 
   # test "We record who shot a player" do
-  #   {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
-  #   :timer.sleep(10)
-
-  #   # {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-  #   :timer.sleep(10)
-
-  #   Game.ship_fires_bullet(game, 9)
-  #   :timer.sleep(10)
-
-  #   {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-  #   :timer.sleep(10)
-
-  #   :timer.sleep(10)
-
-  #   Game.say_player_shot_ship(game, 17, 10)
-  #   :timer.sleep(10)
-  #   {:elapsed_ms, _elapsed_ms} = Game.tick(game)
-
-  #   :timer.sleep(10)
-
-  #   state = Game.state(game)
-
-  #   [player_9_tag,_,_,_,_,_] = hd(state.s)
-  #   [player_10_tag,_,_,_,_,_] = hd(tl(state.s))
-
-  #   assert player_9_tag == state.kby[player_10_tag]
-
-  #   ship_state = Game.state_of_ship(game, player_10_tag)
-  #   assert player_9_tag == ship_state.kby
   # end
 
   # test "We can filter on ship id" do
@@ -144,4 +114,32 @@ defmodule Game.ServerTest do
   # test "We do not find missing ship state by tag" do
   #   refute Game.ship_state_has_tag({9, "VOI", 1464.0, 416.0, 20.0, 1.5612, "FFFFFF"}, "XXX")
   # end
+
+  test "We do not spawn asteroid" do
+    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 1, asteroids: 1)
+
+    next_state = Game.check_next_wave(%{min_asteroid_count: 1, state: %{asteroids: %{1 => %{}}}})
+
+    assert 1 == next_state.min_asteroid_count
+    assert [1] == Map.keys(next_state.state.asteroids)
+    assert Process.exit(game, :normal)
+  end
+
+  test "We do spawn asteroid" do
+    min_asteroid_count = 2
+    {:ok, game, game_id} = GameSupervisor.start_game(fps: 1, asteroids: min_asteroid_count)
+
+    info = %{id: game_id}
+
+    next_state =
+      Game.check_next_wave(%{
+        min_asteroid_count: min_asteroid_count,
+        info: info,
+        state: %{asteroids: %{1 => %{}}}
+      })
+
+    assert 2 == next_state.state.asteroids |> Map.keys() |> length
+    assert min_asteroid_count + 1 == next_state.min_asteroid_count
+    assert Process.exit(game, :normal)
+  end
 end

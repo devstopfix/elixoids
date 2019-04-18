@@ -4,9 +4,9 @@ defmodule Elixoids.Mixfile do
   def project do
     [
       app: :elixoids,
-      description: "Asteroids game and server",
+      description: "Asteroids Arcade Game Server",
       name: "Elixoids",
-      version: "3.19.108",
+      version: "3.19.111",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,

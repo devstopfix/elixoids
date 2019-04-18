@@ -14,6 +14,6 @@ defmodule Elixoids.Api.State do
 
   defimpl JSON, for: Atom do
     def to_json_list(:spawn), do: [0, 0, 0]
-    # TODO remove!
+    # TODO remove once we filter out spawns in game state call from UI!
   end
 end

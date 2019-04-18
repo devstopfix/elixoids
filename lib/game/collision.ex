@@ -7,8 +7,11 @@ defmodule Game.Collision do
 
   use GenServer
 
-  def start_link(game_pid) do
-    GenServer.start_link(__MODULE__, {:ok, game_pid}, [])
+  alias Elixoids.Game.Snapshot
+  import Elixoids.Event
+
+  def start_link(game_id) when is_integer(game_id) do
+    GenServer.start_link(__MODULE__, {:ok, game_id}, [])
   end
 
   @doc """
@@ -93,96 +96,61 @@ defmodule Game.Collision do
 
   # GenServer
 
-  def init({:ok, game_pid}) do
-    {:ok, game_pid}
+  def init({:ok, game_id}) do
+    {:ok, game_id}
   end
 
+  @spec collision_tests(pid(), Snapshot.t()) :: :ok
   def collision_tests(pid, game) do
     GenServer.cast(pid, {:collision_tests, game})
   end
 
   # Collisions
 
-  def handle_cast({:collision_tests, game}, game_pid) do
-    check_for_collisions(game, game_pid)
-    {:noreply, game_pid}
+  def handle_cast({:collision_tests, game}, game_id) do
+    check_for_collisions(game, game_id)
+    {:noreply, game_id}
   end
 
-  defp check_for_collisions(game, game_pid) do
-    # TODO move to game process (remove spawns)
-    all_asteroids = Map.values(game.state.asteroids) |> remove_spawns()
-    all_bullets = Map.values(game.state.bullets) |> remove_spawns()
-    all_ships = Map.values(game.state.ships) |> remove_spawns()
+  defp check_for_collisions(game, game_id) do
+    %Snapshot{asteroids: asteroids, bullets: bullets, ships: ships} = game
 
-    bullet_ships = detect_bullets_hitting_ships(all_bullets, all_ships)
+    bullet_ships = detect_bullets_hitting_ships(bullets, ships)
     # List of {BulletLoc, Ship Tuple}
-    handle_bullets_hitting_ships(game, bullet_ships, game_pid)
+    handle_bullets_hitting_ships(game, bullet_ships, game_id)
 
-    all_asteroids
-    |> detect_asteroids_hitting_ships(all_ships)
-    |> handle_asteroid_hitting_ships(game_pid)
+    asteroids
+    |> detect_asteroids_hitting_ships(ships)
+    |> handle_asteroid_hitting_ships(game_id)
 
-    bullet_asteroids = detect_bullets_hitting_asteroids(all_bullets, all_asteroids)
-    handle_bullets_hitting_asteroids(game, bullet_asteroids, game_pid)
+    bullet_asteroids = detect_bullets_hitting_asteroids(bullets, asteroids)
+    handle_bullets_hitting_asteroids(bullet_asteroids, game_id)
 
-    dud_bullets =
-      Enum.uniq(
-        unique_bullets(bullet_ships) ++
-          unique_bullets(bullet_asteroids)
-      )
-
-    stop_bullets(dud_bullets)
+    # TODO we could not check bullets against ships and rocks
   end
 
-  defp remove_spawns(xs), do: Enum.reject(xs, fn b -> b == :spawn end)
-
-  defp handle_asteroid_hitting_ships(asteroid_ships, game_pid) do
-    Enum.map(asteroid_ships, fn {a, s} ->
-      Game.Server.say_ship_hit_by_asteroid(game_pid, s.id)
-      # TODO send to ship directly
-      Ship.Server.hyperspace(s.pid)
-      # TODO send to Asteroid directly
-      Game.Server.asteroid_hit(game_pid, a.id)
-    end)
+  defp handle_asteroid_hitting_ships(asteroid_ships, game_id) do
+    Enum.map(asteroid_ships, fn {a, s} -> asteroid_hit_ship(game_id, a, s) end)
   end
 
   # List of {BulletLoc, Ship Tuple}
 
-  defp handle_bullets_hitting_ships(game, bullet_ships, game_pid) do
-    Enum.each(bullet_ships, fn {b, s} ->
-      Game.Server.say_player_shot_ship(game_pid, b.id, s.id)
-    end)
-
+  defp handle_bullets_hitting_ships(_game, bullet_ships, game_id) do
     bullet_ships
-    |> unique_bullets
-    |> Enum.each(fn b ->
-      %{pos: %{x: x, y: y}} = game.state.bullets[b.pid]
-      Game.Server.explosion(game_pid, x, y)
-    end)
-
-    Enum.each(bullet_ships, fn {_, s} ->
-      # TODO send this to the ship, not the game
-      # TODO this should be the full ship pid
-      Ship.Server.hyperspace(s.pid)
-    end)
+    |> bullets_hit_single_target()
+    |> Enum.each(fn {b, s} -> bullet_hit_ship(game_id, b, s) end)
   end
 
-  defp handle_bullets_hitting_asteroids(_game, bullet_asteroids, game_pid) do
+  defp handle_bullets_hitting_asteroids(bullet_asteroids, game_id) do
     bullet_asteroids
-    |> unique_bullets
-    |> Enum.each(fn b -> Game.Server.say_player_shot_asteroid(game_pid, b.id) end)
-
-    bullet_asteroids
-    |> unique_targets
-    |> Enum.each(fn %{pid: asteroid_pid, pos: %{x: x, y: y}} ->
-      Game.Server.explosion(game_pid, x, y)
-      Game.Server.asteroid_hit(game_pid, asteroid_pid)
-    end)
+    |> bullets_hit_single_target()
+    |> Enum.each(fn {b, a} -> bullet_hit_asteroid(game_id, b, a) end)
   end
 
-  defp stop_bullets(bullets) do
-    Enum.each(bullets, fn b ->
-      Process.exit(b.pid, :normal)
-    end)
+  defp bullets_hit_single_target(bxs) do
+    bxs
+    |> Enum.group_by(fn {b, _} -> b end)
+    |> Map.values()
+    |> Enum.map(&List.first/1)
   end
 end
