@@ -3,6 +3,7 @@ defmodule Elixoids.Application do
 
   use Application
 
+  @spec start(any(), any()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start(_start_type, _start_args) do
     children = [
       {Registry, keys: :duplicate, name: Registry.Elixoids.News},

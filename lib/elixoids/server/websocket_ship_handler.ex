@@ -10,7 +10,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   import Elixir.Translate
   import Logger
 
-  @ms_between_frames div(1000, 1)
+  @ms_between_frames div(1000, 8)
   @pause_ms 1000
 
   @behaviour :cowboy_handler
