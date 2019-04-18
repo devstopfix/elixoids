@@ -7,7 +7,7 @@ defmodule Elixoids.Explosion.Location do
 
   defimpl WorldJSON, for: __MODULE__ do
     def to_json_list(%{x: x, y: y}) do
-      [x, y]
+      [trunc(x), trunc(y)]
     end
   end
 end

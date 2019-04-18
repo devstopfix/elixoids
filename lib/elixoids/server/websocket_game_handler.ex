@@ -10,7 +10,8 @@ defmodule Elixoids.Server.WebsocketGameHandler do
 
   import Logger
 
-  @ms_between_frames div(1000, 24)
+  @fps 24
+  @ms_between_frames div(1000, @fps)
   @pause_ms 1000
   @opts %{idle_timeout: 60 * 60 * 1000, compress: false}
   @explosions_per_frame 5
@@ -52,12 +53,12 @@ defmodule Elixoids.Server.WebsocketGameHandler do
       |> convert()
 
     case Jason.encode(game_state) do
-      {:ok, message} -> {:reply, {:text, message}, explosions}
+      {:ok, message} -> {:reply, {:text, message}, []}
       {:error, _} -> {:ok, explosions}
     end
   end
 
-  def websocket_info({:explosion, x = [_, _]}, state) do
+  def websocket_info({:explosion, x}, state) do
     {:ok, [x | state]}
   end
 

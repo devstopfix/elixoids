@@ -338,8 +338,6 @@ defmodule Game.Server do
     ships = game.state.ships |> filter_active() |> ships_except(shiploc.tag)
 
     ship_state = %{
-      # TODO remove they know their own tag - it is in WS URL
-      :tag => shiploc.tag,
       :theta => shiploc.theta,
       :ships => ships,
       :rocks => asteroids,

@@ -119,13 +119,18 @@ def name():
 miner = ConstantBearingMiner(name())
 
 def on_message(ws, message):
-    state = json.loads(message)
-    ship_theta = state['theta']
-    rocks = miner.rocks(state)
-    if rocks:
-        reply = miner.handle(rocks, ship_theta)
-        if reply:
-            ws.send(json.dumps(reply))
+    try:
+        state = json.loads(message)
+        rocks = miner.rocks(state)
+        if rocks:
+            ship_theta = state['theta']
+            reply = miner.handle(rocks, ship_theta)
+            if reply:
+                ws.send(json.dumps(reply))
+    except:
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 def on_error(ws, error):
     sys.stderr.write("\n{}\n\n".format(str(error)))
