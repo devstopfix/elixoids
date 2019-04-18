@@ -3,7 +3,7 @@ defmodule Elixoids.Ship.Location do
 
   defstruct pid: nil, id: 0, tag: "", pos: nil, theta: 0.0, radius: 0.0, color: "FFFFFF"
 
-  defimpl Elixoids.Api.State.JSON, for: __MODULE__ do
+  defimpl Elixoids.Api.State.PlayerJSON, for: __MODULE__ do
     def to_json_list(%{
           id: id,
           tag: tag,

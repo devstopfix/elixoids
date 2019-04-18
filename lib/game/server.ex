@@ -325,18 +325,12 @@ defmodule Game.Server do
   def handle_call(:state, _from, game) do
     game_state = %{
       :dim => Elixoids.Space.dimensions(),
-      :a => game.state.asteroids |> map_of_tuples_to_list,
-      # TODO remove
-      :s => game.state.ships |> map_of_tuples_to_list |> map_rest,
-      :b => game.state.bullets |> map_of_tuples_to_list
+      :a => game.state.asteroids |> locations_for_players,
+      :s => game.state.ships |> locations_for_players,
+      :b => game.state.bullets |> locations_for_players
     }
 
     {:reply, game_state, game}
-  end
-
-  # TODO remove
-  defp map_rest(m) do
-    Enum.map(m, fn [_h | t] -> t end)
   end
 
   defp fetch_ship_state(shiploc, game) do
@@ -358,22 +352,6 @@ defmodule Game.Server do
   def ships_except(ships, tag) do
     ships
     |> Enum.reject(fn s -> ship_state_has_tag(s, tag) end)
-  end
-
-  @doc """
-  Convert a list of tuples into a list of lists
-  """
-  def list_of_tuples_to_list(m) do
-    Enum.map(m, fn t -> Tuple.to_list(t) end)
-  end
-
-  @doc """
-  Convert a map of tuples into a list of lists
-  """
-  def map_of_tuples_to_list(m) do
-    m
-    |> Map.values()
-    |> Enum.map(fn t -> Elixoids.Api.State.JSON.to_json_list(t) end)
   end
 
   # Asteroids
@@ -490,5 +468,15 @@ defmodule Game.Server do
     m
     |> Map.values()
     |> Enum.filter(&Kernel.is_map/1)
+  end
+
+  defp locations_for_players(m) do
+    locations_as_list(m, &Elixoids.Api.State.PlayerJSON.to_json_list/1)
+  end
+
+  defp locations_as_list(m, transform) do
+    m
+    |> filter_active()
+    |> Enum.map(transform)
   end
 end

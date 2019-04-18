@@ -40,13 +40,14 @@ defmodule Game.ServerTest do
     Process.exit(game, :normal)
   end
 
-  test "We can retrieve game state of Ships" do
+  test "We can retrieve game state for UI" do
+    tag = "AST"
     {:ok, game, _game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
-    Game.spawn_player(game, "AST")
+    Game.spawn_player(game, tag)
     :timer.sleep(200)
 
     game_state = Game.state(game)
-    assert [_, _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
+    assert [_, tag_, _, _, 20.0, _, "FFFFFF"] = List.first(game_state[:s])
 
     Process.exit(game, :normal)
   end
