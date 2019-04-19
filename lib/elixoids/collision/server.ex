@@ -14,7 +14,7 @@ defmodule Elixoids.Collision.Server do
     GenServer.start_link(__MODULE__, game_id, name: via(game_id))
   end
 
-  @spec collision_tests(integer(), Snapshopt.t()) :: :ok
+  @spec collision_tests(integer(), Snapshot.t()) :: :ok
   def collision_tests(game_id, game) do
     GenServer.cast(via(game_id), {:collision_tests, game})
   end
