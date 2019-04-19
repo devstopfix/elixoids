@@ -295,11 +295,9 @@ defmodule Game.Server do
 
   def check_next_wave(game = %{min_asteroid_count: min_asteroid_count}) do
     active_asteroid_count = length(Map.keys(game.state.asteroids))
-    # TODO do we have a race condition here? Adds too many rocks
+
     if active_asteroid_count < min_asteroid_count do
-      Asteroid.random_asteroid()
-      |> new_asteroid_in_game(game)
-      |> next_wave()
+      new_asteroid_in_game(Asteroid.random_asteroid(), game)
     else
       game
     end
@@ -314,20 +312,6 @@ defmodule Game.Server do
 
   def ship_state_has_tag(%{tag: expected_tag}, expected_tag), do: true
   def ship_state_has_tag(%{tag: _}, _), do: false
-
-  def only_ship(ships, tag) do
-    # TO DO must be better way to get head of list or nil
-    candidates =
-      ships
-      |> Map.values()
-      |> Enum.filter(fn s -> ship_state_has_tag(s, tag) end)
-
-    case candidates do
-      [] -> nil
-      [s] -> s
-      [s, _] -> s
-    end
-  end
 
   # Game state
 
