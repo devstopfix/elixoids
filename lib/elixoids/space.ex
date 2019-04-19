@@ -17,11 +17,7 @@ defmodule Elixoids.Space do
   @doc """
   Wrap point p so that its coordinates remain inside the world.
   """
-  def wrap(p) do
-    p
-    |> wrap_x
-    |> wrap_y
-  end
+  def wrap(p), do: p |> wrap_x |> wrap_y
 
   defp wrap_x(p) do
     cond do
@@ -51,15 +47,7 @@ defmodule Elixoids.Space do
     end
   end
 
-  def random_central_point do
-    x = Float.ceil(@width / 2 + :rand.normal() * (@width / 8.0))
-    y = Float.ceil(@height / 2 + :rand.normal() * (@height / 8.0))
-    %Point{x: x, y: y}
-  end
-
-  def dimensions do
-    [@width, @height]
-  end
+  def dimensions, do: [@width, @height]
 
   # Points on a grid
 
