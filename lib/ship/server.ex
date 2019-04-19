@@ -191,9 +191,7 @@ defmodule Ship.Server do
     }
   end
 
-  def random_ship_point do
-    Space.random_grid_point()
-  end
+  def random_ship_point, do: Space.random_grid_point()
 
   defp clip_delta_theta(delta_theta, delta_t_ms) do
     max_theta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0

@@ -89,7 +89,7 @@ defmodule Elixoids.Space do
     cond do
       x < 0.0 -> 0.0
       x > @width -> 0.0
-      true -> (x - @half_width) / @width
+      true -> (x - @half_width) / @half_width
     end
     |> Float.round(2)
   end
