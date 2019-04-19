@@ -140,10 +140,7 @@ defmodule Game.Server do
     %{
       :game_id => game_id,
       :info => info,
-      :pids => %{:asteroids => asteroids, :bullets => %{}, :ships => %{}},
       :state => %{:asteroids => asteroids, :bullets => %{}, :ships => %{}},
-      :players => %{},
-      # TODO link with Registry
       :collision_pid => collision_pid,
       :min_asteroid_count => asteroid_count
     }
@@ -261,17 +258,10 @@ defmodule Game.Server do
   (unless that ship already exists)
   """
   def handle_call({:spawn_player, player_tag}, _from, game) do
-    if ship_id_of_player(game, player_tag) == nil do
-      case Ship.start_link(game.info, player_tag) do
-        {:ok, ship_pid, ship_id} ->
-          new_game = put_in(game.state.ships[ship_pid], :spawn)
-          {:reply, {:ok, ship_pid, ship_id}, new_game}
-
-        other ->
-          {:error, other}
-      end
-    else
-      {:reply, {:error, :tag_in_use}, game}
+    case Ship.start_link(game.info, player_tag) do
+      {:ok, ship_pid, ship_id} ->
+        new_game = put_in(game.state.ships[ship_pid], :spawn)
+        {:reply, {:ok, ship_pid, ship_id}, new_game}
     end
   end
 
@@ -354,49 +344,12 @@ defmodule Game.Server do
   # Game state
 
   defp remove_pid_from_game_state(pid, game) do
-    game
-    |> remove_bullet_from_game(pid)
-    |> remove_asteroid_from_game(pid)
-    |> remove_ship_from_game(pid)
-  end
-
-  defp remove_bullet_from_game(game, bullet_pid) do
-    case pop_in(game, [:state, :bullets, bullet_pid]) do
-      {nil, _} -> game
-      {_, new_state} -> new_state
-    end
-  end
-
-  defp remove_asteroid_from_game(game, asteroid_pid) do
-    case pop_in(game, [:state, :asteroids, asteroid_pid]) do
-      {nil, _} -> game
-      {_, new_state} -> new_state
-    end
-  end
-
-  defp remove_ship_from_game(game, ship_pid) do
-    case pop_in(game, [:state, :ships, ship_pid]) do
-      {nil, _} -> game
-      {_, new_state} -> new_state
-    end
-  end
-
-  @doc """
-  Return the id of the Ship contolled by Player with given tag, or nil.
-  """
-  def ship_id_of_player(game, tag) do
-    get_in(game, [:players, tag])
-  end
-
-  @doc """
-  Get the PID of the Ship controlled by the Player with given tag,
-  or nil.
-  """
-  def ship_pid_of_player(game, tag) do
-    case ship_id_of_player(game, tag) do
-      nil -> nil
-      id -> get_in(game, [:pids, :ships, id])
-    end
+    Enum.reduce([:asteroids, :bullets, :ships], game, fn thng, game ->
+      case pop_in(game, [:state, thng, pid]) do
+        {nil, _} -> game
+        {_, new_game} -> new_game
+      end
+    end)
   end
 
   # Partial function that returns number of ms since game began

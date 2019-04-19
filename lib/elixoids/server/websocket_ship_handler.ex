@@ -26,8 +26,6 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     if Player.valid_player_tag?(tag) do
       case Game.spawn_player(:game, tag) do
         {:ok, _ship_pid, ship_id} -> connected(%{tag: tag, ship_id: ship_id})
-        # TODO log error
-        _ -> {:stop, state}
       end
     else
       [:bad_player_tag, tag] |> inspect |> warn()
