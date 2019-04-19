@@ -8,7 +8,7 @@ defmodule Game.ServerTest do
   test "When we stop a bullet it is removed from game" do
     tag = "DUD"
     {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
-    {:ok, _game_pid, _ship_id} = Game.spawn_player(game, tag)
+    {:ok, _game_pid, _ship_id} = Game.spawn_player(game_id, tag)
 
     # {:ok, bullet_pid} = Bullet.start_link(game_id, )
     {:ok, _bullet_pid} = Game.bullet_fired(game_id, tag, %{x: 0, y: 0}, 0.0)
@@ -33,20 +33,20 @@ defmodule Game.ServerTest do
   end
 
   test "We can retrieve game state of Asteroids" do
-    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+    {:ok, game, game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
     :timer.sleep(200)
-    game_state = Game.state(game)
+    game_state = Game.state(game_id)
     assert %{radius: 120.0} = List.first(game_state[:a])
     Process.exit(game, :normal)
   end
 
   test "We can retrieve game state for UI" do
     tag = "AST"
-    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
-    Game.spawn_player(game, tag)
+    {:ok, game, game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+    Game.spawn_player(game_id, tag)
     :timer.sleep(200)
 
-    game_state = Game.state(game)
+    game_state = Game.state(game_id)
     assert %{tag: tag, radius: 20.0} = List.first(game_state[:s])
 
     Process.exit(game, :normal)
@@ -60,9 +60,9 @@ defmodule Game.ServerTest do
   end
 
   test "We can retrieve viewport dimensions from game state" do
-    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
+    {:ok, game, game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
     :timer.sleep(10)
-    game_state = Game.state(game)
+    game_state = Game.state(game_id)
     assert 4000.0 == List.first(game_state.dim)
     assert 2250.0 == List.last(game_state.dim)
     Process.exit(game, :normal)

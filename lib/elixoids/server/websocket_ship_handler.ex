@@ -22,9 +22,9 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     {:cowboy_websocket, req, %{url_tag: tag, game_id: 0}, @opts}
   end
 
-  def websocket_init(state = %{url_tag: tag, game_id: _game_id}) do
+  def websocket_init(state = %{url_tag: tag, game_id: game_id}) do
     if Player.valid_player_tag?(tag) do
-      case Game.spawn_player(:game, tag) do
+      case Game.spawn_player(game_id, tag) do
         {:ok, _ship_pid, ship_id} -> connected(%{tag: tag, ship_id: ship_id})
       end
     else

@@ -46,8 +46,9 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   def websocket_info({:timeout, _ref, _}, explosions) do
     :erlang.start_timer(@ms_between_frames, self(), [])
 
+    # TODO game id should be in WS URL and the state
     game_state =
-      :game
+      0
       |> Game.Server.state()
       |> Map.put(:x, Enum.take(explosions, @explosions_per_frame))
       |> convert()

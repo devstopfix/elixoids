@@ -12,7 +12,7 @@ defmodule Elixoids.SoundsTest do
 
     News.subscribe(game_id)
 
-    {:ok, _, ship_id} = Game.spawn_player(game, tag)
+    {:ok, _, ship_id} = Game.spawn_player(game_id, tag)
 
     :ok = Ship.player_pulls_trigger(ship_id)
 

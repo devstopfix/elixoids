@@ -62,8 +62,8 @@ defmodule Game.Server do
   @doc """
   Retrieve the game state as a Map.
   """
-  def state(pid) do
-    GenServer.call(pid, :state)
+  def state(game_id) do
+    GenServer.call(via(game_id), :state)
   end
 
   @spec state_of_ship(integer(), pid()) :: map()
@@ -95,9 +95,9 @@ defmodule Game.Server do
     GenServer.cast(via(game_id), {:explosion, x, y})
   end
 
-  @spec spawn_player(pid(), String.t()) :: {:ok, pid(), term()} | {:error, :tag_in_use}
-  def spawn_player(pid, player_tag) do
-    GenServer.call(pid, {:spawn_player, player_tag})
+  @spec spawn_player(integer(), String.t()) :: {:ok, pid(), term()} | {:error, :tag_in_use}
+  def spawn_player(game_id, player_tag) do
+    GenServer.call(via(game_id), {:spawn_player, player_tag})
   end
 
   ## Initial state
@@ -117,17 +117,8 @@ defmodule Game.Server do
 
   def init(game_id: game_id, fps: _fps, asteroids: asteroid_count) do
     game_state = initial_game_state(asteroid_count, game_id)
-
-    if game_id == 0 do
-      # TODO remove hardcoded process name
-      Process.register(self(), :game)
-      Elixoids.Collision.Supervisor.start_for_game(0)
-    end
-
     Process.flag(:trap_exit, true)
-
     start_heartbeat()
-
     {:ok, game_state}
   end
 
