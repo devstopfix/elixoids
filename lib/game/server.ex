@@ -75,8 +75,8 @@ defmodule Game.Server do
     GenServer.cast(via(game_id), {:update_asteroid, new_state})
   end
 
-  def asteroid_hit(game_id, id) do
-    GenServer.cast(via(game_id), {:asteroid_hit, id})
+  def spawn_asteroids(game_id, rocks) do
+    GenServer.cast(via(game_id), {:spawn_asteroids, rocks})
   end
 
   def update_ship(pid, new_state) do
@@ -202,34 +202,9 @@ defmodule Game.Server do
     end
   end
 
-  @doc """
-      {:ok, game} = Game.Server.start_link(60)
-      Game.Server.asteroid_hit(game, 1)
-
-  If the game is identified by the atom :game then:
-
-      Game.Server.asteroid_hit(:game, 1)
-  """
-  def handle_cast({:asteroid_hit, asteroid_pid}, game) do
-    if Map.has_key?(game.state.asteroids, asteroid_pid) do
-      fragments = Asteroid.split(asteroid_pid)
-      new_game = Enum.reduce(fragments, game, fn f, game -> new_asteroid_in_game(f, game) end)
-      Asteroid.stop(asteroid_pid)
-      {:noreply, new_game}
-    else
-      {:noreply, game}
-    end
-  end
-
-  def handle_cast({:hyperspace_ship, ship_id}, game) do
-    case game.pids.ships[ship_id] do
-      nil ->
-        {:noreply, game}
-
-      pid ->
-        Ship.hyperspace(pid)
-        {:noreply, game}
-    end
+  def handle_cast({:spawn_asteroids, rocks}, game) do
+    new_game = Enum.reduce(rocks, game, fn f, game -> new_asteroid_in_game(f, game) end)
+    {:noreply, new_game}
   end
 
   @doc """

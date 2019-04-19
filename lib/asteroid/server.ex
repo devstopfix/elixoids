@@ -36,31 +36,9 @@ defmodule Asteroid.Server do
 
   @doc """
   The asteroid has been destroyed.
-
-     {:ok, a} = Asteroid.Server.start_link(9999)
-     Process.alive?(a)
-     Asteroid.Server.stop(a)
-     Process.alive?(a)
   """
-  def stop(pid) do
-    GenServer.cast(pid, :stop)
-  end
-
-  @doc """
-  Return a list of zero or two new asteroid states.
-
-  Returns empty list if the asteroid is too small to be split.
-  Otherwise returns a list of two new states of smaller rocks
-  flying in opposite directions.
-
-  {:ok, game} = Game.Server.start_link(60)
-  Game.Server.show(game)
-
-  rock = IEx.Helpers.pid(0,140,0)
-  Asteroid.Server.split(rock)
-  """
-  def split(pid) do
-    GenServer.call(pid, :split)
+  def destroyed(pid) do
+    GenServer.cast(pid, :destroyed)
   end
 
   # GenServer callbacks
@@ -76,22 +54,14 @@ defmodule Asteroid.Server do
     {:ok, moved_asteroid}
   end
 
-  def handle_cast(:stop, b) do
-    {:stop, :normal, b}
-  end
-
-  @doc """
-  Split a single asteroid into two smaller asteroids heading
-  in different directions and return a list of the new rocks,
-  or return an empty list if the rock is too small to split.
-  """
-  def handle_call(:split, _game_pid, a = %{rock: rock}) do
+  def handle_cast(:destroyed, asteroid = %{rock: rock}) do
     if rock.radius >= @splittable_radius_m do
-      rocks = Rock.cleave(rock, 4)
-      {:reply, rocks, a}
-    else
-      {:reply, [], a}
+      rocks = Rock.cleave(rock, 2)
+      GameServer.spawn_asteroids(asteroid.game.id, rocks)
+      {:stop, :normal, asteroid}
     end
+
+    {:stop, :normal, asteroid}
   end
 
   def random_asteroid do
@@ -103,6 +73,7 @@ defmodule Asteroid.Server do
   # Functions
 
   defp move_asteroid(a = %{rock: rock}, delta_t_ms) do
+    # TODO refactor
     p2 =
       rock.pos
       |> Point.apply_velocity(a.rock.velocity, delta_t_ms)

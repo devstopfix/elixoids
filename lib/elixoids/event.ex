@@ -3,7 +3,10 @@ defmodule Elixoids.Event do
   Logic to dispatch game events to processes.
   """
 
+  alias Asteroid.Server, as: Asteroid
   import Elixoids.News
+
+  @asteroid "ASTEROID"
 
   def asteroid_hit_ship(game_id, %{pid: asteroid_pid}, %{
         pid: ship_pid,
@@ -12,9 +15,8 @@ defmodule Elixoids.Event do
       }) do
     Ship.Server.hyperspace(ship_pid)
     Game.Server.explosion(game_id, x, y)
-    # TODO send to Asteroid
-    Game.Server.asteroid_hit(game_id, asteroid_pid)
-    publish_news(game_id, ["ASTEROID", "hit", tag])
+    Asteroid.destroyed(asteroid_pid)
+    publish_news(game_id, [@asteroid, "hit", tag])
   end
 
   def bullet_hit_ship(game_id, %{pid: bullet_pid, shooter: shooter_tag}, %{
@@ -34,8 +36,8 @@ defmodule Elixoids.Event do
         %{pid: asteroid_pid}
       ) do
     Process.exit(bullet_pid, :shutdown)
+    Asteroid.destroyed(asteroid_pid)
     Game.Server.explosion(game_id, x, y)
-    Game.Server.asteroid_hit(game_id, asteroid_pid)
-    publish_news(game_id, [shooter_tag, "shot", "ASTEROID"])
+    publish_news(game_id, [shooter_tag, "shot", @asteroid])
   end
 end
