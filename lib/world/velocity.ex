@@ -24,9 +24,7 @@ defmodule World.Velocity do
     %Velocity{theta: 3 * :math.pi() / 2}
   end
 
-  def east do
-    %Velocity{theta: 0.0}
-  end
+  def east(speed \\ 0.0), do: %Velocity{theta: 0.0, speed: speed}
 
   def random_direction_with_speed(speed) do
     %Velocity{theta: random_direction(), speed: speed}
