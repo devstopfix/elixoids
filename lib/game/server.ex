@@ -39,9 +39,9 @@ defmodule Game.Server do
   alias Asteroid.Server, as: Asteroid
   alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
+  alias Elixoids.Collision.Server, as: CollisionServer
   alias Elixoids.Game.Info
   alias Elixoids.Game.Snapshot
-  alias Game.Collision
   alias Ship.Server, as: Ship
   alias World.Clock
   import Logger
@@ -119,8 +119,9 @@ defmodule Game.Server do
     game_state = initial_game_state(asteroid_count, game_id)
 
     if game_id == 0 do
-      Process.register(self(), :game)
       # TODO remove hardcoded process name
+      Process.register(self(), :game)
+      Elixoids.Collision.Supervisor.start_for_game(0)
     end
 
     Process.flag(:trap_exit, true)
@@ -131,9 +132,6 @@ defmodule Game.Server do
   end
 
   defp initial_game_state(asteroid_count, game_id) do
-    # TODO start in supervisor
-    {:ok, collision_pid} = Collision.start_link(game_id)
-
     info = game_info(self(), game_id)
     asteroids = generate_asteroids(asteroid_count, info)
 
@@ -141,7 +139,6 @@ defmodule Game.Server do
       :game_id => game_id,
       :info => info,
       :state => %{:asteroids => asteroids, :bullets => %{}, :ships => %{}},
-      :collision_pid => collision_pid,
       :min_asteroid_count => asteroid_count
     }
   end
@@ -213,9 +210,9 @@ defmodule Game.Server do
   @doc """
   Update the game state and check for collisions.
   """
-  def handle_tick(_pid, _delta_t_ms, game) do
+  def handle_tick(_pid, _delta_t_ms, game = %{game_id: game_id}) do
     snap = snapshot(game)
-    Collision.collision_tests(game.collision_pid, snap)
+    CollisionServer.collision_tests(game_id, snap)
     next_game_state = check_next_wave(game)
     {:ok, next_game_state}
   end

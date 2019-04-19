@@ -1,4 +1,4 @@
-defmodule Game.Collision do
+defmodule Elixoids.Collision.Server do
   @moduledoc """
   Simplistic collision detections.
   Runs as a separate process to avoid slowing game loop in busy screens.
@@ -11,7 +11,12 @@ defmodule Game.Collision do
   import Elixoids.Event
 
   def start_link(game_id) when is_integer(game_id) do
-    GenServer.start_link(__MODULE__, {:ok, game_id}, [])
+    GenServer.start_link(__MODULE__, game_id, name: via(game_id))
+  end
+
+  @spec collision_tests(integer(), Snapshopt.t()) :: :ok
+  def collision_tests(game_id, game) do
+    GenServer.cast(via(game_id), {:collision_tests, game})
   end
 
   @doc """
@@ -96,14 +101,7 @@ defmodule Game.Collision do
 
   # GenServer
 
-  def init({:ok, game_id}) do
-    {:ok, game_id}
-  end
-
-  @spec collision_tests(pid(), Snapshot.t()) :: :ok
-  def collision_tests(pid, game) do
-    GenServer.cast(pid, {:collision_tests, game})
-  end
+  def init(args), do: {:ok, args}
 
   # Collisions
 
@@ -153,4 +151,6 @@ defmodule Game.Collision do
     |> Map.values()
     |> Enum.map(&List.first/1)
   end
+
+  defp via(game_id), do: {:via, Registry, {Registry.Elixoids.Collisions, {game_id}}}
 end

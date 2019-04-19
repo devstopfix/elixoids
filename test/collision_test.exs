@@ -1,10 +1,8 @@
-defmodule Game.CollisionTest do
+defmodule Elixoids.CollisionTest do
   use ExUnit.Case, async: true
 
-  doctest Game.Collision
-
   alias Elixoids.Ship.Location, as: ShipLoc
-  alias Game.Collision, as: Collision
+  alias Elixoids.Collision.Server, as: Collision
 
   test "No collision between asteroid and rock" do
     ship = %ShipLoc{pos: %{x: 1020, y: 0.0}, radius: 20}
