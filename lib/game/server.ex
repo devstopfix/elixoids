@@ -46,7 +46,7 @@ defmodule Game.Server do
   alias World.Clock
   import Logger
 
-  @max_asteroids 32
+  @max_asteroids 16
 
   def start_link(args = [game_id: game_id, fps: _, asteroids: _]) do
     {:ok, _pid} = GenServer.start_link(__MODULE__, args, name: via(game_id))
@@ -98,10 +98,6 @@ defmodule Game.Server do
   @spec spawn_player(pid(), String.t()) :: {:ok, pid(), term()} | {:error, :tag_in_use}
   def spawn_player(pid, player_tag) do
     GenServer.call(pid, {:spawn_player, player_tag})
-  end
-
-  def remove_player(game_id, player_tag) do
-    GenServer.cast(via(game_id), {:remove_player, player_tag})
   end
 
   ## Initial state
@@ -215,21 +211,6 @@ defmodule Game.Server do
     Elixoids.News.publish_audio(game.game_id, SoundEvent.explosion(pan, game.info.time.()))
     Elixoids.News.publish_explosion(game.game_id, [x, y])
     {:noreply, game}
-  end
-
-  @doc """
-  Stop the ship process and remove it from the game state.
-  """
-  def handle_cast({:remove_player, player_tag}, game) do
-    case ship_pid_of_player(game, player_tag) do
-      nil -> nil
-      pid -> Ship.stop(pid)
-    end
-
-    case ship_id_of_player(game, player_tag) do
-      nil -> {:noreply, game}
-      id -> {:noreply, remove_ship_from_game(game, id)}
-    end
   end
 
   @doc """
@@ -376,8 +357,7 @@ defmodule Game.Server do
     game
     |> remove_bullet_from_game(pid)
     |> remove_asteroid_from_game(pid)
-
-    # TODO remove ship!
+    |> remove_ship_from_game(pid)
   end
 
   defp remove_bullet_from_game(game, bullet_pid) do
@@ -394,9 +374,11 @@ defmodule Game.Server do
     end
   end
 
-  defp remove_ship_from_game(game, id) do
-    game2 = update_in(game.pids.ships, &Map.delete(&1, id))
-    update_in(game2.state.ships, &Map.delete(&1, id))
+  defp remove_ship_from_game(game, ship_pid) do
+    case pop_in(game, [:state, :ships, ship_pid]) do
+      {nil, _} -> game
+      {_, new_state} -> new_state
+    end
   end
 
   @doc """

@@ -45,9 +45,9 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     {:ok, state}
   end
 
-  def terminate(_reason, _partial_req, _) do
-    # TODO send to ship Game.remove_player(game_id, tag)
-    # [:ws_disconnect, tag] |> inspect |> info()
+  def terminate(_reason, _partial_req, %{ship_id: ship_id, tag: tag}) do
+    Ship.stop(ship_id)
+    [:ws_disconnect, tag] |> inspect |> info()
     :ok
   end
 

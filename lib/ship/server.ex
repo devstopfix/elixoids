@@ -71,18 +71,13 @@ defmodule Ship.Server do
   end
 
   @doc """
-  Update laser recharge rate
-  """
-  def fire(ship_id) do
-    GenServer.cast(via(ship_id), :fire)
-  end
-
-  @doc """
-  Stop the process.
+  Remove the ship from the game.
   """
   def stop(ship_id) do
-    # TODO just use Process.exit(, :normal)
-    GenServer.cast(via(ship_id), :stop)
+    case Registry.lookup(Registry.Elixoids.Ships, ship_id) do
+      [{pid, _} | _] -> Process.exit(pid, :shutdown)
+      _ -> false
+    end
   end
 
   @doc """
@@ -104,10 +99,6 @@ defmodule Ship.Server do
     {:ok, ship}
   end
 
-  def handle_cast(:stop, ship) do
-    {:stop, :normal, ship}
-  end
-
   @doc """
   Rotate the ship and broadcast new state to the game.
   """
@@ -120,10 +111,6 @@ defmodule Ship.Server do
       |> discharge_laser
 
     {:noreply, new_ship}
-  end
-
-  def handle_cast(:fire, ship) do
-    {:noreply, recharge_laser(ship)}
   end
 
   def handle_cast({:new_heading, theta}, ship) do
