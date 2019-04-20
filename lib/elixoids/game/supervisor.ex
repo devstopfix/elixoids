@@ -12,6 +12,7 @@ defmodule Elixoids.Game.Supervisor do
   use DynamicSupervisor
   alias Elixoids.Collision.Supervisor, as: CollisionSupervisor
   alias Game.Server, as: GameServer
+  import Game.Identifiers
 
   def start_link(_arg) do
     DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
@@ -37,6 +38,4 @@ defmodule Elixoids.Game.Supervisor do
     {:ok, _} = CollisionSupervisor.start_for_game(game_id)
     {:ok, pid, game_id}
   end
-
-  defp next_game_id, do: System.unique_integer([:positive, :monotonic])
 end
