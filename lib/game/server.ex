@@ -46,7 +46,7 @@ defmodule Game.Server do
   alias World.Clock
   import Logger
 
-  @max_asteroids 16
+  # @max_asteroids 16
 
   def start_link(args = [game_id: game_id, fps: _, asteroids: _]) do
     {:ok, _pid} = GenServer.start_link(__MODULE__, args, name: via(game_id))
@@ -250,7 +250,9 @@ defmodule Game.Server do
       {:ok, ship_pid, ship_id} ->
         new_game = put_in(game.state.ships[ship_pid], :spawn)
         {:reply, {:ok, ship_pid, ship_id}, new_game}
-      e -> {:reply, e, game}
+
+      e ->
+        {:reply, e, game}
     end
   end
 
@@ -304,10 +306,11 @@ defmodule Game.Server do
     end
   end
 
-  defp next_wave(game_state) do
-    game_state
-    |> Map.update!(:min_asteroid_count, &min(&1 + 1, @max_asteroids))
-  end
+  # TODO next_wave
+  # defp next_wave(game_state) do
+  #   game_state
+  #   |> Map.update!(:min_asteroid_count, &min(&1 + 1, @max_asteroids))
+  # end
 
   # Ships
 
