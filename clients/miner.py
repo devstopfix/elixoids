@@ -75,7 +75,7 @@ class Miner:
 
 class ConstantBearingMiner(Miner):
 
-    ANGULAR_SIZE=0.1
+    ANGULAR_SIZE=0.05
     target_id = 0
 
     # Find the difference between thetas over successive game states
@@ -96,12 +96,19 @@ class ConstantBearingMiner(Miner):
     def pointing_at(self, ship_theta, target_theta):
         return abs(normalize(ship_theta) - normalize(target_theta)) < self.ANGULAR_SIZE
 
+    def lead_target(self, target):
+        [_, s0, s1] = target
+        [t0, _] = s0
+        [t1, _] = s1
+        return normalize(t1 + (t1 - t0))
+
+
     def strategy(self, delta_state, ship_theta):
         target = self.choose_target(delta_state)
         if (target[0] != self.target_id):
             self.target_id = target[0]
             print("{} Switching target {}".format(self.name, self.target_id))
-        target_theta = target[2][0]
+        target_theta = self.lead_target(target)
         perturbed_theta = perturb(target_theta, self.ANGULAR_SIZE)
         if self.pointing_at(ship_theta, target_theta):
             return {'theta': perturbed_theta, 'fire': True}
