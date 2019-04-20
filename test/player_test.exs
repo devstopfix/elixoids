@@ -7,9 +7,9 @@ defmodule Elixoids.PlayerTest do
   alias Game.Server, as: Game
   alias Ship.Server, as: Ship
 
-  test "Two players with same name can connect" do
-    tag1 = "ACE"
-    tag2 = "ACE"
+  test "Two players with can connect" do
+    tag1 = "ALC"
+    tag2 = "BOB"
     {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 0)
 
     News.subscribe(game_id)
@@ -20,8 +20,8 @@ defmodule Elixoids.PlayerTest do
     :ok = Ship.player_pulls_trigger(ship1_id)
     :ok = Ship.player_pulls_trigger(ship2_id)
 
-    assert_receive {:news, "ACE fires"}, 100
-    assert_receive {:news, "ACE fires"}, 100
+    assert_receive {:news, "ALC fires"}, 100
+    assert_receive {:news, "BOB fires"}, 100
 
     Process.exit(pid2, :shutdown)
     Process.exit(pid1, :shutdown)

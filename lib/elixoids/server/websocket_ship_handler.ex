@@ -23,10 +23,13 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   end
 
   def websocket_init(state = %{url_tag: tag, game_id: game_id}) do
+    :erlang.start_timer(@pause_ms, self(), [])
+
     if Player.valid_player_tag?(tag) do
-      {:ok, _pid, ship_id} = Game.spawn_player(game_id, tag)
-      :erlang.start_timer(@pause_ms, self(), [])
-      {:ok, %{tag: tag, ship_id: ship_id}}
+      case Game.spawn_player(game_id, tag) do
+        {:ok, _pid, ship_id} -> {:ok, %{tag: tag, ship_id: ship_id}}
+        {:error, _} -> {:stop, state}
+      end
     else
       {:stop, state}
     end

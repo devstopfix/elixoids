@@ -250,6 +250,7 @@ defmodule Game.Server do
       {:ok, ship_pid, ship_id} ->
         new_game = put_in(game.state.ships[ship_pid], :spawn)
         {:reply, {:ok, ship_pid, ship_id}, new_game}
+      e -> {:reply, e, game}
     end
   end
 
