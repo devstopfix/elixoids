@@ -11,7 +11,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   import Logger
 
   @ms_between_frames div(1000, 8)
-  @pause_ms 1000
+  @pause_ms 250
 
   @behaviour :cowboy_handler
 
@@ -24,23 +24,12 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   def websocket_init(state = %{url_tag: tag, game_id: game_id}) do
     if Player.valid_player_tag?(tag) do
-      case Game.spawn_player(game_id, tag) do
-        {:ok, _ship_pid, ship_id} -> connected(%{tag: tag, ship_id: ship_id})
-      end
+      {:ok, _pid, ship_id} = Game.spawn_player(game_id, tag)
+      :erlang.start_timer(@pause_ms, self(), [])
+      {:ok, %{tag: tag, ship_id: ship_id}}
     else
-      [:bad_player_tag, tag] |> inspect |> warn()
       {:stop, state}
     end
-  rescue
-    e in RuntimeError ->
-      [:ws_connection, e] |> inspect |> error()
-      {:stop, state}
-  end
-
-  defp connected(state = %{tag: tag}) do
-    [:ws_connection, :ship, tag] |> inspect |> info()
-    :erlang.start_timer(@pause_ms, self(), [])
-    {:ok, state}
   end
 
   def terminate(_reason, _partial_req, %{ship_id: ship_id, tag: tag}) do

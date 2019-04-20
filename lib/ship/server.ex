@@ -35,20 +35,22 @@ defmodule Ship.Server do
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
 
   def start_link(game_info, tag \\ Player.random_tag()) do
+    id = next_id()
+
     ship =
       Map.merge(random_ship(), %{
-        :id => next_id(),
+        :id => id,
         :tag => tag,
         :game => game_info
       })
 
-    ship_id = {game_info.id, tag}
+    ship_id = {game_info.id, id, tag}
 
     {:ok, pid} = GenServer.start_link(__MODULE__, ship, name: via(ship_id))
     {:ok, pid, ship_id}
   end
 
-  defp via(ship_id = {_, _}),
+  defp via(ship_id),
     do: {:via, Registry, {Registry.Elixoids.Ships, ship_id}}
 
   @doc """

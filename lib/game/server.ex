@@ -303,7 +303,6 @@ defmodule Game.Server do
     end
   end
 
-
   defp next_wave(game_state) do
     game_state
     |> Map.update!(:min_asteroid_count, &min(&1 + 1, @max_asteroids))
