@@ -55,24 +55,7 @@ Clients subscribe to an event stream from the game via Websockets.
 
 ### Sound Client Protocol
 
-Sound events can be received at `ws://example.com/sound` and are a JSON list of maps:
-
-```json
-[
-  {"snd": "x", "pan": -0.8, "gt": 83802},
-  {"snd": "f", "pan":  0.2, "gt": 84010}
-]
-...
-```
-
-The sound types are:
-
-* `x` : explosion
-* `f` : shot fired
-
-The pan is a float from -1 to +1 where -1 is hard left and zero is center. See the [pan property](https://developer.apple.com/documentation/avfoundation/avaudioplayer/1390884-pan)
-
-* `gt` is the game time in milliseconds and can be used for ordering or delaying events
+Sound events can be received at `ws://example.com/sound` and here is the [sound format](docs/sound_protocol.md).
 
 ### News Client
 

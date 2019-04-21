@@ -12,6 +12,7 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
   @opts %{idle_timeout: 60 * 60 * 1000}
 
   def init(req, _opts) do
+    IO.inspect(req)
     {:cowboy_websocket, req, [], @opts}
   end
 

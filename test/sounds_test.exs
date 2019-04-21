@@ -3,6 +3,7 @@ defmodule Elixoids.SoundsTest do
 
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
+  alias Elixoids.Api.Sound.Protocol, as: SoundProtocol
   alias Game.Server, as: Game
   alias Ship.Server, as: Ship
 
@@ -26,5 +27,13 @@ defmodule Elixoids.SoundsTest do
     assert gt >= 0
 
     Process.exit(game, :normal)
+  end
+
+  test "We can encode sound events as Protobuf" do
+    assert <<10, 0, 10, 8, 21, 205, 204, 76, 63, 24, 145, 78>> ==
+             SoundProtocol.encode([
+               %{snd: "f", pan: 0.0, gt: 0},
+               %{snd: "x", pan: 0.8, gt: 10001}
+             ])
   end
 end
