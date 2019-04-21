@@ -162,13 +162,8 @@ if __name__ == "__main__":
     player_name = args.name or miner.name
     ws_url = news_url(args.host, player_name)
     ws = websocket.WebSocketApp(ws_url,
+                              header = {"Accept": "application/json"},
                               on_message = on_message,
                               on_error = on_error,
                               on_close = on_close)
     ws.run_forever()
-
-
-#def sort_by_distance(self, delta_state):
-   #return sorted(delta_state, key= lambda a: a[2][1])
-
-#random.choice([True, False])

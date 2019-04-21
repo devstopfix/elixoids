@@ -36,6 +36,7 @@ if __name__ == "__main__":
     ws_url = news_url(args.host)
     websocket.enableTrace(True)
     ws = websocket.WebSocketApp(ws_url,
+                              header = {"Accept": "text/plain"},
                               on_message = on_message,
                               on_error = on_error,
                               on_close = on_close)
