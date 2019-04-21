@@ -13,7 +13,7 @@ defmodule Elixoids.Api.WebsocketSoundHandler do
 
   @behaviour :cowboy_handler
 
-  def init(req= %{headers: %{"accept" => "application/octet-stream" }}, _opts) do
+  def init(req = %{headers: %{"accept" => "application/octet-stream"}}, _opts) do
     state = %{encode: &encode_protocol/1, events: []}
     {:cowboy_websocket, req, state, @opts}
   end
@@ -76,5 +76,4 @@ defmodule Elixoids.Api.WebsocketSoundHandler do
 
   defp encode_protocol(state = %{events: events}),
     do: {:reply, {:binary, SoundProtocol.encode(events)}, %{state | events: []}}
-
 end
