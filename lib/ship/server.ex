@@ -231,9 +231,9 @@ defmodule Ship.Server do
 
   # defimpl Elixoids.Game.Heartbeat.Tick do
   def handle_tick(_pid, delta_t_ms, ship) do
-    new_ship = ship |> __MODULE__.rotate_ship(delta_t_ms)
+    new_ship = ship |> rotate_ship(delta_t_ms)
 
-    GameServer.update_ship(ship.game.pid, __MODULE__.state_tuple(new_ship))
+    GameServer.update_ship(ship.game.id, state_tuple(new_ship))
     {:ok, new_ship}
   end
 end
