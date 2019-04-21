@@ -74,7 +74,6 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   # Player
 
-  @spec handle_input(map(), map()) :: boolean()
   defp handle_input(player_input, state) do
     for {k, v} <- player_input do
       handle_input(k, v, state)

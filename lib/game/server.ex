@@ -289,6 +289,9 @@ defmodule Game.Server do
     |> Enum.reject(fn s -> ship_state_has_tag(s, tag) end)
   end
 
+  def ship_state_has_tag(%{tag: expected_tag}, expected_tag), do: true
+  def ship_state_has_tag(%{tag: _}, _), do: false
+
   # Asteroids
 
   def new_asteroid_in_game(a, game) do
@@ -311,11 +314,6 @@ defmodule Game.Server do
   #   game_state
   #   |> Map.update!(:min_asteroid_count, &min(&1 + 1, @max_asteroids))
   # end
-
-  # Ships
-
-  def ship_state_has_tag(%{tag: expected_tag}, expected_tag), do: true
-  def ship_state_has_tag(%{tag: _}, _), do: false
 
   # Game state
 
