@@ -80,15 +80,15 @@ There is a sample Python news client at [cat_news.py](client/cat_news.py):
 
 The news stream is a stream of lines of the form:
 
-    PLAYER VERB [SUBJECT]
+    [PLAYER|ASTEROID] VERB [PLAYER|ASTEROID]
 
 Examples:
 
 ```
 PLY fires
-PLY hit ASTEROID
-PLY hit OTH
-ASTEROID hits PLY
+PLY shot ASTEROID
+PLY kills OTH
+ASTEROID hit PLY
 ```
 
 ### Java Ship Client
