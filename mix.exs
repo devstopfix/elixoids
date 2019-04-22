@@ -35,6 +35,7 @@ defmodule Elixoids.Mixfile do
       {:credo, "~> 1.0.5", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:excheck, "~> 0.5.3", only: :test},
+      {:gnuplot, "~> 1.19", only: :test},
       {:jason, "~> 1.1"},
       {:mix_test_watch, "~> 0.9", only: :dev},
       {:triq, "~> 1.3", only: [:dev, :test]}
