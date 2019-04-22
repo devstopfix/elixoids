@@ -51,22 +51,21 @@ defmodule Elixoids.Space do
 
   # Points on a grid
 
-  @grid_points 7
-  @gx @width / @grid_points
-  @gy @height / @grid_points
+  @grid_points 8
 
-  def rand_grid_index do
-    :rand.uniform(@grid_points - 1)
+  defp rand_grid_position(size_px, grid_count) do
+    grid_size = size_px / grid_count
+    p = :rand.uniform(grid_count - 1)
+    x = grid_size * p
+    perturb = :rand.normal() * grid_size / @grid_points
+    x + perturb
   end
 
-  def rand_grid_position(grid_size_px) do
-    perturb = :rand.normal() * (grid_size_px / 8.0)
-    grid_size_px * rand_grid_index() + perturb
-  end
+  @grid_points 8
 
   def random_grid_point do
-    x = rand_grid_position(@gx)
-    y = rand_grid_position(@gy)
+    x = rand_grid_position(@width, @grid_points)
+    y = rand_grid_position(@height, @grid_points - 2)
     %Point{x: x, y: y}
   end
 
