@@ -7,7 +7,7 @@ defmodule Game.ServerTest do
 
   test "When we stop a bullet it is removed from game" do
     tag = "DUD"
-    {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
+    {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 1)
     {:ok, _game_pid, _ship_id} = Game.spawn_player(game_id, tag)
 
     # {:ok, bullet_pid} = Bullet.start_link(game_id, )
@@ -33,7 +33,7 @@ defmodule Game.ServerTest do
   end
 
   test "We can retrieve game state of Asteroids" do
-    {:ok, game, game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+    {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 2)
     :timer.sleep(200)
     game_state = Game.state(game_id)
     assert %{radius: 120.0} = List.first(game_state[:a])
@@ -42,7 +42,7 @@ defmodule Game.ServerTest do
 
   test "We can retrieve game state for UI" do
     tag = "AST"
-    {:ok, game, game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+    {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 2)
     Game.spawn_player(game_id, tag)
     :timer.sleep(200)
 
@@ -53,14 +53,14 @@ defmodule Game.ServerTest do
   end
 
   test "Games get different ids and pids" do
-    {:ok, game1, game1_id} = GameSupervisor.start_game(fps: 1, asteroids: 1)
-    {:ok, game2, game2_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
+    {:ok, game1, game1_id} = GameSupervisor.start_game(asteroids: 1)
+    {:ok, game2, game2_id} = GameSupervisor.start_game(asteroids: 2)
     assert game2_id != game1_id
     assert game1 != game2
   end
 
   test "We can retrieve viewport dimensions from game state" do
-    {:ok, game, game_id} = GameSupervisor.start_game(fps: 60, asteroids: 1)
+    {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 1)
     :timer.sleep(10)
     game_state = Game.state(game_id)
     assert 4000.0 == List.first(game_state.dim)
@@ -117,7 +117,7 @@ defmodule Game.ServerTest do
   # end
 
   test "We do not spawn asteroid" do
-    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 1, asteroids: 1)
+    {:ok, game, _game_id} = GameSupervisor.start_game(asteroids: 1)
 
     next_state = Game.check_next_wave(%{min_asteroid_count: 1, state: %{asteroids: %{1 => %{}}}})
 
@@ -128,7 +128,7 @@ defmodule Game.ServerTest do
 
   test "We do spawn asteroid" do
     min_asteroid_count = 2
-    {:ok, game, game_id} = GameSupervisor.start_game(fps: 1, asteroids: min_asteroid_count)
+    {:ok, game, game_id} = GameSupervisor.start_game(asteroids: min_asteroid_count)
 
     info = %{id: game_id}
 

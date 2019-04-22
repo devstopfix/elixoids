@@ -1,6 +1,6 @@
 defmodule Elixoids.Server.WebsocketShipHandler do
   @moduledoc """
-  Websocket Handler. Queries the ship state at 4fps
+  Websocket Handler. Queries the ship state at 8 fps
   and publishes it over the websocket.
   """
 

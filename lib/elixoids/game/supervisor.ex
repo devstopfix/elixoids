@@ -25,12 +25,11 @@ defmodule Elixoids.Game.Supervisor do
   @doc """
   Start a new supervised game.
 
-      Elixoids.Game.Supervisor.start_game([fps: 4, asteroids: 4])
+      Elixoids.Game.Supervisor.start_game([fasteroids: 4])
   """
-  @spec start_game(fps: integer(), asteroids: integer()) :: {:ok, pid(), integer()}
-  def start_game(args = [fps: fps, asteroids: asteroid_count])
-      when fps >= 0 and fps <= 60 and
-             asteroid_count >= 0 and asteroid_count <= @max_asteroids do
+  @spec start_game(asteroids: integer()) :: {:ok, pid(), integer()}
+  def start_game(args = [asteroids: asteroid_count])
+      when asteroid_count >= 0 and asteroid_count <= @max_asteroids do
     game_id = next_game_id()
     arg = [game_id: game_id]
     child_spec = {GameServer, arg ++ args}

@@ -10,7 +10,7 @@ defmodule Elixoids.PlayerTest do
   test "Two players with can connect" do
     tag1 = "ALC"
     tag2 = "BOB"
-    {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 0)
+    {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 0)
 
     News.subscribe(game_id)
 

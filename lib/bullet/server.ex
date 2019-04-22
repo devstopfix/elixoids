@@ -24,7 +24,6 @@ defmodule Bullet.Server do
   @doc """
   Fire a bullet with:
 
-      {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
       {:ok, b} = Bullet.Server.start_link(0, "XXX", %World.Point{:x=>0.0, :y=>0.0}, 1.0)
   """
   def start_link(game_id, shooter, pos, theta)

@@ -5,32 +5,6 @@ defmodule Game.Server do
   The processes update themselves and they report their new state to the Game.
 
   Players are identified by a name (AAA..ZZZ) and control a Ship process.
-
-  To use, start a Game, and periodically send it tick messages:
-
-      {:ok, game} = Game.Server.start_link()
-      Game.Server.tick(game)
-      ...
-      Game.Server.tick(game)
-      ...
-
-  To retrieve the game state, periodically send a message:
-
-      game_state = Game.Server.state(game)
-
-  To start a running Game at 60 fps with 4 random ships:
-
-      {:ok, game} = Game.Server.start_link(60)
-      Game.Server.show(game)
-
-  To split an asteroid:
-
-      Game.Server.asteroid_hit(:game, 1)
-
-  To hyperspace a ship:
-
-      Game.Server.hyperspace_ship(game, 10)
-
   """
 
   use GenServer
@@ -48,7 +22,7 @@ defmodule Game.Server do
 
   # @max_asteroids 16
 
-  def start_link(args = [game_id: game_id, fps: _, asteroids: _]) do
+  def start_link(args = [game_id: game_id, asteroids: _]) do
     {:ok, _pid} = GenServer.start_link(__MODULE__, args, name: via(game_id))
   end
 
@@ -115,7 +89,7 @@ defmodule Game.Server do
 
   ## Server Callbacks
 
-  def init(game_id: game_id, fps: _fps, asteroids: asteroid_count) do
+  def init(game_id: game_id, asteroids: asteroid_count) do
     game_state = initial_game_state(asteroid_count, game_id)
     Process.flag(:trap_exit, true)
     start_heartbeat()

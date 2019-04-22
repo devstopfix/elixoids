@@ -1,6 +1,6 @@
 defmodule Elixoids.Server.WebsocketGameHandler do
   @moduledoc """
-  Websocket Handler. Queries the game state at 24fps
+  Websocket Handler. Queries the game state at 30fps
   and publishes it to subscriber.
 
   1 hour idle timeout.
@@ -10,7 +10,7 @@ defmodule Elixoids.Server.WebsocketGameHandler do
 
   import Logger
 
-  @fps 24
+  @fps 30
   @ms_between_frames div(1000, @fps)
   @pause_ms 1000
   @opts %{idle_timeout: 60 * 60 * 1000, compress: false}

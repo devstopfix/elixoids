@@ -9,7 +9,7 @@ defmodule Elixoids.SoundsTest do
 
   test "When a player shoots we receive a sound event" do
     tag = "FIR"
-    {:ok, game, game_id} = GameSupervisor.start_game(fps: 8, asteroids: 1)
+    {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 1)
 
     News.subscribe(game_id)
 

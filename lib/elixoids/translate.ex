@@ -8,9 +8,7 @@ defmodule Elixir.Translate do
   alias World.Velocity
 
   @doc """
-      {:ok, game} = Elixoids.Game.Supervisor.start_game([fps: 4, asteroids: 2])
-      Game.Server.spawn_player(game, "OUR")
-      Game.Server.state_of_ship(game, "OUR")
+  Translate asteroids in game relative to ship.
   """
   @spec asteroids_relative(list(map()), float(), float()) :: list(list())
   def asteroids_relative(rocks, ship_x, ship_y) do
