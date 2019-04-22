@@ -32,7 +32,7 @@ defmodule Elixoids.Mixfile do
   defp deps do
     [
       {:cowboy, "~> 2.6"},
-      {:credo, "~> 1.0.4", only: [:dev, :test]},
+      {:credo, "~> 1.0.5", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:excheck, "~> 0.5.3", only: :test},
       {:jason, "~> 1.1"},

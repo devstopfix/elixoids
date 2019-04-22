@@ -79,8 +79,8 @@ defmodule Game.Server do
     GenServer.cast(via(game_id), {:spawn_asteroids, rocks})
   end
 
-  def update_ship(pid, new_state) do
-    GenServer.cast(pid, {:update_ship, new_state})
+  def update_ship(game_id, new_state) do
+    GenServer.cast(via(game_id), {:update_ship, new_state})
   end
 
   def bullet_fired(game_id, shooter_tag, pos, theta) do
@@ -123,7 +123,7 @@ defmodule Game.Server do
   end
 
   defp initial_game_state(asteroid_count, game_id) do
-    info = game_info(self(), game_id)
+    info = game_info(game_id)
     asteroids = generate_asteroids(asteroid_count, info)
 
     %{
@@ -289,6 +289,9 @@ defmodule Game.Server do
     |> Enum.reject(fn s -> ship_state_has_tag(s, tag) end)
   end
 
+  def ship_state_has_tag(%{tag: expected_tag}, expected_tag), do: true
+  def ship_state_has_tag(%{tag: _}, _), do: false
+
   # Asteroids
 
   def new_asteroid_in_game(a, game) do
@@ -312,11 +315,6 @@ defmodule Game.Server do
   #   |> Map.update!(:min_asteroid_count, &min(&1 + 1, @max_asteroids))
   # end
 
-  # Ships
-
-  def ship_state_has_tag(%{tag: expected_tag}, expected_tag), do: true
-  def ship_state_has_tag(%{tag: _}, _), do: false
-
   # Game state
 
   defp remove_pid_from_game_state(pid, game) do
@@ -335,8 +333,7 @@ defmodule Game.Server do
     fn -> Clock.now_ms() - epoch end
   end
 
-  # TODO remove pid?
-  defp game_info(pid, game_id), do: Info.new(pid, game_id, game_time())
+  defp game_info(game_id), do: Info.new(game_id, game_time())
 
   @spec snapshot(map()) :: Snapshot.t()
   defp snapshot(game_state) do
