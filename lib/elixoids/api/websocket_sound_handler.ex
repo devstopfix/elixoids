@@ -9,20 +9,20 @@ defmodule Elixoids.Api.WebsocketSoundHandler do
   @behaviour :cowboy_handler
 
   def init(req = %{headers: %{"accept" => "application/octet-stream"}}, _opts) do
-    state = %{encode: &encode_protocol/1, events: []}
+    state = %{encode: &encode_protocol/2}
     {:cowboy_websocket, req, state, @opts}
   end
 
   def init(req, _opts) do
-    state = %{encode: &encode_json/1, events: []}
+    state = %{encode: &encode_json/2}
     {:cowboy_websocket, req, state, @opts}
   end
 
   # TODO get game ID from URL
-  def websocket_init(_state) do
+  def websocket_init(state) do
     {:ok, _pid} = Elixoids.News.subscribe(0)
     [:ws_connection, :audio] |> inspect |> info()
-    {:ok, []}
+    {:ok, state}
   end
 
   def websocket_terminate(_reason, _req, _state) do
@@ -34,14 +34,20 @@ defmodule Elixoids.Api.WebsocketSoundHandler do
     {:ok, state}
   end
 
-  def websocket_info({:audio, sound}, state) do
+  def websocket_info({:audio, sound}, state = %{encode: encode}) do
+    encode.(sound, state)
+  end
+
+  def websocket_info(_, state) do
+    {:ok, state}
+  end
+
+  defp encode_json(sound, state) do
     case Jason.encode([sound]) do
       {:ok, payload} -> {:reply, {:text, payload}, state}
       _ -> {:ok, state}
     end
   end
 
-  def websocket_info(_, state) do
-    {:ok, state}
-  end
+  defp encode_protocol(sound, state), do: {:reply, {:binary, SoundProtocol.encode(sound)}, state}
 end

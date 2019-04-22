@@ -29,11 +29,13 @@ defmodule Elixoids.SoundsTest do
     Process.exit(game, :normal)
   end
 
+  test "We can encode short sound events as Protobuf" do
+    assert <<24, 1>> ==
+             SoundProtocol.encode(%{snd: "f", pan: 0.0, gt: 1})
+  end
+
   test "We can encode sound events as Protobuf" do
-    assert <<10, 0, 10, 8, 21, 205, 204, 76, 63, 24, 145, 78>> ==
-             SoundProtocol.encode([
-               %{snd: "f", pan: 0.0, gt: 0},
-               %{snd: "x", pan: 0.8, gt: 10001}
-             ])
+    assert <<21, 0, 0, 128, 63, 24, 145, 78>> ==
+             SoundProtocol.encode(%{snd: "x", pan: 1.0, gt: 10001})
   end
 end

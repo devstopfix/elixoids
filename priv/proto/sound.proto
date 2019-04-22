@@ -1,9 +1,5 @@
 syntax = "proto3";
 
-message Sounds {
-  repeated Sound sounds = 1;
-}
-
 message Sound {
     enum Noise {
       FIRE = 0;

@@ -1,16 +1,4 @@
 defmodule Elixoids.Api.Sound.Protocol do
-  defmodule Sounds do
-    @moduledoc false
-    use Protobuf, syntax: :proto3
-
-    @type t :: %__MODULE__{
-            sounds: [Sound.t()]
-          }
-    defstruct [:sounds]
-
-    field(:sounds, 1, repeated: true, type: Elixoids.Api.Sound.Protocol.Sound)
-  end
-
   defmodule Sound do
     @moduledoc false
     use Protobuf, syntax: :proto3
@@ -38,11 +26,8 @@ defmodule Elixoids.Api.Sound.Protocol do
     field(:SAUCER, 4)
   end
 
-  def convert(%{snd: "f", pan: pan, gt: gt}), do: Sound.new(kind: 0, pan: pan, game_time: gt)
-  def convert(%{snd: "x", pan: pan, gt: gt}), do: Sound.new(kind: 1, pan: pan, game_time: gt)
+  defp convert(%{snd: "f", pan: pan, gt: gt}), do: Sound.new(kind: 0, pan: pan, game_time: gt)
+  defp convert(%{snd: "x", pan: pan, gt: gt}), do: Sound.new(kind: 1, pan: pan, game_time: gt)
 
-  def encode(sound_events) do
-    sounds = Enum.map(sound_events, &convert/1)
-    Sounds.encode(Sounds.new(sounds: sounds))
-  end
+  def encode(sound), do: Sound.encode(convert(sound))
 end
