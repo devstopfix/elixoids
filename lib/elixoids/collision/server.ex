@@ -3,6 +3,7 @@ defmodule Elixoids.Collision.Server do
   Simplistic collision detections.
   Runs as a separate process to avoid slowing game loop in busy screens.
   Tests everything against everything else - no bounding boxes or culling.
+  A bullet may take out multiple ships, or multiple asteroids, but not both a ship and an asteroid
   """
 
   use GenServer
@@ -18,6 +19,79 @@ defmodule Elixoids.Collision.Server do
   def collision_tests(game_id, game) do
     GenServer.cast(via(game_id), {:collision_tests, game})
   end
+
+  defp via(game_id), do: {:via, Registry, {Registry.Elixoids.Collisions, {game_id}}}
+
+  # GenServer
+
+  def init(args), do: {:ok, args}
+
+  # Collisions
+
+  def handle_cast({:collision_tests, game}, game_id) do
+    %Snapshot{asteroids: asteroids, bullets: bullets, ships: ships} = game
+
+    events = collision_check(asteroids, bullets, ships)
+    dispatch(game_id, events)
+
+    {:noreply, game_id}
+  end
+
+  @spec collision_check(list(AsteroidLoc.t()), list(BulletLoc.t()), list(ShipLoc.t())) ::
+          list(tuple())
+  def collision_check(asteroids, bullets, ships) do
+    tally = [a: MapSet.new(asteroids), b: MapSet.new(bullets), s: MapSet.new(ships), hits: []]
+
+    [_, _, _, hits: events] =
+      tally
+      |> check_bullets_hit_asteroids
+      |> check_bullets_hit_ships
+      |> check_asteroids_hit_ships
+
+    events
+  end
+
+  defp check_bullets_hit_asteroids(tally = [a: as, b: bs, s: _, hits: _]) do
+    hits = for b <- bs, a <- as, bullet_hits_asteroid?(b, a), do: {:bullet_hit_asteroid, b, a}
+
+    Enum.reduce(hits, tally, fn hit = {_, b, a}, [a: as, b: bs, s: ss, hits: hits] ->
+      [a: MapSet.delete(as, a), b: MapSet.delete(bs, b), s: ss, hits: [hit | hits]]
+    end)
+  end
+
+  defp check_bullets_hit_ships(tally = [a: _, b: bs, s: ss, hits: _]) do
+    hits = for b <- bs, s <- ss, bullet_hits_ship?(b, s), do: {:bullet_hit_ship, b, s}
+
+    Enum.reduce(hits, tally, fn hit = {_, b, s}, [a: as, b: bs, s: ss, hits: hits] ->
+      [a: as, b: MapSet.delete(bs, b), s: MapSet.delete(ss, s), hits: [hit | hits]]
+    end)
+  end
+
+  defp check_asteroids_hit_ships(tally = [a: as, b: _, s: ss, hits: _]) do
+    hits = for a <- as, s <- ss, asteroid_hits_ship?(a, s), do: {:asteroid_hit_ship, a, s}
+
+    Enum.reduce(hits, tally, fn hit = {_, a, s}, [a: as, b: bs, s: ss, hits: hits] ->
+      [a: MapSet.delete(as, a), b: bs, s: MapSet.delete(ss, s), hits: [hit | hits]]
+    end)
+  end
+
+  defp dispatch(_game_id, []), do: true
+
+  defp dispatch(game_id, [{:bullet_hit_ship, b, s} | events]) do
+    bullet_hit_ship(game_id, b, s)
+    dispatch(game_id, events)
+  end
+
+  defp dispatch(game_id, [{:bullet_hit_asteroid, b, a} | events]) do
+    bullet_hit_asteroid(game_id, b, a)
+    dispatch(game_id, events)
+  end
+
+  defp dispatch(game_id, [{:asteroid_hit_ship, a, s} | events]) do
+    asteroid_hit_ship(game_id, a, s)
+    dispatch(game_id, events)
+  end
+
 
   @doc """
   Square a number.
@@ -38,46 +112,11 @@ defmodule Elixoids.Collision.Server do
     sq(bx - sx) + sq(by - sy) < sq(sr)
   end
 
-  @doc """
-  Return a tuple of {bullet_id, ship_id} for each collision.
-  A single bullet can only hit a single ship
-  """
-  def detect_bullets_hitting_ships(bullets, ships) do
-    l = for b <- bullets, s <- ships, bullet_hits_ship?(b, s), do: {b, s}
-    Enum.uniq_by(l, fn {b, _s} -> b.pid end)
-  end
-
   def bullet_hits_asteroid?(bullet, asteroid) do
     %{pos: %{x: bx, y: by}} = bullet
     %{pos: %{x: ax, y: ay}, radius: ar} = asteroid
 
     sq(bx - ax) + sq(by - ay) < sq(ar)
-  end
-
-  @doc """
-  Return a tuple of {bullet_id, asteroid_id} for each collision.
-  A single bullet can only hit a single asteroid
-  """
-  def detect_bullets_hitting_asteroids(bullets, asteroids) do
-    l = for b <- bullets, a <- asteroids, bullet_hits_asteroid?(b, a), do: {b, a}
-
-    Enum.uniq_by(l, fn {b, _a} -> b.pid end)
-  end
-
-  @doc """
-  List of bullets (bullet_ids) to stop.
-  """
-  def unique_bullets(collisions) do
-    collisions |> Enum.map(fn {b, _} -> b end) |> Enum.uniq()
-  end
-
-  @doc """
-  List of targets (ship_ids) to destroy
-  """
-  def unique_targets(collisions) do
-    collisions
-    |> Enum.map(fn {_, s} -> s end)
-    |> Enum.uniq()
   end
 
   @doc """
@@ -88,69 +127,7 @@ defmodule Elixoids.Collision.Server do
     %{pos: %{x: ax, y: ay}, radius: ar} = asteroid
     %{pos: %{x: sx, y: sy}, radius: sr} = ship
 
+    # TODO replace sqrt with sq
     :math.sqrt(sq(ax - sx) + sq(ay - sy)) <= sr + ar
   end
-
-  @doc """
-  Return a tuple of {asteroid_id, ship_id} for each collision.
-  """
-  def detect_asteroids_hitting_ships(asteroids, ships) do
-    l = for a <- asteroids, s <- ships, asteroid_hits_ship?(a, s), do: {a, s}
-    Enum.uniq_by(l, fn {_a, s} -> s end)
-  end
-
-  # GenServer
-
-  def init(args), do: {:ok, args}
-
-  # Collisions
-
-  def handle_cast({:collision_tests, game}, game_id) do
-    check_for_collisions(game, game_id)
-    {:noreply, game_id}
-  end
-
-  defp check_for_collisions(game, game_id) do
-    %Snapshot{asteroids: asteroids, bullets: bullets, ships: ships} = game
-
-    bullet_ships = detect_bullets_hitting_ships(bullets, ships)
-    # List of {BulletLoc, Ship Tuple}
-    handle_bullets_hitting_ships(game, bullet_ships, game_id)
-
-    asteroids
-    |> detect_asteroids_hitting_ships(ships)
-    |> handle_asteroid_hitting_ships(game_id)
-
-    bullet_asteroids = detect_bullets_hitting_asteroids(bullets, asteroids)
-    handle_bullets_hitting_asteroids(bullet_asteroids, game_id)
-
-    # TODO we could not check bullets against ships and rocks
-  end
-
-  defp handle_asteroid_hitting_ships(asteroid_ships, game_id) do
-    Enum.map(asteroid_ships, fn {a, s} -> asteroid_hit_ship(game_id, a, s) end)
-  end
-
-  # List of {BulletLoc, Ship Tuple}
-
-  defp handle_bullets_hitting_ships(_game, bullet_ships, game_id) do
-    bullet_ships
-    |> bullets_hit_single_target()
-    |> Enum.each(fn {b, s} -> bullet_hit_ship(game_id, b, s) end)
-  end
-
-  defp handle_bullets_hitting_asteroids(bullet_asteroids, game_id) do
-    bullet_asteroids
-    |> bullets_hit_single_target()
-    |> Enum.each(fn {b, a} -> bullet_hit_asteroid(game_id, b, a) end)
-  end
-
-  defp bullets_hit_single_target(bxs) do
-    bxs
-    |> Enum.group_by(fn {b, _} -> b end)
-    |> Map.values()
-    |> Enum.map(&List.first/1)
-  end
-
-  defp via(game_id), do: {:via, Registry, {Registry.Elixoids.Collisions, {game_id}}}
 end
