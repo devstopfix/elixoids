@@ -31,7 +31,7 @@ defmodule Ship.Server do
   @ship_rotation_rad_per_sec :math.pi() * 2 / 3.0
 
   # Minimum time between shots
-  @laser_recharge_ms 500
+  @laser_recharge_ms 660
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
 
   def start_link(game_info, tag \\ Player.random_tag()) do
