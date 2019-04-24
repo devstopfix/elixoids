@@ -321,5 +321,4 @@ defmodule Elixoids.CollisionTest do
       assert (a + b) * (a + b) == Collision.sq(a + b)
     end
   end
-
 end
