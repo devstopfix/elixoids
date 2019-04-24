@@ -5,6 +5,9 @@ elixir:
   - 1.7
   - 1.6
 
+otp_release:
+  - '20.0'
+
 before_script:
   - mix compile –warnings-as-errors
   - mix credo --strict
