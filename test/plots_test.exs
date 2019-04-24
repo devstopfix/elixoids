@@ -6,11 +6,16 @@ defmodule Elixoids.PlotsTest do
 
   @tag :gnuplot
   test "Sound panning bathtub curves" do
-    for p <- [3,5,7], do: assert {:ok, _ } = plot([
-      [:set, :title, "Pan curves"],
-      ~w(set style line 1 lc rgb '#000000')a,
-      [:plot, -1..1, 'x**' ++ inspect(p), :ls, 1]
-    ])
+    for p <- [3, 5, 7],
+        do:
+          assert(
+            {:ok, _} =
+              plot([
+                [:set, :title, "Pan curves"],
+                ~w(set style line 1 lc rgb '#000000')a,
+                [:plot, -1..1, 'x**' ++ inspect(p), :ls, 1]
+              ])
+          )
   end
 
   @tag :gnuplot
