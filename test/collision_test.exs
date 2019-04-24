@@ -1,5 +1,4 @@
 defmodule Elixoids.CollisionTest do
-
   # Run large tests with mix test test/collision_test.exs --include large
 
   use ExUnit.Case, async: true
@@ -97,7 +96,6 @@ defmodule Elixoids.CollisionTest do
     assert [3, 4, 5] == Collision.unique_targets([{1, 3}, {2, 4}, {1, 5}])
   end
 
-
   ## Game constants
 
   @ship_radius_m 20.0
@@ -109,9 +107,13 @@ defmodule Elixoids.CollisionTest do
 
   ## Angles
 
-  def major_angle, do: [0.0, 1.0, 2.0, 3.0] |> :triq_dom.oneof() |> :triq_dom.bind(fn n -> n * :math.pi / 2.0 end)
+  def major_angle,
+    do:
+      [0.0, 1.0, 2.0, 3.0]
+      |> :triq_dom.oneof()
+      |> :triq_dom.bind(fn n -> n * :math.pi() / 2.0 end)
 
-  def any_angle, do: :triq_dom.float() |> :triq_dom.bind(fn f -> :math.fmod(f, :math.pi) end)
+  def any_angle, do: :triq_dom.float() |> :triq_dom.bind(fn f -> :math.fmod(f, :math.pi()) end)
 
   def theta, do: :triq_dom.oneof([:triq_dom.oneof([0.0]), major_angle(), any_angle()])
 
@@ -123,26 +125,30 @@ defmodule Elixoids.CollisionTest do
 
   defp mid_float, do: 0..120 |> Enum.map(&to_float/1) |> :triq_dom.oneof()
 
-  defp world_float, do:
-    :triq_dom.float()
-    |> :triq_dom.suchthat(fn f -> f < 2000.0 end)
-    |> :triq_dom.bind(&abs/1)
+  defp world_float,
+    do:
+      :triq_dom.float()
+      |> :triq_dom.suchthat(fn f -> f < 2000.0 end)
+      |> :triq_dom.bind(&abs/1)
 
-  defp position, do: :triq_dom.oneof([:triq_dom.oneof([0.0]), small_float(), mid_float(), world_float()])
+  defp position,
+    do: :triq_dom.oneof([:triq_dom.oneof([0.0]), small_float(), mid_float(), world_float()])
 
-  defp point, do: :triq_dom.bind([position(), position()], fn [x,y] -> %Point{x: x, y: y} end)
+  defp point, do: :triq_dom.bind([position(), position()], fn [x, y] -> %Point{x: x, y: y} end)
 
   # 0..0.99
-  defp frac, do:
-    0..99
-    |> Enum.to_list
-    |> :triq_dom.oneof
-    |> :triq_dom.bind(fn i -> i / 100.0 end)
+  defp frac,
+    do:
+      0..99
+      |> Enum.to_list()
+      |> :triq_dom.oneof()
+      |> :triq_dom.bind(fn i -> i / 100.0 end)
 
   # > 1.1
-  defp multiplier, do:
-    :triq_dom.float()
-    |> :triq_dom.bind(fn f -> abs(f) + 1.1 end)
+  defp multiplier,
+    do:
+      :triq_dom.float()
+      |> :triq_dom.bind(fn f -> abs(f) + 1.1 end)
 
   # Generate a circle and a point inside that circle
   defp point_inside_circle(sizes) do
@@ -150,7 +156,7 @@ defmodule Elixoids.CollisionTest do
     |> :triq_dom.bind(fn [p, t, r, f] ->
       dx = :math.cos(t) * r * f
       dy = :math.sin(t) * r * f
-      {p, %Point{x: p.x + dx, y: p.y + dy}, r }
+      {p, %Point{x: p.x + dx, y: p.y + dy}, r}
     end)
   end
 
@@ -160,7 +166,7 @@ defmodule Elixoids.CollisionTest do
     |> :triq_dom.bind(fn [p, t, r, m] ->
       dx = :math.cos(t) * r * m
       dy = :math.sin(t) * r * m
-      {p, %Point{x: p.x + dx, y: p.y + dy}, r }
+      {p, %Point{x: p.x + dx, y: p.y + dy}, r}
     end)
   end
 
@@ -169,7 +175,6 @@ defmodule Elixoids.CollisionTest do
 
   defp point_inside_asteroid, do: point_inside_circle(asteroid_radius())
   defp point_outside_asteroid, do: point_outside_circle(asteroid_radius())
-
 
   defp overlapping_circles(size1, size2) do
     [point(), size1, size2, theta(), frac()]
@@ -191,20 +196,22 @@ defmodule Elixoids.CollisionTest do
     end)
   end
 
-
   defp ship_overlapping_asteroid, do: overlapping_circles(ship_radius_m(), asteroid_radius())
 
-  defp ship_non_overlapping_asteroid, do: non_overlapping_circles(ship_radius_m(), asteroid_radius())
+  defp ship_non_overlapping_asteroid,
+    do: non_overlapping_circles(ship_radius_m(), asteroid_radius())
 
   property :check_generators do
     for_all p in point() do
       assert p.x >= 0.0
       assert p.y >= 0.0
     end
+
     for_all t in theta() do
       assert t >= -3.2
       assert t <= 6.3
     end
+
     for_all m in multiplier() do
       assert m >= 1.1
     end
@@ -260,7 +267,6 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-
   @tag iterations: 10000, large: true
   property :asteroid_hits_ship do
     for_all [p1: ps, r1: rs, p2: pa, r2: ra] in ship_overlapping_asteroid() do
@@ -278,5 +284,4 @@ defmodule Elixoids.CollisionTest do
       assert [] == Collision.detect_asteroids_hitting_ships([asteroid], [ship])
     end
   end
-
 end
