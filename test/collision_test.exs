@@ -103,7 +103,7 @@ defmodule Elixoids.CollisionTest do
   # Generators
 
   defp asteroid_radius, do: :triq_dom.oneof([120.0, 60.0, 30.0, 15.0])
-  defp ship_radius_m, do: :triq_dom.oneof([@ship_radius_m])
+  defp ship_radius, do: :triq_dom.oneof([@ship_radius_m])
 
   ## Angles
 
@@ -137,83 +137,73 @@ defmodule Elixoids.CollisionTest do
   defp point, do: :triq_dom.bind([position(), position()], fn [x, y] -> %Point{x: x, y: y} end)
 
   # 0..0.99
-  defp frac,
+  defp smaller_radius,
     do:
       0..99
       |> Enum.to_list()
       |> :triq_dom.oneof()
       |> :triq_dom.bind(fn i -> i / 100.0 end)
 
-  # > 1.1
-  defp multiplier,
+  # > 1.01
+  defp larger_radius,
     do:
       :triq_dom.float()
-      |> :triq_dom.bind(fn f -> abs(f) + 1.1 end)
+      |> :triq_dom.bind(fn f -> abs(f) + 1.01 end)
 
-  # Generate a circle and a point inside that circle
-  defp point_inside_circle(sizes) do
-    [point(), theta(), sizes, frac()]
-    |> :triq_dom.bind(fn [p, t, r, f] ->
-      dx = :math.cos(t) * r * f
-      dy = :math.sin(t) * r * f
+  # Generate a circle and a point offset from the centre of the circle
+  defp point_circle(sizes, delta_r) do
+    [point(), theta(), sizes, delta_r]
+    |> :triq_dom.bind(fn [p, t, r, dr] ->
+      dx = :math.cos(t) * (r * dr)
+      dy = :math.sin(t) * (r * dr)
       {p, %Point{x: p.x + dx, y: p.y + dy}, r}
     end)
   end
 
-  # Generate a circle and a point outside that circle
-  defp point_outside_circle(sizes) do
-    [point(), theta(), sizes, multiplier()]
-    |> :triq_dom.bind(fn [p, t, r, m] ->
-      dx = :math.cos(t) * r * m
-      dy = :math.sin(t) * r * m
-      {p, %Point{x: p.x + dx, y: p.y + dy}, r}
-    end)
-  end
+  defp point_inside_ship, do: point_circle(ship_radius(), smaller_radius())
+  defp point_outside_ship, do: point_circle(ship_radius(), larger_radius())
 
-  defp point_inside_ship, do: point_inside_circle(:triq_dom.oneof([@ship_radius_m]))
-  defp point_outside_ship, do: point_outside_circle(:triq_dom.oneof([@ship_radius_m]))
+  defp point_inside_asteroid, do: point_circle(asteroid_radius(), smaller_radius())
+  defp point_outside_asteroid, do: point_circle(asteroid_radius(), larger_radius())
 
-  defp point_inside_asteroid, do: point_inside_circle(asteroid_radius())
-  defp point_outside_asteroid, do: point_outside_circle(asteroid_radius())
-
-  defp overlapping_circles(size1, size2) do
-    [point(), size1, size2, theta(), frac()]
-    |> :triq_dom.bind(fn [p, r1, r2, t, f] ->
-      r = (r1 + r2) * f
-      dx = :math.cos(t) * r
-      dy = :math.sin(t) * r
+  defp circles(size1, size2, delta_r) do
+    [point(), size1, size2, theta(), delta_r]
+    |> :triq_dom.bind(fn [p, r1, r2, t, dr] ->
+      d = (r1 + r2) * dr
+      dx = :math.cos(t) * d
+      dy = :math.sin(t) * d
       [p1: p, r1: r1, p2: %Point{x: p.x + dx, y: p.y + dy}, r2: r2]
     end)
   end
 
-  defp non_overlapping_circles(size1, size2) do
-    [point(), size1, size2, theta(), multiplier()]
-    |> :triq_dom.bind(fn [p, r1, r2, t, m] ->
-      r = (r1 + r2) * m
-      dx = :math.cos(t) * r
-      dy = :math.sin(t) * r
-      [p1: p, r1: r1, p2: %Point{x: p.x + dx, y: p.y + dy}, r2: r2]
-    end)
-  end
+  defp ship_overlapping_asteroid, do: circles(ship_radius(), asteroid_radius(), smaller_radius())
 
-  defp ship_overlapping_asteroid, do: overlapping_circles(ship_radius_m(), asteroid_radius())
+  defp ship_non_overlapping_asteroid, do: circles(ship_radius(), asteroid_radius(), larger_radius())
 
-  defp ship_non_overlapping_asteroid,
-    do: non_overlapping_circles(ship_radius_m(), asteroid_radius())
-
-  property :check_generators do
+  property :check_point_generator do
     for_all p in point() do
       assert p.x >= 0.0
       assert p.y >= 0.0
     end
+  end
 
+  property :check_angle_generator do
     for_all t in theta() do
       assert t >= -3.2
       assert t <= 6.3
     end
+  end
 
-    for_all m in multiplier() do
-      assert m >= 1.1
+  property :check_multipler_generator do
+    for_all m in larger_radius() do
+      assert m >= 1.01
+    end
+  end
+
+  property :check_frac_generator do
+    for_all f in smaller_radius() do
+      assert f >= 0.0
+      assert f <= 0.99
     end
   end
 
