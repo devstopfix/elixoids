@@ -35,6 +35,7 @@ defmodule Elixoids.Mixfile do
       {:credo, "~> 1.0.5", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:excheck, "~> 0.5.3", only: :test},
+      # {:excheck, path: "../../excheck/excheck-luc-tielen"},
       {:gnuplot, "~> 1.19", only: :test},
       {:jason, "~> 1.1"},
       {:protobuf, "~> 0.6.1"},

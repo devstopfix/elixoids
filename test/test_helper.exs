@@ -1,2 +1,2 @@
-ExUnit.start(exclude: [:gnuplot])
+ExUnit.start(exclude: [:gnuplot, :large])
 ExCheck.start()
