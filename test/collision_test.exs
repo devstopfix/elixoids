@@ -178,7 +178,8 @@ defmodule Elixoids.CollisionTest do
 
   defp ship_overlapping_asteroid, do: circles(ship_radius(), asteroid_radius(), smaller_radius())
 
-  defp ship_non_overlapping_asteroid, do: circles(ship_radius(), asteroid_radius(), larger_radius())
+  defp ship_non_overlapping_asteroid,
+    do: circles(ship_radius(), asteroid_radius(), larger_radius())
 
   property :check_point_generator do
     for_all p in point() do

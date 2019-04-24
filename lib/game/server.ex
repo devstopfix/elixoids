@@ -16,6 +16,7 @@ defmodule Game.Server do
   alias Elixoids.Collision.Server, as: CollisionServer
   alias Elixoids.Game.Info
   alias Elixoids.Game.Snapshot
+  alias Elixoids.Ship.Targets
   alias Ship.Server, as: Ship
   alias World.Clock
   import Logger
@@ -40,7 +41,7 @@ defmodule Game.Server do
     GenServer.call(via(game_id), :state)
   end
 
-  @spec state_of_ship(integer(), pid()) :: map()
+  @spec state_of_ship(integer(), pid()) :: ShipState.t()
   def state_of_ship(game_id, ship_pid) do
     GenServer.call(via(game_id), {:state_of_ship, ship_pid})
   end
@@ -201,8 +202,8 @@ defmodule Game.Server do
 
   def handle_call({:state_of_ship, ship_pid}, _from, game) do
     case game.state.ships[ship_pid] do
-      # TODO fail better
-      nil -> {:reply, %Snapshot{}, game}
+      nil -> {:reply, %Targets{}, game}
+      :spawn -> {:reply, %Targets{}, game}
       ship -> fetch_ship_state(ship, game)
     end
   end
@@ -248,7 +249,7 @@ defmodule Game.Server do
     asteroids = game.state.asteroids |> filter_active()
     ships = game.state.ships |> filter_active() |> ships_except(shiploc.tag)
 
-    ship_state = %{
+    ship_state = %Targets{
       :theta => shiploc.theta,
       :ships => ships,
       :rocks => asteroids,

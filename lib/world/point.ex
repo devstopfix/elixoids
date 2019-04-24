@@ -3,6 +3,8 @@ defmodule World.Point do
   The (x,y) position in 2D. Origin is at bottom left.
   """
 
+  @type t :: %{x: float(), y: float()}
+
   defstruct x: 0.0, y: 0.0
 
   @ms_in_s 1000.0
