@@ -10,6 +10,8 @@ defmodule Elixoids.CollisionTest do
   alias Elixoids.Collision.Server, as: Collision
   alias World.Point
 
+  require Elixoids.Collision.Server
+
   test "No collision between asteroid and rock" do
     ship = %ShipLoc{pos: %{x: 1020, y: 0.0}, radius: 20}
     asteroid = %{id: 2, pos: %{x: 899.0, y: 0}, radius: 80}
@@ -307,4 +309,17 @@ defmodule Elixoids.CollisionTest do
       Enum.all?(for {:bullet_hit_ship, b, _} <- collisions, do: assert(b == bullet))
     end
   end
+
+  property :test_square_macro_1 do
+    for_all i in pos_integer() do
+      assert i * i == Collision.sq(i)
+    end
+  end
+
+  property :test_square_macro_2 do
+    for_all {a, b} in {pos_integer(), pos_integer()} do
+      assert (a + b) * (a + b) == Collision.sq(a + b)
+    end
+  end
+
 end

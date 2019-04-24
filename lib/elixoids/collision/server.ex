@@ -92,7 +92,6 @@ defmodule Elixoids.Collision.Server do
     dispatch(game_id, events)
   end
 
-
   @doc """
   Square a number.
   """
@@ -127,7 +126,6 @@ defmodule Elixoids.Collision.Server do
     %{pos: %{x: ax, y: ay}, radius: ar} = asteroid
     %{pos: %{x: sx, y: sy}, radius: sr} = ship
 
-    # TODO replace sqrt with sq
-    :math.sqrt(sq(ax - sx) + sq(ay - sy)) <= sr + ar
+    sq(ax - sx) + sq(ay - sy) <= sq(sr + ar)
   end
 end
