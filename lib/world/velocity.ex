@@ -10,18 +10,12 @@ defmodule World.Velocity do
   # 360º
   @two_pi_radians 2 * :math.pi()
 
+  @type t :: %{theta: float(), speed: float()}
+
   defstruct theta: 0.0, speed: 0.0
 
   def north(speed \\ 0.0) do
     %Velocity{theta: :math.pi() / 2, speed: speed}
-  end
-
-  def west do
-    %Velocity{theta: :math.pi()}
-  end
-
-  def south do
-    %Velocity{theta: 3 * :math.pi() / 2}
   end
 
   def east(speed \\ 0.0), do: %Velocity{theta: 0.0, speed: speed}

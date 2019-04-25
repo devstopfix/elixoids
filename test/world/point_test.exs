@@ -40,7 +40,7 @@ defmodule World.PointTest do
 
   test "Move point East" do
     p1 = %Point{x: 10.0, y: 10.0}
-    v = %Velocity{theta: 0, speed: 10.0}
+    v = Velocity.east(10.0)
     p2 = Point.apply_velocity(p1, v, 1000)
     assert p2.x == 20.0
     assert p2.y == 10.0

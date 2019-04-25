@@ -3,7 +3,13 @@ defmodule Elixoids.Asteroid.Location do
 
   alias Elixoids.Api.State.WorldJSON
 
-  # @type t :: {integer(), float(), float(), float}
+  @type t :: %{
+          pid: pid(),
+          id: integer(),
+          pos: World.Point.t(),
+          radius: float(),
+          velocity: World.Velocity.t()
+        }
 
   defstruct pid: nil, id: 0, pos: nil, radius: 0.0, velocity: nil
 
