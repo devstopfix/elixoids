@@ -10,7 +10,6 @@ defmodule Bullet.Server do
 
   alias Elixoids.Bullet.Location, as: BulletLoc
   alias Elixoids.Space
-  alias Elixoids.World.Point
   alias Elixoids.World.Velocity
   alias Game.Server, as: GameServer
   import Game.Identifiers
@@ -73,7 +72,7 @@ defmodule Bullet.Server do
   def move_bullet(b, delta_t_ms) do
     p2 =
       b.pos
-      |> Point.apply_velocity(b.velocity, delta_t_ms)
+      |> Velocity.apply_velocity(b.velocity, delta_t_ms)
       |> Space.wrap()
 
     %{b | :pos => p2}

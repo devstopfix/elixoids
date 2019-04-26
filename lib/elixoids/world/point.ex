@@ -10,18 +10,6 @@ defmodule Elixoids.World.Point do
   @doc "Translation"
   def translate(p, dx, dy), do: %{p | x: p.x + dx, y: p.y + dy}
 
-  @ms_in_s 1000.0
-
-  @doc """
-  Apply velocity v to point p.
-  TODO move velocity out
-  """
-  def apply_velocity(p, v, delta_t_ms) do
-    dx = :math.cos(v.theta) * v.speed * delta_t_ms / @ms_in_s
-    dy = :math.sin(v.theta) * v.speed * delta_t_ms / @ms_in_s
-    translate(p, dx, dy)
-  end
-
   @spec distance_between(Point.t(), Point.t()) :: float()
   def distance_between(%{x: x1, y: y1}, %{x: x2, y: y2}) do
     :math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))

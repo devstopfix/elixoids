@@ -13,6 +13,7 @@ defmodule Elixoids.World.Velocity do
   defstruct theta: 0.0, speed: 0.0
 
   alias Elixoids.World.Angle
+  alias Elixoids.World.Point
   alias Elixoids.World.RoundDP
   import Elixoids.World.Angle
 
@@ -27,6 +28,15 @@ defmodule Elixoids.World.Velocity do
   @spec rotate(t(), Angle.t()) :: t()
   def rotate(%{theta: theta} = v, delta_theta),
     do: %{v | theta: normalize_radians(theta + delta_theta)}
+
+  @ms_in_s 1000.0
+
+  @spec apply_velocity(Point.t(), t(), number()) :: Point.t()
+  def apply_velocity(p, %{theta: theta, speed: speed}, delta_t_ms) do
+    dx = :math.cos(theta) * speed * delta_t_ms / @ms_in_s
+    dy = :math.sin(theta) * speed * delta_t_ms / @ms_in_s
+    Point.translate(p, dx, dy)
+  end
 
   defimpl RoundDP, for: __MODULE__ do
     @doc "Round angle to 3dp"

@@ -1,7 +1,6 @@
 defmodule Elixoids.Asteroid.Rock do
   @moduledoc "Attributes of an asteroid"
 
-  alias Elixoids.World.Point
   alias Elixoids.World.Velocity
 
   defstruct pos: nil, velocity: nil, radius: 0.0
@@ -41,7 +40,7 @@ defmodule Elixoids.Asteroid.Rock do
   # Bump the asteroid in the direction it is facing, by half its radius
   defp bump(a) do
     t_ms = a.radius / a.velocity.speed * 1000 / 1.8
-    update_in(a.pos, &Point.apply_velocity(&1, a.velocity, t_ms))
+    update_in(a.pos, &Velocity.apply_velocity(&1, a.velocity, t_ms))
   end
 
   # @doc """

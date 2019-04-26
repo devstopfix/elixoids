@@ -13,7 +13,6 @@ defmodule Ship.Server do
   alias Elixoids.Player
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
-  alias Elixoids.World.Point
   alias Elixoids.World.Velocity
   alias Game.Server, as: GameServer
   alias World.Clock
@@ -154,7 +153,7 @@ defmodule Ship.Server do
   defp calculate_nose(ship) do
     ship_centre = ship.pos
     v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
-    Point.apply_velocity(ship_centre, v, 1000.0)
+    Velocity.apply_velocity(ship_centre, v, 1000.0)
   end
 
   # Data

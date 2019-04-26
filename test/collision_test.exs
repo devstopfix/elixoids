@@ -14,7 +14,6 @@ defmodule Elixoids.CollisionTest do
 
   require Elixoids.Collision.Server
 
-
   property :check_point_generator do
     for_all p in gen_point() do
       assert p.x >= 0.0
@@ -167,14 +166,12 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-
   # Generators
 
   defp asteroid_radius, do: :triq_dom.oneof([120.0, 60.0, 30.0, 15.0])
 
   @ship_radius_m 20.0
   defp ship_radius, do: :triq_dom.oneof([@ship_radius_m])
-
 
   # 0..0.99
   defp smaller_radius,
@@ -232,7 +229,6 @@ defmodule Elixoids.CollisionTest do
 
   defp gen_bullet,
     do: [gen_point()] |> :triq_dom.bind(fn [p] -> %BulletLoc{pos: p} end)
-
 
   # Legacy example tests
 
@@ -299,5 +295,4 @@ defmodule Elixoids.CollisionTest do
     refute Collision.bullet_hits_ship?(%{pos: %{x: 0, y: 50}}, ship)
     refute Collision.bullet_hits_ship?(%{pos: %{x: 50, y: 0}}, ship)
   end
-
 end

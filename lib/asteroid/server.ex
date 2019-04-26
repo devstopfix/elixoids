@@ -9,7 +9,6 @@ defmodule Asteroid.Server do
   alias Elixoids.Asteroid.Location, as: AsteroidLoc
   alias Elixoids.Asteroid.Rock
   alias Elixoids.Space
-  alias Elixoids.World.Point
   alias Elixoids.World.Velocity
   alias Game.Server, as: GameServer
   import Game.Identifiers
@@ -78,7 +77,7 @@ defmodule Asteroid.Server do
     # TODO refactor
     p2 =
       rock.pos
-      |> Point.apply_velocity(a.rock.velocity, delta_t_ms)
+      |> Velocity.apply_velocity(a.rock.velocity, delta_t_ms)
       |> Space.wrap()
 
     Map.put(a, :rock, Map.put(rock, :pos, p2))
