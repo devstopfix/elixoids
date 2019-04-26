@@ -6,35 +6,35 @@ defmodule Elixoids.Test.Generators do
 
   defp to_float(i), do: i * 1.0
 
-  defp small_float, do: 0..10 |> Enum.map(&to_float/1) |> :triq_dom.oneof()
+  defp small_float, do: 0..10 |> Enum.map(&to_float/1) |> oneof()
 
-  defp mid_float, do: 0..120 |> Enum.map(&to_float/1) |> :triq_dom.oneof()
+  defp mid_float, do: 0..120 |> Enum.map(&to_float/1) |> oneof()
 
   defp world_float,
     do:
-      :triq_dom.float()
-      |> :triq_dom.bind(&abs/1)
-      |> :triq_dom.suchthat(fn f -> f < 2000.0 end)
+      float()
+      |> bind(&abs/1)
+      |> suchthat(fn f -> f < 2000.0 end)
 
   defp gen_world_float,
-    do: :triq_dom.oneof([:triq_dom.oneof([0.0]), small_float(), mid_float(), world_float()])
+    do: oneof([oneof([0.0]), small_float(), mid_float(), world_float()])
 
   # Positions in the world
 
   def gen_point,
     do:
-      :triq_dom.bind([gen_world_float(), gen_world_float()], fn [x, y] -> %Point{x: x, y: y} end)
+      bind([gen_world_float(), gen_world_float()], fn [x, y] -> %Point{x: x, y: y} end)
 
   # Angles
 
   defp major_angle,
     do:
       [0.0, 1.0, 2.0, 3.0]
-      |> :triq_dom.oneof()
-      |> :triq_dom.bind(fn n -> n * :math.pi() / 2.0 end)
+      |> oneof()
+      |> bind(fn n -> n * :math.pi() / 2.0 end)
 
-  defp any_angle, do: :triq_dom.float() |> :triq_dom.bind(fn f -> :math.fmod(f, :math.pi()) end)
+  defp any_angle, do: float() |> bind(fn f -> :math.fmod(f, :math.pi()) end)
 
-  def gen_theta, do: :triq_dom.oneof([:triq_dom.oneof([0.0]), major_angle(), any_angle()])
+  def gen_theta, do: oneof([oneof([0.0]), major_angle(), any_angle()])
 
 end
