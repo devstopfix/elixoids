@@ -8,9 +8,7 @@ defmodule Elixoids.World.Point do
   defstruct x: 0.0, y: 0.0
 
   @doc "Translation"
-  def translate(p, dx, dy) do
-    %{p | x: p.x + dx, y: p.y + dy}
-  end
+  def translate(p, dx, dy), do: %{p | x: p.x + dx, y: p.y + dy}
 
   @ms_in_s 1000.0
 
@@ -24,11 +22,8 @@ defmodule Elixoids.World.Point do
     translate(p, dx, dy)
   end
 
-  @doc """
-  Distance between two points (Pythagoras)
-  # TODO convert to points
-  """
-  def distance(x1, y1, x2, y2) do
+  @spec distance_between(Point.t(), Point.t()) :: float()
+  def distance_between(%{x: x1, y: y1}, %{x: x2, y: y2}) do
     :math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
   end
 

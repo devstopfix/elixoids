@@ -100,10 +100,10 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     true
   end
 
-  defp convert(%{origin: %{x: x, y: y}, rocks: rocks, ships: ships, theta: theta}) do
+  defp convert(%{origin: origin, rocks: rocks, ships: ships, theta: theta}) do
     %{
-      rocks: asteroids_relative(rocks, x, y),
-      ships: ships_relative(ships, x, y),
+      rocks: asteroids_relative(rocks, origin),
+      ships: ships_relative(ships, origin),
       theta: theta
     }
   end

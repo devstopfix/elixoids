@@ -5,50 +5,39 @@ defmodule Elixir.Translate do
 
   alias Bullet.Server, as: Bullet
   alias Elixoids.World.Point
+  alias Elixoids.World.Polar
   alias World.Velocity
 
   @doc """
   Translate asteroids in game relative to ship.
   """
-  @spec asteroids_relative(list(map()), float(), float()) :: list(list())
-  def asteroids_relative(rocks, ship_x, ship_y) do
+  @spec asteroids_relative(list(map()), Point.t()) :: list(list())
+  def asteroids_relative(rocks, origin) do
     rocks
-    |> Enum.map(fn a -> asteroid_relative(a, ship_x, ship_y) end)
+    |> Enum.map(fn a -> asteroid_relative(a, origin) end)
     |> Enum.filter(fn s -> Bullet.in_range?(List.last(s)) end)
   end
 
-  defp asteroid_relative(asteroid, ox, oy) do
-    %{id: id, pos: %{x: ax, y: ay}, radius: r} = asteroid
+  defp asteroid_relative(asteroid, origin) do
+    %{id: id, pos: pos, radius: r} = asteroid
 
-    d = Point.distance(ox, oy, ax, ay)
+    p = Polar.subtract(pos, origin)
+    # TODO round angle
 
-    theta = :math.atan2(ay - oy, ax - ox)
-
-    theta
-    |> Velocity.wrap_angle()
-    |> Velocity.round_theta()
-
-    [id, theta, r, round_cm(d)]
+    [id, p.theta, r, round_cm(p.distance)]
   end
 
-  def ships_relative(ships, ship_x, ship_y) do
+  def ships_relative(ships, origin) do
     ships
-    |> Enum.map(fn s -> ship_relative(s, ship_x, ship_y) end)
+    |> Enum.map(fn s -> ship_relative(s, origin) end)
     |> Enum.filter(fn s -> Bullet.in_range?(List.last(s)) end)
   end
 
-  defp ship_relative(ship, ox, oy) do
-    %{tag: tag, pos: %{x: sx, y: sy}} = ship
+  defp ship_relative(%{tag: tag, pos: pos}, origin) do
+    p = Polar.subtract(pos, origin)
+    # TODO round angle
 
-    d = Point.distance(ox, oy, sx, sy)
-
-    theta = :math.atan2(sy - oy, sx - ox)
-
-    theta
-    |> Velocity.wrap_angle()
-    |> Velocity.round_theta()
-
-    [tag, theta, round_cm(d)]
+    [tag, p.theta, round_cm(p.distance)]
   end
 
   # TODO move rounding to Polar.round_dp
