@@ -80,7 +80,7 @@ class ConstantBearingMiner(Miner):
 
     # Find the difference between thetas over successive game states
     # The dampen factor can be adjusted to stop switching targets too often
-    def delta_theta(self, a, dampen=1.1):
+    def delta_theta(self, a, dampen=1.2):
         [_, s0, s1] = a
         [t0, _] = s0
         [t1, _] = s1
@@ -107,7 +107,6 @@ class ConstantBearingMiner(Miner):
         target = self.choose_target(delta_state)
         if (target[0] != self.target_id):
             self.target_id = target[0]
-            print("{} Switching target {}".format(self.name, self.target_id))
         target_theta = self.lead_target(target)
         perturbed_theta = perturb(target_theta, self.ANGULAR_SIZE)
         if self.pointing_at(ship_theta, target_theta):
