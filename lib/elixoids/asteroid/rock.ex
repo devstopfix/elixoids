@@ -36,9 +36,7 @@ defmodule Elixoids.Asteroid.Rock do
     update_in(rock.velocity, &Velocity.rotate(&1, delta_theta))
   end
 
-  defp speedup(a) do
-    update_in(a.velocity, &Velocity.double(&1))
-  end
+  defp speedup(a), do: update_in(a.velocity, &Velocity.double_speed(&1))
 
   # Bump the asteroid in the direction it is facing, by half its radius
   defp bump(a) do

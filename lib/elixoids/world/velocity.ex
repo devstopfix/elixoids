@@ -22,8 +22,7 @@ defmodule Elixoids.World.Velocity do
 
   def random_velocity(speed), do: %__MODULE__{theta: random_angle(), speed: speed}
 
-  @doc "Double the speed component of Velocity"
-  def double(%{speed: speed} = v), do: %{v | speed: speed * 2.0}
+  def double_speed(%{speed: speed} = v), do: %{v | speed: speed * 2.0}
 
   @spec rotate(t(), Angle.t()) :: t()
   def rotate(%{theta: theta} = v, delta_theta),

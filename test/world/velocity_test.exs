@@ -13,7 +13,7 @@ defmodule Elixoids.World.VelocityTest do
       v1 = Velocity.random_velocity(speed)
       assert v1.speed == speed
 
-      v2 = Velocity.double(v1)
+      v2 = Velocity.double_speed(v1)
 
       assert v2.speed == speed * 2
       assert v1.theta == v2.theta
