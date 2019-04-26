@@ -7,9 +7,6 @@ defmodule World.Velocity do
 
   alias World.Velocity, as: Velocity
 
-  # 360º
-  @two_pi_radians 2 * :math.pi()
-
   @type t :: %{theta: float(), speed: float()}
 
   defstruct theta: 0.0, speed: 0.0
@@ -24,9 +21,10 @@ defmodule World.Velocity do
     %Velocity{theta: random_direction(), speed: speed}
   end
 
-  def random_direction do
-    :rand.uniform() * :math.pi() * 2
-  end
+  # 360º
+  @two_pi_radians 2 * :math.pi()
+
+  def random_direction, do: :rand.uniform() * :math.pi() * 2
 
   @doc """
   Double the speed component of Velocity
@@ -52,11 +50,10 @@ defmodule World.Velocity do
   end
 
   @doc """
-  Round angle to 8dp.
+  Round angle to 3dp.
+  TODO move to Angle
   """
-  def round_theta(theta) do
-    Float.round(theta, 8)
-  end
+  def round_theta(theta), do: Float.round(theta, 3)
 
   @doc """
   Keep angle theta between 0..2π
@@ -75,6 +72,7 @@ defmodule World.Velocity do
 
   @doc """
   fmod returns the floating-point remainder of a / b
+  # TODO call to Erlang fmod
   """
   def fmod(a, b) do
     a - Float.floor(a / b) * b

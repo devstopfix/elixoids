@@ -1,12 +1,12 @@
 defmodule Elixir.Translate do
   @moduledoc """
-  Translate the game state and center it over a co-ordinate.
+  Translate the game state to the position of a ship.
   """
 
   alias Bullet.Server, as: Bullet
   alias Elixoids.World.Point
   alias Elixoids.World.Polar
-  alias World.Velocity
+  import Elixoids.World.RoundDP
 
   @doc """
   Translate asteroids in game relative to ship.
@@ -20,11 +20,8 @@ defmodule Elixir.Translate do
 
   defp asteroid_relative(asteroid, origin) do
     %{id: id, pos: pos, radius: r} = asteroid
-
-    p = Polar.subtract(pos, origin)
-    # TODO round angle
-
-    [id, p.theta, r, round_cm(p.distance)]
+    p = pos |> Polar.subtract(origin) |> round_dp()
+    [id, p.theta, r, p.distance]
   end
 
   def ships_relative(ships, origin) do
@@ -34,12 +31,7 @@ defmodule Elixir.Translate do
   end
 
   defp ship_relative(%{tag: tag, pos: pos}, origin) do
-    p = Polar.subtract(pos, origin)
-    # TODO round angle
-
-    [tag, p.theta, round_cm(p.distance)]
+    p = pos |> Polar.subtract(origin) |> round_dp()
+    [tag, p.theta, p.distance]
   end
-
-  # TODO move rounding to Polar.round_dp
-  defp round_cm(x), do: Float.round(x, 2)
 end
