@@ -4,7 +4,7 @@ defmodule Elixir.Translate do
   """
 
   alias Bullet.Server, as: Bullet
-  alias World.Point
+  alias Elixoids.World.Point
   alias World.Velocity
 
   @doc """
@@ -28,7 +28,7 @@ defmodule Elixir.Translate do
     |> Velocity.wrap_angle()
     |> Velocity.round_theta()
 
-    [id, theta, r, Point.round(d)]
+    [id, theta, r, round_cm(d)]
   end
 
   def ships_relative(ships, ship_x, ship_y) do
@@ -48,6 +48,9 @@ defmodule Elixir.Translate do
     |> Velocity.wrap_angle()
     |> Velocity.round_theta()
 
-    [tag, theta, Point.round(d)]
+    [tag, theta, round_cm(d)]
   end
+
+  # TODO move rounding to Polar.round_dp
+  defp round_cm(x), do: Float.round(x, 2)
 end

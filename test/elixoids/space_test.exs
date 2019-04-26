@@ -4,7 +4,7 @@ defmodule Elixoids.SpaceTest do
   doctest Elixoids.Space
 
   alias Elixoids.Space, as: Space
-  alias World.Point, as: Point
+  alias Elixoids.World.Point, as: Point
 
   property :wrap_any_point_into_screen do
     for_all {x, y} in {real(), real()} do

@@ -10,8 +10,8 @@ defmodule Bullet.Server do
 
   alias Elixoids.Bullet.Location, as: BulletLoc
   alias Elixoids.Space
+  alias Elixoids.World.Point
   alias Game.Server, as: GameServer
-  alias World.Point
   import Game.Identifiers
   import World.Clock
   use Elixoids.Game.Heartbeat

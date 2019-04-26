@@ -1,7 +1,7 @@
 defmodule Elixoids.Asteroid.Rock do
   @moduledoc "Attributes of an asteroid"
 
-  alias World.Point
+  alias Elixoids.World.Point
   alias World.Velocity
 
   defstruct pos: nil, velocity: nil, radius: 0.0

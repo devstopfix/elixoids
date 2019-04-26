@@ -13,9 +13,9 @@ defmodule Ship.Server do
   alias Elixoids.Player
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
+  alias Elixoids.World.Point
   alias Game.Server, as: GameServer
   alias World.Clock
-  alias World.Point
   alias World.Velocity
   import Elixoids.News
   import Game.Identifiers

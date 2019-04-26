@@ -5,15 +5,15 @@ defmodule Asteroid.Server do
   """
 
   use GenServer
-  use Elixoids.Game.Heartbeat
 
   alias Elixoids.Asteroid.Location, as: AsteroidLoc
   alias Elixoids.Asteroid.Rock
   alias Elixoids.Space
+  alias Elixoids.World.Point
   alias Game.Server, as: GameServer
-  alias World.Point
   alias World.Velocity
   import Game.Identifiers
+  use Elixoids.Game.Heartbeat
 
   # Radius of random asteroid
   @asteroid_radius_m 120.0

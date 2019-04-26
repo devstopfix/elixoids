@@ -8,7 +8,7 @@ defmodule Elixoids.CollisionTest do
   alias Elixoids.Bullet.Location, as: BulletLoc
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Collision.Server, as: Collision
-  alias World.Point
+  alias Elixoids.World.Point
 
   require Elixoids.Collision.Server
 
