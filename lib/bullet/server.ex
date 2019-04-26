@@ -11,6 +11,7 @@ defmodule Bullet.Server do
   alias Elixoids.Bullet.Location, as: BulletLoc
   alias Elixoids.Space
   alias Elixoids.World.Point
+  alias Elixoids.World.Velocity
   alias Game.Server, as: GameServer
   import Game.Identifiers
   import World.Clock
@@ -31,12 +32,10 @@ defmodule Bullet.Server do
              is_map(pos) and
              is_number(theta) and
              is_binary(shooter) do
-    v = %World.Velocity{:theta => theta, :speed => @bullet_speed_m_per_s}
-
     b = %{
       :id => next_id(),
       :pos => pos,
-      :velocity => v,
+      :velocity => bullet_velocity(theta),
       :shooter => shooter,
       :game_id => game_id,
       :expire_at => calculate_ttl()
@@ -97,4 +96,6 @@ defmodule Bullet.Server do
   Is distance d in metres within the range of a bullet?
   """
   def in_range?(d), do: d < @bullet_range_m
+
+  defp bullet_velocity(theta), do: %Velocity{:theta => theta, :speed => @bullet_speed_m_per_s}
 end

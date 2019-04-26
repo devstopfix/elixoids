@@ -2,6 +2,7 @@ defmodule Elixoids.Asteroid.Location do
   @moduledoc false
 
   alias Elixoids.Api.State.WorldJSON
+  alias Elixoids.World.Velocity
   import Elixoids.World.RoundDP
 
   @type t :: %{
@@ -9,7 +10,7 @@ defmodule Elixoids.Asteroid.Location do
           id: integer(),
           pos: World.Point.t(),
           radius: float(),
-          velocity: World.Velocity.t()
+          velocity: Velocity.t()
         }
 
   defstruct pid: nil, id: 0, pos: nil, radius: 0.0, velocity: nil

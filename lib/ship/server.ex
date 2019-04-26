@@ -14,11 +14,13 @@ defmodule Ship.Server do
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
   alias Elixoids.World.Point
+  alias Elixoids.World.Velocity
   alias Game.Server, as: GameServer
   alias World.Clock
-  alias World.Velocity
   import Elixoids.News
   import Game.Identifiers
+  import Elixoids.World.Angle
+
   use Elixoids.Game.Heartbeat
 
   # Ship radius (m)
@@ -106,7 +108,7 @@ defmodule Ship.Server do
   """
   def handle_cast(:hyperspace, ship) do
     p = random_ship_point()
-    theta = Velocity.random_direction()
+    theta = random_angle()
 
     new_ship =
       %{ship | pos: p, theta: theta}
@@ -116,8 +118,8 @@ defmodule Ship.Server do
   end
 
   def handle_cast({:new_heading, theta}, ship) do
-    if Velocity.valid_theta(theta) do
-      new_ship = %{ship | :target_theta => Velocity.wrap_angle(theta)}
+    if valid_theta?(theta) do
+      new_ship = %{ship | :target_theta => normalize_radians(theta)}
       {:noreply, new_ship}
     else
       {:noreply, ship}
@@ -167,7 +169,8 @@ defmodule Ship.Server do
       tag: ship.tag,
       pos: ship.pos,
       radius: @ship_radius_m,
-      theta: Velocity.round_theta(ship.theta)
+      # TODO protocol?
+      theta: Float.round(ship.theta, 3)
     }
   end
 
@@ -192,13 +195,6 @@ defmodule Ship.Server do
     end
   end
 
-  # 360º
-  @two_pi_radians 2 * :math.pi()
-
-  defp turn_positive?(theta, target_theta) do
-    Velocity.fmod(target_theta - theta + @two_pi_radians, @two_pi_radians) > :math.pi()
-  end
-
   @doc """
   Rotate the ship from it's current theta towards it's
   intended delta_theta - but clip the rate of rotation
@@ -214,7 +210,7 @@ defmodule Ship.Server do
         -delta_theta
       end
 
-    theta = Velocity.wrap_angle(ship.theta + turn)
+    theta = normalize_radians(ship.theta + turn)
     %{ship | :theta => theta}
   end
 

@@ -2,7 +2,7 @@ defmodule Elixoids.Asteroid.Rock do
   @moduledoc "Attributes of an asteroid"
 
   alias Elixoids.World.Point
-  alias World.Velocity
+  alias Elixoids.World.Velocity
 
   defstruct pos: nil, velocity: nil, radius: 0.0
 
@@ -33,7 +33,7 @@ defmodule Elixoids.Asteroid.Rock do
   end
 
   defp redirect(rock, delta_theta) do
-    update_in(rock.velocity, &Velocity.fork(&1, delta_theta))
+    update_in(rock.velocity, &Velocity.rotate(&1, delta_theta))
   end
 
   defp speedup(a) do
@@ -45,4 +45,12 @@ defmodule Elixoids.Asteroid.Rock do
     t_ms = a.radius / a.velocity.speed * 1000 / 1.8
     update_in(a.pos, &Point.apply_velocity(&1, a.velocity, t_ms))
   end
+
+  # @doc """
+  # Modify the angle by a small amount
+  # """
+  # def perturb(theta) do
+  #   delta_theta = :rand.uniform() * :math.pi() / 24.0
+  #   wrap_angle(theta + delta_theta)
+  # end
 end

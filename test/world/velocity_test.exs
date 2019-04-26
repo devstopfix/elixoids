@@ -1,30 +1,16 @@
-defmodule World.VelocityTest do
+defmodule Elixoids.World.VelocityTest do
   use ExUnit.Case, async: true
   use ExCheck
-  doctest World.Velocity
 
-  alias World.Velocity, as: Velocity
+  alias Elixoids.World.Velocity
 
   test "Stationary" do
-    v = %Velocity{}
-    assert 0.0 = v.speed
-  end
-
-  test "Wrap angle" do
-    assert 0.0 == Velocity.wrap_angle(0.0)
-  end
-
-  test "Wrap negative angle" do
-    assert :math.pi() == Velocity.wrap_angle(-1 * :math.pi())
-  end
-
-  test "Wrap overflow angle" do
-    assert :math.pi() == Velocity.wrap_angle(3 * :math.pi())
+    assert %{speed: 0.0} = %Velocity{}
   end
 
   property :double_velocity_doubles_speed do
     for_all {speed} in {real()} do
-      v1 = Velocity.random_direction_with_speed(speed)
+      v1 = Velocity.random_velocity(speed)
       assert v1.speed == speed
 
       v2 = Velocity.double(v1)
@@ -37,8 +23,8 @@ defmodule World.VelocityTest do
   test :fork_velocity do
     v = Velocity.north()
 
-    vl = Velocity.fork(v, 0.2)
-    vr = Velocity.fork(v, -0.2)
+    vl = Velocity.rotate(v, 0.2)
+    vr = Velocity.rotate(v, -0.2)
 
     assert vl.speed == v.speed
     assert vr.speed == v.speed

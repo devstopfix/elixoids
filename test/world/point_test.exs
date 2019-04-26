@@ -3,7 +3,7 @@ defmodule World.PointTest do
   use ExCheck
 
   alias Elixoids.World.Point
-  alias World.Velocity, as: Velocity
+  alias Elixoids.World.Velocity
 
   property :apply_velocity_to_point do
     for_all {x, y, theta, speed} in {real(), real(), real(), real()} do

@@ -1,7 +1,6 @@
 defmodule Ship.ServerTest do
   use ExUnit.Case, async: true
   use ExCheck
-  doctest Ship.Server
 
   alias Ship.Server, as: Ship
 
