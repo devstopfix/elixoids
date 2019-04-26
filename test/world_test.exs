@@ -3,14 +3,8 @@ defmodule Elixoids.WorldTest do
   use ExCheck
 
   alias Elixoids.World.Point
+  import Elixoids.Test.Generators
   import Elixoids.World.RoundDP
-
-  def gen_float, do: :triq_dom.oneof([:triq_dom.oneof([0.0, 1.0]), float()])
-
-  def gen_point,
-    do:
-      [gen_float(), gen_float()]
-      |> :triq_dom.bind(fn [x, y] -> %Point{x: x, y: y} end)
 
   property :round_positions_to_1_dp do
     for_all p in gen_point() do
@@ -37,7 +31,7 @@ defmodule Elixoids.WorldTest do
   end
 
   property :translate_point do
-    for_all {p1, dx, dy} in {gen_point(), gen_float(), gen_float()} do
+    for_all {p1, dx, dy} in {gen_point(), float(), float()} do
       p2 = Point.translate(p1, dx, dy)
       assert p2.x == p1.x + dx
       assert p2.y == p1.y + dy

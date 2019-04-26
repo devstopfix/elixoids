@@ -10,6 +10,8 @@ defmodule Elixoids.CollisionTest do
   alias Elixoids.Collision.Server, as: Collision
   alias Elixoids.World.Point
 
+  import Elixoids.Test.Generators
+
   require Elixoids.Collision.Server
 
   test "No collision between asteroid and rock" do
@@ -95,25 +97,6 @@ defmodule Elixoids.CollisionTest do
 
   def theta, do: :triq_dom.oneof([:triq_dom.oneof([0.0]), major_angle(), any_angle()])
 
-  ## Points
-
-  defp to_float(i), do: i * 1.0
-
-  defp small_float, do: 0..10 |> Enum.map(&to_float/1) |> :triq_dom.oneof()
-
-  defp mid_float, do: 0..120 |> Enum.map(&to_float/1) |> :triq_dom.oneof()
-
-  defp world_float,
-    do:
-      :triq_dom.float()
-      |> :triq_dom.bind(&abs/1)
-      |> :triq_dom.suchthat(fn f -> f < 2000.0 end)
-
-  defp position,
-    do: :triq_dom.oneof([:triq_dom.oneof([0.0]), small_float(), mid_float(), world_float()])
-
-  defp point, do: :triq_dom.bind([position(), position()], fn [x, y] -> %Point{x: x, y: y} end)
-
   # 0..0.99
   defp smaller_radius,
     do:
@@ -130,7 +113,7 @@ defmodule Elixoids.CollisionTest do
 
   # Generate a circle and a point offset from the centre of the circle
   defp point_circle(sizes, delta_r) do
-    [point(), theta(), sizes, delta_r]
+    [gen_point(), theta(), sizes, delta_r]
     |> :triq_dom.bind(fn [p, t, r, dr] ->
       dx = :math.cos(t) * (r * dr)
       dy = :math.sin(t) * (r * dr)
@@ -145,7 +128,7 @@ defmodule Elixoids.CollisionTest do
   defp point_outside_asteroid, do: point_circle(asteroid_radius(), larger_radius())
 
   defp circles(size1, size2, delta_r) do
-    [point(), size1, size2, theta(), delta_r]
+    [gen_point(), size1, size2, theta(), delta_r]
     |> :triq_dom.bind(fn [p, r1, r2, t, dr] ->
       d = (r1 + r2) * dr
       dx = :math.cos(t) * d
@@ -161,17 +144,18 @@ defmodule Elixoids.CollisionTest do
 
   defp gen_asteroid,
     do:
-      [point(), asteroid_radius()]
+      [gen_point(), asteroid_radius()]
       |> :triq_dom.bind(fn [p, r] -> %AsteroidLoc{pos: p, radius: r} end)
 
   defp gen_ship,
-    do: [point(), ship_radius()] |> :triq_dom.bind(fn [p, r] -> %ShipLoc{pos: p, radius: r} end)
+    do:
+      [gen_point(), ship_radius()] |> :triq_dom.bind(fn [p, r] -> %ShipLoc{pos: p, radius: r} end)
 
   defp gen_bullet,
-    do: [point()] |> :triq_dom.bind(fn [p] -> %BulletLoc{pos: p} end)
+    do: [gen_point()] |> :triq_dom.bind(fn [p] -> %BulletLoc{pos: p} end)
 
   property :check_point_generator do
-    for_all p in point() do
+    for_all p in gen_point() do
       assert p.x >= 0.0
       assert p.y >= 0.0
     end
@@ -199,7 +183,7 @@ defmodule Elixoids.CollisionTest do
 
   @tag iterations: 10000, large: true
   property :bullet_in_center_of_ship_hit do
-    for_all p in point() do
+    for_all p in gen_point() do
       bullet = %BulletLoc{pos: p}
       ship = %ShipLoc{pos: p, radius: @ship_radius_m}
       assert [{:bullet_hit_ship, bullet, ship}] == Collision.collision_check([], [bullet], [ship])

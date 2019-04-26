@@ -4,10 +4,11 @@ defmodule World.PointTest do
 
   alias Elixoids.World.Point
   alias Elixoids.World.Velocity
+  import Elixoids.Test.Generators
+
 
   property :apply_velocity_to_point do
-    for_all {x, y, theta, speed} in {real(), real(), real(), real()} do
-      p1 = %Point{x: x, y: y}
+    for_all {p1, theta, speed} in {gen_point(), real(), real()} do
       v = %Velocity{theta: theta, speed: speed}
       p2 = Point.apply_velocity(p1, v, 1)
       assert p2.x != p1.x
