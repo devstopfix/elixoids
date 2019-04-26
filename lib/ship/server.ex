@@ -57,21 +57,15 @@ defmodule Ship.Server do
   @doc """
   Player requests turn to given theta.
   """
-  def new_heading(ship_id, theta) do
-    GenServer.cast(via(ship_id), {:new_heading, theta})
-  end
+  def new_heading(ship_id, theta), do: GenServer.cast(via(ship_id), {:new_heading, theta})
 
   @doc """
   Move the ship to a random position on the map
   and prevent it firing.
   """
-  def hyperspace(ship_pid) when is_pid(ship_pid) do
-    GenServer.cast(ship_pid, :hyperspace)
-  end
+  def hyperspace(ship_pid) when is_pid(ship_pid), do: GenServer.cast(ship_pid, :hyperspace)
 
-  def hyperspace(ship_id) do
-    GenServer.cast(via(ship_id), :hyperspace)
-  end
+  def hyperspace(ship_id), do: GenServer.cast(via(ship_id), :hyperspace)
 
   @doc """
   Remove the ship from the game.
@@ -87,13 +81,9 @@ defmodule Ship.Server do
   Player pulls trigger, which may fire a bullet
   if the ship is recharged.
   """
-  def player_pulls_trigger(ship_id) do
-    GenServer.cast(via(ship_id), :player_pulls_trigger)
-  end
+  def player_pulls_trigger(ship_id), do: GenServer.cast(via(ship_id), :player_pulls_trigger)
 
-  def game_state(ship_id) do
-    GenServer.call(via(ship_id), :game_state)
-  end
+  def game_state(ship_id), do: GenServer.call(via(ship_id), :game_state)
 
   # GenServer callbacks
 
@@ -118,8 +108,7 @@ defmodule Ship.Server do
 
   def handle_cast({:new_heading, theta}, ship) do
     if valid_theta?(theta) do
-      new_ship = %{ship | :target_theta => normalize_radians(theta)}
-      {:noreply, new_ship}
+      {:noreply, %{ship | target_theta: normalize_radians(theta)}}
     else
       {:noreply, ship}
     end
@@ -150,9 +139,8 @@ defmodule Ship.Server do
     Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan, ship.game.time.()))
   end
 
-  defp calculate_nose(ship) do
-    ship_centre = ship.pos
-    v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
+  defp calculate_nose(%{pos: ship_centre, theta: theta}) do
+    v = %Velocity{:theta => theta, :speed => @nose_radius_m}
     Velocity.apply_velocity(ship_centre, v, 1000.0)
   end
 
