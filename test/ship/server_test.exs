@@ -16,13 +16,6 @@ defmodule Ship.ServerTest do
     assert 1.2 == rotated_ship[:theta]
   end
 
-  # test "rotate ship from East to South" do
-  #   south = :math.pi * -2.0
-  #   ship = %{theta: 0.0, target_theta: south}
-  #   rotated_ship = Ship.rotate_ship(ship, 4 * 1000)
-  #   assert south == rotated_ship.theta
-  # end
-
   property :ships_pointing_desired_heading_do_not_rotate do
     for_all {theta} in {int(0, 6)} do
       ship = %{theta: theta / 1.0, target_theta: theta / 1.0}

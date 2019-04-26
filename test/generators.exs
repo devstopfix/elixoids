@@ -19,7 +19,22 @@ defmodule Elixoids.Test.Generators do
   defp gen_world_float,
     do: :triq_dom.oneof([:triq_dom.oneof([0.0]), small_float(), mid_float(), world_float()])
 
+  # Positions in the world
+
   def gen_point,
     do:
       :triq_dom.bind([gen_world_float(), gen_world_float()], fn [x, y] -> %Point{x: x, y: y} end)
+
+  # Angles
+
+  defp major_angle,
+    do:
+      [0.0, 1.0, 2.0, 3.0]
+      |> :triq_dom.oneof()
+      |> :triq_dom.bind(fn n -> n * :math.pi() / 2.0 end)
+
+  defp any_angle, do: :triq_dom.float() |> :triq_dom.bind(fn f -> :math.fmod(f, :math.pi()) end)
+
+  def gen_theta, do: :triq_dom.oneof([:triq_dom.oneof([0.0]), major_angle(), any_angle()])
+
 end
