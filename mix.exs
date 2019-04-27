@@ -11,8 +11,9 @@ defmodule Elixoids.Mixfile do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      package: package()
-      # dialyzer: [flags: ["-Wunmatched_returns", :error_handling, :underspecs]]
+      package: package(),
+      dialyzer: [flags: [:error_handling, :underspecs]]
+      # "-Wunmatched_returns",
     ]
   end
 

@@ -41,7 +41,7 @@ defmodule Game.Server do
     GenServer.call(via(game_id), :state)
   end
 
-  @spec state_of_ship(integer(), pid()) :: ShipState.t()
+  @spec state_of_ship(integer(), pid()) :: map()
   def state_of_ship(game_id, ship_pid) do
     GenServer.call(via(game_id), {:state_of_ship, ship_pid})
   end
@@ -310,7 +310,7 @@ defmodule Game.Server do
 
   defp game_info(game_id), do: Info.new(game_id, game_time())
 
-  @spec snapshot(map()) :: Snapshot.t()
+  # @spec snapshot(map()) :: Snapshot.t()
   defp snapshot(game_state) do
     %Snapshot{
       asteroids: filter_active(game_state.state.asteroids),

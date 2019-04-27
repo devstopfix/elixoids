@@ -25,13 +25,13 @@ defmodule Elixoids.World.Velocity do
 
   def double_speed(%{speed: speed} = v), do: %{v | speed: speed * 2.0}
 
-  @spec rotate(t(), Angle.t()) :: t()
+  @spec rotate(t(), Angle.t()) :: __MODULE__.t()
   def rotate(%{theta: theta} = v, delta_theta),
     do: %{v | theta: normalize_radians(theta + delta_theta)}
 
   @ms_in_s 1000.0
 
-  @spec apply_velocity(Point.t(), t(), number()) :: Point.t()
+  @spec apply_velocity(Point.t(), __MODULE__.t(), number()) :: Point.t()
   def apply_velocity(p, %{theta: theta, speed: speed}, delta_t_ms) do
     dx = :math.cos(theta) * speed * delta_t_ms / @ms_in_s
     dy = :math.sin(theta) * speed * delta_t_ms / @ms_in_s

@@ -57,7 +57,6 @@ defmodule Asteroid.Server do
     if rock.radius >= @splittable_radius_m do
       rocks = Rock.cleave(rock, 2)
       GameServer.spawn_asteroids(asteroid.game.id, rocks)
-      {:stop, :normal, asteroid}
     end
 
     {:stop, :normal, asteroid}

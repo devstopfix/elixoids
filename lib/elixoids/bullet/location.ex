@@ -4,7 +4,7 @@ defmodule Elixoids.Bullet.Location do
   alias Elixoids.Api.State.WorldJSON
   import Elixoids.World.RoundDP
 
-  @type t :: %{pid: pid(), id: integer(), pos: World.Point.t(), shooter: String.t()}
+  @type t :: %{pid: pid(), id: integer(), pos: Elixoids.World.Point.t(), shooter: String.t()}
 
   defstruct pid: nil, id: 0, shooter: "", pos: nil
 

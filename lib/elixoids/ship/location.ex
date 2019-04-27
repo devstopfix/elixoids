@@ -8,7 +8,7 @@ defmodule Elixoids.Ship.Location do
           pid: pid(),
           id: integer(),
           tag: String.t(),
-          pos: World.Point.t(),
+          pos: Elixoids.World.Point.t(),
           theta: float(),
           radius: float(),
           color: String.t()
