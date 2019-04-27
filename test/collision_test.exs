@@ -43,7 +43,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 100, large: true
+  @tag iterations: 10
   property :bullet_in_center_of_ship_hit do
     for_all p in gen_point() do
       bullet = %BulletLoc{pos: p}
@@ -70,6 +70,16 @@ defmodule Elixoids.CollisionTest do
       assert [] == Collision.collision_check([], [bullet], [ship])
     end
   end
+
+  @tag iterations: 10
+  property :bullet_in_center_of_asteroid_hit do
+    for_all {p, r} in {gen_point(), asteroid_radius()} do
+      bullet = %BulletLoc{pos: p}
+      asteroid = %AsteroidLoc{pos: p, radius: r}
+      assert [{:bullet_hit_asteroid, bullet, asteroid}] == Collision.collision_check([asteroid], [bullet], [])
+    end
+  end
+
 
   @tag iterations: 5000, large: true
   property :bullet_inside_asteroid_hit do
