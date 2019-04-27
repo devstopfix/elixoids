@@ -47,7 +47,7 @@ defmodule Game.Server do
   end
 
   def update_asteroid(game_id, new_state) do
-    GenServer.cast(via(game_id), {:update_asteroid, new_state})
+    GenServer.cast(via(game_id), {:update_entity, :asteroids, new_state})
   end
 
   def spawn_asteroids(game_id, rocks) do
@@ -55,7 +55,7 @@ defmodule Game.Server do
   end
 
   def update_ship(game_id, new_state) do
-    GenServer.cast(via(game_id), {:update_ship, new_state})
+    GenServer.cast(via(game_id), {:update_entity, :ships, new_state})
   end
 
   def bullet_fired(game_id, shooter_tag, pos, theta) do
@@ -63,7 +63,7 @@ defmodule Game.Server do
   end
 
   def update_bullet(game_id, new_state) do
-    GenServer.cast(via(game_id), {:update_bullet, new_state})
+    GenServer.cast(via(game_id), {:update_entity, :bullets, new_state})
   end
 
   def explosion(game_id, x, y) do
@@ -124,38 +124,14 @@ defmodule Game.Server do
     {:noreply, game}
   end
 
-  def handle_cast({:update_asteroid, asteroid}, game) do
-    if Map.has_key?(game.state.asteroids, asteroid.pid) do
-      new_game = put_in(game.state.asteroids[asteroid.pid], asteroid)
-      {:noreply, new_game}
-    else
-      {:noreply, game}
-    end
-  end
+  def handle_cast({:update_entity, entity, state = %{pid: pid}}, game) do
+    {_, new_game} =
+      get_and_update_in(game, [:state, entity, pid], fn
+        nil -> :pop
+        old -> {old, state}
+      end)
 
-  @doc """
-  Update game state with ship state.
-  """
-  def handle_cast({:update_ship, ship_state = %{pid: pid}}, game) do
-    if Map.has_key?(game.state.ships, pid) do
-      new_game = put_in(game.state.ships[pid], ship_state)
-      {:noreply, new_game}
-    else
-      {:noreply, game}
-    end
-  end
-
-  @doc """
-  Update the game state with the position of a bullet.
-  The bullet broadcasts its state at a given fps.
-  """
-  def handle_cast({:update_bullet, b}, game) do
-    if Map.has_key?(game.state.bullets, b.pid) do
-      new_game = put_in(game.state.bullets[b.pid], b)
-      {:noreply, new_game}
-    else
-      {:noreply, game}
-    end
+    {:noreply, new_game}
   end
 
   def handle_cast({:spawn_asteroids, rocks}, game) do

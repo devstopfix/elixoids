@@ -47,9 +47,9 @@ defmodule Asteroid.Server do
     {:ok, a}
   end
 
-  def handle_tick(_pid, delta_t_ms, asteroid) do
-    moved_asteroid = asteroid |> move_asteroid(delta_t_ms)
-    GameServer.update_asteroid(asteroid.game.id, state_tuple(moved_asteroid))
+  def handle_tick(_pid, delta_t_ms, asteroid = %{game: %{id: game_id}}) do
+    moved_asteroid = asteroid |> move(delta_t_ms)
+    GameServer.update_asteroid(game_id, state_tuple(moved_asteroid))
     {:ok, moved_asteroid}
   end
 
@@ -63,23 +63,19 @@ defmodule Asteroid.Server do
   end
 
   def random_asteroid do
-    p = Elixoids.Space.random_point_on_border()
-    v = asteroid_velocity()
-    %Rock{:pos => p, :velocity => v, :radius => @asteroid_radius_m}
+    %Rock{
+      :pos => Elixoids.Space.random_point_on_border(),
+      :velocity => asteroid_velocity(),
+      :radius => @asteroid_radius_m
+    }
   end
 
   defp asteroid_velocity, do: Velocity.random_velocity(@asteroid_speed_m_per_s)
 
-  # Functions
-
-  defp move_asteroid(a = %{rock: rock}, delta_t_ms) do
-    # TODO refactor
-    p2 =
-      rock.pos
-      |> Velocity.apply_velocity(a.rock.velocity, delta_t_ms)
-      |> Space.wrap()
-
-    Map.put(a, :rock, Map.put(rock, :pos, p2))
+  defp move(a = %{rock: %{velocity: v}}, delta_t_ms) do
+    update_in(a, [:rock, Access.key(:pos)], fn pos ->
+      pos |> Velocity.apply_velocity(v, delta_t_ms) |> Space.wrap()
+    end)
   end
 
   defp state_tuple(a = %{rock: rock}) do

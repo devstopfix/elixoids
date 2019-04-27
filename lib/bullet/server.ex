@@ -22,9 +22,9 @@ defmodule Bullet.Server do
   @fly_time_ms s_to_ms(@bullet_range_m / @bullet_speed_m_per_s)
 
   @doc """
-  Fire a bullet with:
+  Fire with:
 
-      {:ok, b} = Bullet.Server.start_link(0, "XXX", %World.Point{:x=>0.0, :y=>0.0}, 1.0)
+      {:ok, b} = Bullet.Server.start_link(0, "XXX", %{:x=>0.0, :y=>0.0}, 1.0)
   """
   def start_link(game_id, shooter, pos, theta)
       when is_integer(game_id) and
@@ -53,29 +53,20 @@ defmodule Bullet.Server do
   @doc """
   Update the position of the bullet and broadcast to the game
   """
-  def handle_tick(_pid, delta_t_ms, bullet) do
+  def handle_tick(_pid, delta_t_ms, bullet = %{game_id: game_id}) do
     if past?(bullet.expire_at) do
       {:stop, :normal, bullet}
     else
-      moved_bullet = bullet |> move_bullet(delta_t_ms)
-      GameServer.update_bullet(bullet.game_id, state_tuple(moved_bullet))
+      moved_bullet = bullet |> move(delta_t_ms)
+      GameServer.update_bullet(game_id, state_tuple(moved_bullet))
       {:ok, moved_bullet}
     end
   end
 
-  # Functions
-
-  @doc """
-  Apply velocity of bullet b to it's position,
-  in given time slice.
-  """
-  def move_bullet(b, delta_t_ms) do
-    p2 =
-      b.pos
-      |> Velocity.apply_velocity(b.velocity, delta_t_ms)
-      |> Space.wrap()
-
-    %{b | :pos => p2}
+  defp move(b = %{velocity: v}, delta_t_ms) do
+    update_in(b, [:pos], fn pos ->
+      pos |> Velocity.apply_velocity(v, delta_t_ms) |> Space.wrap()
+    end)
   end
 
   @doc """

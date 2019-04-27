@@ -135,7 +135,7 @@ defmodule Ship.Server do
     pos = calculate_nose(ship)
     GameServer.bullet_fired(ship.game.id, ship.tag, pos, ship.theta)
     publish_news(ship.game.id, [ship.tag, "fires"])
-    pan = Elixoids.Space.frac_x(ship.pos.x)
+    pan = Space.frac_x(ship.pos.x)
     Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan, ship.game.time.()))
   end
 
@@ -161,7 +161,7 @@ defmodule Ship.Server do
     }
   end
 
-  def random_ship do
+  defp random_ship do
     %{
       :pos => random_ship_point(),
       :theta => 0.0,
