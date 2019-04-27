@@ -8,9 +8,10 @@ defmodule Elixoids.World.Point do
   defstruct x: 0.0, y: 0.0
 
   @doc "Translation"
+  @spec translate(t(), number(), number()) :: t()
   def translate(p, dx, dy), do: %{p | x: p.x + dx, y: p.y + dy}
 
-  @spec distance_between(Point.t(), Point.t()) :: float()
+  @spec distance_between(t(), t()) :: float()
   def distance_between(%{x: x1, y: y1}, %{x: x2, y: y2}) do
     :math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
   end

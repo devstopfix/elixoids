@@ -7,6 +7,7 @@ defmodule Elixoids.World.Angle do
   @pi2_radians 2 * :math.pi()
 
   @doc "Keep angle between 0..2π"
+  @spec normalize_radians(number()) :: float()
   def normalize_radians(theta) when theta < 0.0, do: theta + @pi2_radians
   def normalize_radians(theta) when theta > @pi2_radians, do: theta - @pi2_radians
   def normalize_radians(theta), do: theta

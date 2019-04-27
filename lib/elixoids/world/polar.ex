@@ -12,7 +12,6 @@ defmodule Elixoids.World.Polar do
   alias Elixoids.World.RoundDP
   import Elixoids.World.Angle
 
-  @spec subtract(Point.t(), Point.t()) :: t()
   def subtract(p1, p0) do
     d = Point.distance_between(p0, p1)
     theta = :math.atan2(p1.y - p0.y, p1.x - p0.x) |> normalize_radians()

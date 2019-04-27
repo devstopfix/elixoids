@@ -14,6 +14,8 @@ defmodule Elixoids.CollisionTest do
 
   require Elixoids.Collision.Server
 
+  @ship_radius_m 20.0
+
   property :check_point_generator do
     for_all p in gen_point() do
       assert p.x >= 0.0
@@ -170,7 +172,6 @@ defmodule Elixoids.CollisionTest do
 
   defp asteroid_radius, do: :triq_dom.oneof([120.0, 60.0, 30.0, 15.0])
 
-  @ship_radius_m 20.0
   defp ship_radius, do: :triq_dom.oneof([@ship_radius_m])
 
   # 0..0.99
