@@ -1,7 +1,6 @@
 defmodule Elixoids.News do
   @moduledoc """
   Allow games to broadcast game events to subscribers.
-
   The subscriber may produce score table, statistics etc
   """
 
@@ -11,9 +10,7 @@ defmodule Elixoids.News do
     {:ok, _} = Registry.register(Registry.Elixoids.News, key(game_id), true)
   end
 
-  def publish_audio(game_id, audio) do
-    publish(game_id, {:audio, audio})
-  end
+  def publish_audio(game_id, audio), do: publish(game_id, {:audio, audio})
 
   def publish_explosion(game_id, [x, y]),
     do: publish(game_id, {:explosion, %ExplosionLoc{x: x, y: y}})

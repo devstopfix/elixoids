@@ -35,19 +35,17 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     end
   end
 
-  def terminate(_reason, _partial_req, %{ship_id: ship_id, tag: tag}) do
+  def terminate(_reason, _partial_req, %{ship_id: ship_id}) do
     Ship.stop(ship_id)
-    [:ws_disconnect, tag] |> inspect |> info()
     :ok
   end
 
-  def websocket_handle({:text, content}, state = %{tag: tag}) do
+  def websocket_handle({:text, content}, state) do
     case Jason.decode(content) do
       {:ok, player_input} ->
         handle_input(player_input, state)
 
-      {:error, e} ->
-        [:badjson, tag, content, e] |> inspect |> Logger.info()
+      {:error, _} ->
         {:reply, {:text, '{"bad":"json"}'}, state}
     end
   end

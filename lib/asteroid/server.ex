@@ -33,9 +33,6 @@ defmodule Asteroid.Server do
     GenServer.start_link(__MODULE__, a)
   end
 
-  @doc """
-  The asteroid has been destroyed.
-  """
   def destroyed(pid) do
     GenServer.cast(pid, :destroyed)
   end

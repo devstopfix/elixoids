@@ -2,7 +2,6 @@ defmodule Elixoids.Api.WebsocketSoundHandler do
   @moduledoc "Forwards game sounds to the subscriber."
 
   alias Elixoids.Api.Sound.Protocol, as: SoundProtocol
-  import Logger
 
   @opts %{idle_timeout: 60 * 60 * 1000}
 
@@ -18,29 +17,21 @@ defmodule Elixoids.Api.WebsocketSoundHandler do
     {:cowboy_websocket, req, state, @opts}
   end
 
-  # TODO get game ID from URL
   def websocket_init(state) do
+    # TODO get game ID from URL
     {:ok, _pid} = Elixoids.News.subscribe(0)
-    [:ws_connection, :audio] |> inspect |> info()
     {:ok, state}
   end
 
-  def websocket_terminate(_reason, _req, _state) do
-    [:ws_disconnect, :audio] |> inspect |> info()
-    :ok
-  end
+  def websocket_terminate(_reason, _req, _state), do: :ok
 
-  def websocket_handle(_data, state) do
-    {:ok, state}
-  end
+  def websocket_handle(_data, state), do: {:ok, state}
 
   def websocket_info({:audio, sound}, state = %{encode: encode}) do
     encode.(sound, state)
   end
 
-  def websocket_info(_, state) do
-    {:ok, state}
-  end
+  def websocket_info(_, state), do: {:ok, state}
 
   defp encode_json(sound, state) do
     case Jason.encode([sound]) do

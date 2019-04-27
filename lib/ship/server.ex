@@ -93,14 +93,11 @@ defmodule Ship.Server do
   end
 
   @doc """
-  Rotate the ship and broadcast new state to the game.
+  Hyperspace the ship to a new position.
   """
   def handle_cast(:hyperspace, ship) do
-    p = random_ship_point()
-    theta = random_angle()
-
     new_ship =
-      %{ship | pos: p, theta: theta}
+      %{ship | pos: random_ship_point(), theta: random_angle()}
       |> discharge_laser
 
     {:noreply, new_ship}
@@ -114,10 +111,6 @@ defmodule Ship.Server do
     end
   end
 
-  @doc """
-  Player pulls trigger. Do nothing if laser is recharging,
-  else spawn a bullet and add it the the game.
-  """
   def handle_cast(:player_pulls_trigger, ship) do
     if Clock.past?(ship.laser_charged_at) do
       fire_bullet(ship)
@@ -146,10 +139,7 @@ defmodule Ship.Server do
 
   # Data
 
-  @doc """
-  The tuple that will be shown to the UI for rendering.
-  """
-  def state_tuple(ship) do
+  defp state_tuple(ship) do
     %ShipLoc{
       pid: self(),
       id: ship.id,
