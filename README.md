@@ -14,14 +14,12 @@ Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=ma
 
 # Build
 
-There are two versions of this game, v3 on master, and v1 which was released in 2016.
-
-Check out this repository and run:
+There are two versions of this game, v3 on master, and v1 which was released in 2016. To run the game on OSX:
 
     brew install elixir
+    git clone https://github.com/devstopfix/elixoids.git
+    cd elixoids
     mix deps.get
-
-*Master* is currently being refactored and a lot of code being removed and replaced with Elixir 1.4 features such as Registry.
 
 Branch [v1](//github.com/devstopfix/elixoids/tree/v1) contains the version compatible with the UI and original [Sonic][4] repositories.
 
@@ -83,8 +81,7 @@ See [Elixoids Java Client](https://github.com/jrothwell/asteroids-client) by [J 
 The [CBDR](https://en.wikipedia.org/wiki/Constant_bearing,_decreasing_range) Python client at [miner.py](client/miner.py) will try and shoot the asteroid which is on the most constant bearing with it:
 
     pip3 install websocket-client
-    python3 clients/miner.py --host localhost:8065 -n MCB
-
+    python3 clients/miner.py --host localhost:8065 --name MCB
 
 ### Ruby Clients
 
@@ -121,83 +118,6 @@ Copy the artefacts into the local folder which is served by the game webserver:
 
     cp asteroids-ui/asteroids-renderer/bin/* elixoids/html/
 
-# Testing
-
-Inspect source code for bad practice:
-
-    mix credo --strict
-
-Run tests whenever source changes:
-
-    mix test.watch
-
-# Deploy
-
-How to install to an Ubuntu 14.04 LTS server:
-
-## Packages
-
-```
-sudo apt-get -y update
-wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
-sudo dpkg -i erlang-solutions_1.0_all.deb
-sudo apt-get -y update
-sudo apt-get -y install esl-erlang
-sudo apt-get -y install elixir
-sudo apt-get -y install git
-sudo apt-get -y install nginx
-```
-
-## Reverse proxy websocket
-
-Edit NGINX conf:
-
-    sudo nano /etc/nginx/sites-enabled/default
-
-Before `server`:
-
-```
-upstream elixoids {
-  server 127.0.0.1:8065 max_fails=5 fail_timeout=6s;
-}
-```
-
-Server 'location':
-
-```
-    location / {
-
-        allow all;
-
-        # Proxy Headers
-        proxy_http_version 1.1;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Cluster-Client-Ip $remote_addr;
-
-        # The Important Websocket Bits!
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-
-        proxy_pass http://elixoids;
-    }
-```
-
-Restart:
-
-    sudo service nginx restart
-
-
-Install and build game:
-
-    git clone https://github.com/devstopfix/elixoids.git
-    cd elixoids/
-    mix deps.get
-    mix compile
-
-Run:
-
-    mix run --no-halt
 
 
 # Licence
