@@ -18,10 +18,7 @@ defmodule Game.Server do
   alias Elixoids.Game.Snapshot
   alias Elixoids.Ship.Targets
   alias Ship.Server, as: Ship
-  alias World.Clock
   import Logger
-
-  # @max_asteroids 16
 
   def start_link(args = [game_id: game_id, asteroids: _]) do
     {:ok, _pid} = GenServer.start_link(__MODULE__, args, name: via(game_id))
@@ -144,7 +141,7 @@ defmodule Game.Server do
   """
   def handle_cast({:explosion, x, y}, game) do
     pan = Elixoids.Space.frac_x(x)
-    Elixoids.News.publish_audio(game.game_id, SoundEvent.explosion(pan, game.info.time.()))
+    Elixoids.News.publish_audio(game.game_id, SoundEvent.explosion(pan))
     Elixoids.News.publish_explosion(game.game_id, [x, y])
     {:noreply, game}
   end
@@ -277,14 +274,7 @@ defmodule Game.Server do
     end)
   end
 
-  # Partial function that returns number of ms since game began
-  @spec game_time() :: (() -> integer())
-  defp game_time do
-    epoch = Clock.now_ms()
-    fn -> Clock.now_ms() - epoch end
-  end
-
-  defp game_info(game_id), do: Info.new(game_id, game_time())
+  defp game_info(game_id), do: %Info{id: game_id}
 
   # @spec snapshot(map()) :: Snapshot.t()
   defp snapshot(game_state) do

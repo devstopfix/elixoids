@@ -129,7 +129,7 @@ defmodule Ship.Server do
     GameServer.bullet_fired(ship.game.id, ship.tag, pos, ship.theta)
     publish_news(ship.game.id, [ship.tag, "fires"])
     pan = Space.frac_x(ship.pos.x)
-    Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan, ship.game.time.()))
+    Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan))
   end
 
   defp calculate_nose(%{pos: ship_centre, theta: theta}) do

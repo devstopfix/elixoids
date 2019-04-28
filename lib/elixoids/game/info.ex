@@ -4,9 +4,5 @@ defmodule Elixoids.Game.Info do
   used in dependent processes.
   """
 
-  defstruct id: 0, time: nil
-
-  def new(game_id, game_time) do
-    %__MODULE__{id: game_id, time: game_time}
-  end
+  defstruct id: 0
 end

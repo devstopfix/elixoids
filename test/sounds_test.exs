@@ -20,22 +20,21 @@ defmodule Elixoids.SoundsTest do
     assert_receive {:news, fire_msg}, 100
     assert String.contains?(fire_msg, tag)
     assert String.contains?(fire_msg, "fires")
-    assert_receive {:audio, %{snd: "f", gt: gt, pan: pan}}, 100
+    assert_receive {:audio, %{snd: "f", pan: pan}}, 100
 
     assert pan >= -1.0
     assert pan <= 1.0
-    assert gt >= 0
 
     Process.exit(game, :normal)
   end
 
   test "We can encode short sound events as Protobuf" do
-    assert <<24, 1>> ==
-             SoundProtocol.encode(%{snd: "f", pan: 0.0, gt: 1})
+    assert <<21, 205, 204, 204, 61>> ==
+             SoundProtocol.encode(%{snd: "f", pan: 0.1})
   end
 
   test "We can encode sound events as Protobuf" do
-    assert <<21, 0, 0, 128, 63, 24, 145, 78>> ==
-             SoundProtocol.encode(%{snd: "x", pan: 1.0, gt: 10001})
+    assert <<21, 0, 0, 128, 63>> ==
+             SoundProtocol.encode(%{snd: "x", pan: 1.0})
   end
 end

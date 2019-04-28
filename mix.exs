@@ -13,7 +13,6 @@ defmodule Elixoids.Mixfile do
       deps: deps(),
       package: package(),
       dialyzer: [flags: [:error_handling, :underspecs]]
-      # "-Wunmatched_returns",
     ]
   end
 
@@ -22,7 +21,12 @@ defmodule Elixoids.Mixfile do
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
       maintainers: ["J Every"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/devstopfix/elixoids"}
+      links: %{
+        "GitHub" => "https://github.com/devstopfix/elixoids",
+        "CI" => "https://travis-ci.org/devstopfix/elixoids",
+        "Audio" => "https://github.com/jrothwell/sonic-asteroids/",
+        "Graphics" => "https://github.com/lachok/asteroids"
+      }
     ]
   end
 

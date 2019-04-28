@@ -11,5 +11,4 @@ message Sound {
 
     Noise noise = 1;
     float pan = 2;
-    uint32 game_time = 3;
 }
