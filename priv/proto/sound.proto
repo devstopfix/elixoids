@@ -11,4 +11,5 @@ message Sound {
 
     Noise noise = 1;
     float pan = 2;
+    int32 size = 3;
 }

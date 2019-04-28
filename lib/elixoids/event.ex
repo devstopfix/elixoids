@@ -8,13 +8,13 @@ defmodule Elixoids.Event do
 
   @asteroid "ASTEROID"
 
-  def asteroid_hit_ship(game_id, %{pid: asteroid_pid}, %{
+  def asteroid_hit_ship(game_id, %{pid: asteroid_pid, radius: radius}, %{
         pid: ship_pid,
         tag: tag,
-        pos: %{x: x, y: y}
+        pos: pos
       }) do
     Ship.Server.hyperspace(ship_pid)
-    Game.Server.explosion(game_id, x, y)
+    Game.Server.explosion(game_id, pos, radius)
     Asteroid.destroyed(asteroid_pid)
     publish_news(game_id, [@asteroid, "hit", tag])
   end
@@ -22,22 +22,23 @@ defmodule Elixoids.Event do
   def bullet_hit_ship(game_id, %{pid: bullet_pid, shooter: shooter_tag}, %{
         pid: ship_pid,
         tag: victim_tag,
-        pos: %{x: x, y: y}
+        pos: pos,
+        radius: radius
       }) do
     Process.exit(bullet_pid, :shutdown)
-    Game.Server.explosion(game_id, x, y)
+    Game.Server.explosion(game_id, pos, radius)
     Ship.Server.hyperspace(ship_pid)
     publish_news(game_id, [shooter_tag, "kills", victim_tag])
   end
 
   def bullet_hit_asteroid(
         game_id,
-        %{pid: bullet_pid, shooter: shooter_tag, pos: %{x: x, y: y}},
-        %{pid: asteroid_pid}
+        %{pid: bullet_pid, shooter: shooter_tag, pos: pos},
+        %{pid: asteroid_pid, radius: radius}
       ) do
     Process.exit(bullet_pid, :shutdown)
     Asteroid.destroyed(asteroid_pid)
-    Game.Server.explosion(game_id, x, y)
+    Game.Server.explosion(game_id, pos, radius)
     publish_news(game_id, [shooter_tag, "shot", @asteroid])
   end
 end

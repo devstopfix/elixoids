@@ -63,8 +63,8 @@ defmodule Game.Server do
     GenServer.cast(via(game_id), {:update_entity, :bullets, new_state})
   end
 
-  def explosion(game_id, x, y) do
-    GenServer.cast(via(game_id), {:explosion, x, y})
+  def explosion(game_id, pos, radius) do
+    GenServer.cast(via(game_id), {:explosion, pos, radius})
   end
 
   @spec spawn_player(integer(), String.t()) :: {:ok, pid(), term()} | {:error, :tag_in_use}
@@ -139,9 +139,9 @@ defmodule Game.Server do
   @doc """
   Append an Explosion to the game state at given co-ordinates.
   """
-  def handle_cast({:explosion, x, y}, game) do
+  def handle_cast({:explosion, %{x: x, y: y}, radius}, game) do
     pan = Elixoids.Space.frac_x(x)
-    Elixoids.News.publish_audio(game.game_id, SoundEvent.explosion(pan))
+    Elixoids.News.publish_audio(game.game_id, SoundEvent.explosion(pan, radius))
     Elixoids.News.publish_explosion(game.game_id, [x, y])
     {:noreply, game}
   end

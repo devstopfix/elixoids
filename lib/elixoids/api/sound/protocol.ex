@@ -3,14 +3,18 @@ defmodule Elixoids.Api.Sound.Protocol do
     @moduledoc false
     use Protobuf, syntax: :proto3
 
+    #  protoc --elixir_out /tmp priv/proto/sound.proto
+
     @type t :: %__MODULE__{
             noise: atom | integer,
-            pan: float
+            pan: float,
+            size: integer
           }
-    defstruct [:noise, :pan]
+    defstruct [:noise, :pan, :size]
 
     field(:noise, 1, type: Sound.Noise, enum: true)
     field(:pan, 2, type: :float)
+    field(:size, 3, type: :int32)
   end
 
   defmodule Sound.Noise do
@@ -24,8 +28,8 @@ defmodule Elixoids.Api.Sound.Protocol do
     field(:SAUCER, 4)
   end
 
-  defp convert(%{snd: "f", pan: pan}), do: Sound.new(kind: 0, pan: pan)
-  defp convert(%{snd: "x", pan: pan}), do: Sound.new(kind: 1, pan: pan)
+  defp convert(%{snd: "f", pan: pan, size: size}), do: Sound.new(kind: 0, pan: pan, size: size)
+  defp convert(%{snd: "x", pan: pan, size: size}), do: Sound.new(kind: 1, pan: pan, size: size)
 
   def encode(sound), do: Sound.encode(convert(sound))
 end

@@ -7,10 +7,11 @@ defmodule Elixoids.Api.SoundEvent do
   * pan - float -1.0 for hard left, +1.0 for hard right, 0.0 in the centre
   """
 
-  @derive {Jason.Encoder, only: [:snd, :pan]}
-  defstruct snd: "", pan: 0.0
+  @derive {Jason.Encoder, only: [:snd, :pan, :size]}
+  defstruct snd: "", pan: 0.0, size: 0
 
-  def explosion(pan) when is_float(pan), do: %__MODULE__{snd: "x", pan: pan}
+  def explosion(pan, radius) when is_float(pan),
+    do: %__MODULE__{snd: "x", pan: pan, size: trunc(radius)}
 
-  def fire(pan) when is_float(pan), do: %__MODULE__{snd: "f", pan: pan}
+  def fire(pan) when is_float(pan), do: %__MODULE__{snd: "f", pan: pan, size: 0}
 end
