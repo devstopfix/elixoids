@@ -1,14 +1,12 @@
 defmodule Elixoids.Server.WebsocketShipHandler do
   @moduledoc """
-  Websocket Handler. Queries the ship state at 8 fps
-  and publishes it over the websocket.
+  Websocket Handler. Queries the ship state at 8 fps and publishes it over the websocket.
   """
 
-  alias Elixoids.Player, as: Player
+  alias Elixoids.Player
   alias Game.Server, as: Game
   alias Ship.Server, as: Ship
   import Elixir.Translate
-  import Logger
 
   @ms_between_frames div(1000, 8)
   @pause_ms 250
@@ -18,7 +16,6 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   @opts %{idle_timeout: 60 * 1000}
 
   def init(req = %{bindings: %{tag: tag}}, _state) do
-    [:http_connection, :ship] |> inspect |> info()
     {:cowboy_websocket, req, %{url_tag: tag, game_id: 0}, @opts}
   end
 

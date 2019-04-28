@@ -43,7 +43,7 @@ The game runs well in full screen, on Chrome this can be enabled with `[cmd]-[â†
 
 To hear the sound effects on a Mac, download and run [v3 of the SonicAsteroids.app][7] and set the address to listen to as:
 
-    ws://localhost:8065/sound
+    ws://localhost:8065/0/sound
 
 See the protocol below.
 
@@ -53,7 +53,7 @@ Clients subscribe to an event stream from the game via Websockets.
 
 ### Sound Client Protocol
 
-Sound events can be received at `ws://example.com/sound` and here is the [sound format](docs/sound_protocol.md).
+Sound events can be received at `ws://example.com/0/sound` and here is the [sound format](docs/sound_protocol.md).
 
 ### News Client
 
@@ -131,4 +131,4 @@ This software is published under the [MIT License](LICENSE) and Copyright Â©2019
 [4]: https://github.com/jrothwell/sonic-asteroids
 [5]: https://github.com/jrothwell
 [6]: https://vimeo.com/330017229
-[7]: https://github.com/devstopfix/sonic-asteroids/releases/tag/v3.19.105
+[7]: https://github.com/devstopfix/sonic-asteroids/releases/tag/v3.19.118

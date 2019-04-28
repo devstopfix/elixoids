@@ -23,7 +23,7 @@ Sizes:
 |      20  | ship              |
 |       0  | bullet            |
 
-## Protobuf
+### Protobuf
 
 Reduce network bandwidth by subscribing using the [sound protocol buffer](priv/proto/sound.proto). Your client will need to initiate the web socket connection with the HTTP header:
 
@@ -39,7 +39,7 @@ Generate your Python client:
 
     protoc --python_out /tmp priv/proto/sound.proto
 
-## JSON Protocol
+### JSON Protocol
 
 The websocket will receive a JSON message which is a list of a single sound event. Each event is a map:
 
@@ -54,3 +54,8 @@ This is the default protocol - you can request it with the HTTP header:
     Accept: application/json
 
 Each JSON event is around 36 bytes, compared to 5-7 bytes for the protobuf.
+
+# Clients
+
+* [Sonic Asteroids v3 2019](https://github.com/devstopfix/sonic-asteroids/releases/tag/v3.19.118)
+* [Sonic Asteroids v1 2016](https://github.com/jrothwell/sonic-asteroids) for [branch v1 2016](https://github.com/devstopfix/elixoids/tree/v1)
