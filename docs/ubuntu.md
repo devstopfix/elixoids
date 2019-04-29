@@ -2,67 +2,70 @@
 
 How to install to an Ubuntu 18.04 LTS server:
 
-## Packages
+## Erlang and Elixir
 
-```
+```bash
 sudo apt-get -y update
 wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
 sudo dpkg -i erlang-solutions_1.0_all.deb
 sudo apt-get -y update
-sudo apt-get -y install esl-erlang
-sudo apt-get -y install elixir
-sudo apt-get -y install git nginx
+sudo apt-get -y install esl-erlang elixir
 ```
 
-## Reverse proxy websocket
+## Game
+
+Create a user and add them the the games group:
+
+```bash
+export ELIXOIDS_HOME=/usr/local/games/elixoids
+export ELIXOIDS_LOG=/var/log/elixoids
+
+sudo apt-get -y install git htop
+
+sudo adduser --disabled-password --ingroup games --gecos "" elixoids
+sudo usermod -a -G games ubuntu
+
+sudo mkdir $ELIXOIDS_HOME
+sudo chown root:games $ELIXOIDS_HOME
+sudo chmod g+rwx $ELIXOIDS_HOME
+
+sudo mkdir $ELIXOIDS_LOG
+sudo chown root:games $ELIXOIDS_LOG
+sudo chmod g+rwx $ELIXOIDS_LOG
+
+git clone https://github.com/devstopfix/elixoids.git $ELIXOIDS_HOME
+
+cd $ELIXOIDS_HOME
+mix local.hex --force
+mix local.rebar --force
+mix deps.get
+mix compile
+```
+
+## NGINX Reverse Proxy
+
+```bash
+sudo apt-get -y install nginx
+```
 
 Edit NGINX conf:
 
-    sudo nano /etc/nginx/sites-enabled/default
+    sudo nano /etc/nginx/sites-available/elixoids
 
-Before `server`:
+with the contents of [elixoids.conf](elixoids.conf)
 
-```
-upstream elixoids {
-  server 127.0.0.1:8065 max_fails=5 fail_timeout=6s;
-}
-```
+Enable the site and reload:
 
-Server 'location':
-
-```
-    location / {
-
-        allow all;
-
-        # Proxy Headers
-        proxy_http_version 1.1;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Cluster-Client-Ip $remote_addr;
-
-        # The Important Websocket Bits!
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-
-        proxy_pass http://elixoids;
-    }
+```bash
+sudo ln -sfn /etc/nginx/sites-available/elixoids  /etc/nginx/sites-enabled/default
+sudo nginx -t && sudo service nginx reload
 ```
 
-Restart:
+## Run
 
-    sudo service nginx restart
+Run as the elixoids user and allow logout of SSH session:
 
-
-Install and build game:
-
-    cd /usr/share/games
-    mkdir elixoids
-    cd elixoids/
-    git clone https://github.com/devstopfix/elixoids.git .
-    mix deps.get
-    mix compile
-
-Run:
-
-    mix run --no-halt
+```bash
+su - elixoids
+nohup mix run --no-halt >> /var/log/elixoids/ zero.log &
+```
