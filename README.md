@@ -113,18 +113,20 @@ In order to get the latest version of the UI:
 * checkout [asteroids-ui][3] in a sibling folder to this project
 * rebuild:
 
-```
+```bash
 cd asteroids-ui/asteroids-renderer
 npm run build
 ````
 
 Copy the artefacts into the local folder which is served by the game webserver:
 
-    cp asteroids-ui/asteroids-renderer/bin/* elixoids/html/
+    cp asteroids-ui/asteroids-renderer/bin/* elixoids/priv/html/
 
+## Deploy
 
+See the [Ubuntu deployment guide](docs/ubuntu.md) to run the game engine on a server.
 
-# Licence
+## Licence
 
 This software is published under the [MIT License](LICENSE) and Copyright ©2019 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5].
 
