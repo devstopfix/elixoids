@@ -34,7 +34,7 @@ defmodule Elixoids.Api do
           {"/news", Elixoids.Server.WebsocketNewsHandler, []},
           {"/ship/:tag", Elixoids.Server.WebsocketShipHandler, []},
           {"/:game/sound", Elixoids.Server.WebsocketSoundHandler, []},
-          {"/websocket", Elixoids.Server.WebsocketGameHandler, []}
+          {"/:game/graphics", Elixoids.Server.WebsocketGameHandler, []}
         ]
       }
     ])

@@ -55,6 +55,10 @@ Clients subscribe to an event stream from the game via Websockets.
 
 Sound events can be received at `ws://example.com/0/sound` and here is the [sound format](docs/sound_protocol.md).
 
+### Graphics Client
+
+Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] for reference implementation.
+
 ### News Client
 
 There is a sample Python news client at [cat_news.py](client/cat_news.py):
