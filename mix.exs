@@ -31,13 +31,16 @@ defmodule Elixoids.Mixfile do
   end
 
   def application do
-    [mod: {Elixoids.Application, []}, extra_applications: [:cowboy, :ranch, :logger, :chaos_monkey]]
+    [
+      mod: {Elixoids.Application, []},
+      extra_applications: [:cowboy, :ranch, :logger, :chaos_monkey]
+    ]
   end
 
   defp deps do
     [
       {:cowboy, "~> 2.6"},
-      {:chaos_monkey, git: "https://github.com/dLuna/chaos_monkey", only: [:dev]},
+      {:chaos_monkey, git: "https://github.com/dLuna/chaos_monkey", only: [:dev, :test]},
       {:credo, "~> 1.0.5", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:excheck, "~> 0.5.3", only: :test},

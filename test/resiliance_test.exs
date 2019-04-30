@@ -1,0 +1,52 @@
+defmodule Elixoids.ResilianceTest do
+  use ExUnit.Case, async: true
+  use ExCheck
+
+  alias Elixoids.Game.Supervisor, as: GameSupervisor
+  alias Asteroid.Server, as: Asteroid
+
+  test "When asteroid exits the game continues" do
+    Process.flag(:trap_exit, true)
+    {:ok, game_pid, game_id} = GameSupervisor.start_game(asteroids: 1)
+    {:ok, asteroid_pid} = Asteroid.start_link(%{id: game_id})
+    Process.sleep(10)
+    assert Process.alive?(asteroid_pid)
+    Process.exit(asteroid_pid, :kill)
+
+    assert_receive {:EXIT, asteroid_pid, :killed}, 500
+    refute Process.alive?(asteroid_pid)
+    assert Process.alive?(game_pid)
+  end
+
+  test "When Collision process exits the game continues" do
+    {:ok, game_pid, game_id} = GameSupervisor.start_game(asteroids: 1)
+
+    [{collision_pid, _}] = Registry.lookup(Registry.Elixoids.Collisions, {game_id})
+    Process.exit(collision_pid, :kill)
+    Process.sleep(100)
+
+    assert Process.alive?(game_pid)
+    refute Process.alive?(collision_pid)
+    Process.sleep(100)
+
+    [{collision2_pid, _}] = Registry.lookup(Registry.Elixoids.Collisions, {game_id})
+    assert collision2_pid != collision_pid
+    Process.exit(game_pid, :shutdown)
+    Process.sleep(100)
+    refute Process.alive?(collision_pid)
+  end
+
+  # TODO test "When game ends, collision process ends" do
+  #   {:ok, game_pid, game_id} = GameSupervisor.start_game(asteroids: 1)
+
+  #   Process.sleep(100)
+  #   assert Process.alive?(game_pid)
+
+  #   [{collision_pid, _}] = Registry.lookup(Registry.Elixoids.Collisions, {game_id})
+  #   Process.exit(game_pid, :kill)
+  #   Process.sleep(100)
+  #   refute Process.alive?(game_pid)
+  #   refute Process.alive?(collision_pid)
+  # end
+
+end
