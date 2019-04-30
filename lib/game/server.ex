@@ -121,8 +121,8 @@ defmodule Game.Server do
   end
 
   def handle_cast({:spawn_asteroids, rocks}, game) do
-    new_game = Enum.reduce(rocks, game, fn f, game -> new_asteroid_in_game(f, game) end)
-    {:noreply, new_game}
+    Enum.each(rocks, fn rock -> new_asteroid_in_game(rock, game) end)
+    {:noreply, game}
   end
 
   @doc """
@@ -169,17 +169,13 @@ defmodule Game.Server do
     end
   end
 
-  @doc """
-  Put a marker for the spawned bullet into the game
-  """
   def handle_call({:bullet_fired, shooter_tag, pos, theta}, _from, game) do
     {:ok, bullet_pid} = Bullet.start_link(game.game_id, shooter_tag, pos, theta)
-    {:reply, {:ok, bullet_pid}, put_in(game.state.bullets[bullet_pid], :spawn)}
+    {:reply, {:ok, bullet_pid}, game}
   end
 
   @doc """
-  Spawn a new ship controlled by player with given tag
-  (unless that ship already exists)
+  Spawn a new ship controlled by player with given tag (unless that ship already exists)
   """
   def handle_call({:spawn_player, player_tag}, _from, game) do
     case Ship.start_link(game.info, player_tag) do
@@ -196,7 +192,7 @@ defmodule Game.Server do
       :dim => Elixoids.Space.dimensions(),
       :a => game.state.asteroids |> Map.values(),
       :s => game.state.ships |> Map.values(),
-      :b => game.state.bullets |> filter_active()
+      :b => game.state.bullets |> Map.values()
     }
 
     {:reply, game_state, game}
@@ -262,12 +258,9 @@ defmodule Game.Server do
   # @spec snapshot(map()) :: Snapshot.t()
   defp snapshot(game_state) do
     %Snapshot{
-      asteroids: filter_active(game_state.state.asteroids),
-      bullets: filter_active(game_state.state.bullets),
-      ships: filter_active(game_state.state.ships)
+      asteroids: Map.values(game_state.state.asteroids),
+      bullets: Map.values(game_state.state.bullets),
+      ships: Map.values(game_state.state.ships)
     }
   end
-
-  # Remove actors that have a placeholder state of :spawn
-  defp filter_active(m), do: m |> Map.values() |> Enum.filter(&Kernel.is_map/1)
 end
