@@ -12,7 +12,6 @@ defmodule Elixoids.ResilianceTest do
     Process.flag(:trap_exit, true)
     {:ok, game_pid, game_id} = GameSupervisor.start_game(asteroids: 1)
     {:ok, asteroid_pid} = Asteroid.start_link(%{id: game_id})
-    Process.sleep(10)
     assert Process.alive?(asteroid_pid)
     Process.exit(asteroid_pid, :kill)
 

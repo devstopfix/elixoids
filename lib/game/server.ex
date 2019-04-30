@@ -74,15 +74,8 @@ defmodule Game.Server do
 
   ## Initial state
 
-  @doc """
-  Generate n new asteroids and store as a map of their
-  identifier to a tuple of their {pid, state}.
-  """
   def generate_asteroids(n, game_info) do
-    Enum.reduce(1..n, %{}, fn _i, rocks ->
-      {:ok, pid} = Asteroid.start_link(game_info)
-      Map.put(rocks, pid, :spawn)
-    end)
+    Enum.map(1..n, fn _ -> {:ok, _pid} = Asteroid.start_link(game_info) end)
   end
 
   ## Server Callbacks
@@ -96,12 +89,12 @@ defmodule Game.Server do
 
   defp initial_game_state(asteroid_count, game_id) do
     info = game_info(game_id)
-    asteroids = generate_asteroids(asteroid_count, info)
+    generate_asteroids(asteroid_count, info)
 
     %{
       :game_id => game_id,
       :info => info,
-      :state => %{:asteroids => asteroids, :bullets => %{}, :ships => %{}},
+      :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
       :min_asteroid_count => asteroid_count
     }
   end
@@ -201,7 +194,7 @@ defmodule Game.Server do
   def handle_call(:state, _from, game) do
     game_state = %{
       :dim => Elixoids.Space.dimensions(),
-      :a => game.state.asteroids |> filter_active(),
+      :a => game.state.asteroids |> Map.values(),
       :s => game.state.ships |> Map.values(),
       :b => game.state.bullets |> filter_active()
     }
@@ -210,7 +203,7 @@ defmodule Game.Server do
   end
 
   defp fetch_ship_state(shiploc, game) do
-    asteroids = game.state.asteroids |> filter_active()
+    asteroids = game.state.asteroids |> Map.values()
     ships = game.state.ships |> Map.values() |> ships_except(shiploc.tag)
 
     ship_state = %Targets{
@@ -234,8 +227,7 @@ defmodule Game.Server do
   # Asteroids
 
   def new_asteroid_in_game(a, game) do
-    {:ok, pid} = Asteroid.start_link(game.info, a)
-    put_in(game.state.asteroids[pid], :spawn)
+    {:ok, _pid} = Asteroid.start_link(game.info, a)
   end
 
   def check_next_wave(game = %{min_asteroid_count: min_asteroid_count}) do
@@ -243,9 +235,9 @@ defmodule Game.Server do
 
     if active_asteroid_count < min_asteroid_count do
       new_asteroid_in_game(Asteroid.random_asteroid(), game)
-    else
-      game
     end
+
+    game
   end
 
   # TODO next_wave
