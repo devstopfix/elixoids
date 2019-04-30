@@ -14,14 +14,12 @@ Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=ma
 
 # Build
 
-There are two versions of this game, v3 on master, and v1 which was released in 2016. To run the game on OSX:
+To run the game [on Ubuntu](docs/ubuntu.md) or on OSX:
 
     brew install elixir
     git clone https://github.com/devstopfix/elixoids.git
     cd elixoids
     mix deps.get
-
-Branch [v1](//github.com/devstopfix/elixoids/tree/v1) contains the version compatible with the UI and original [Sonic][4] repositories.
 
 # Run
 
@@ -41,11 +39,11 @@ Open the UI in your browser:
 
 The game runs well in full screen, on Chrome this can be enabled with `[cmd]-[↩]`
 
-To hear the sound effects on a Mac, download and run [v3 of the SonicAsteroids.app][7] and set the address to listen to as:
+To hear the sound effects on a Mac, download and run [v3 of the SonicAsteroids.app][4] and set the address to listen to as:
 
     ws://localhost:8065/0/sound
 
-See the protocol below.
+See the [sound format](docs/sound_protocol.md).
 
 ## Clients
 
@@ -61,7 +59,7 @@ Graphics stream can be received at `ws://example.com/0/graphics` - to be documen
 
 ### News Client
 
-There is a sample Python news client at [cat_news.py](client/cat_news.py):
+There is a sample Python news client at [cat_news.py](clients/cat_news.py):
 
 The news stream is a stream of lines of the form:
 
@@ -82,7 +80,7 @@ See [Elixoids Java Client](https://github.com/jrothwell/asteroids-client) by [J 
 
 ### Python Asteroid Miner Client
 
-The [CBDR](https://en.wikipedia.org/wiki/Constant_bearing,_decreasing_range) Python client at [miner.py](client/miner.py) will try and shoot the asteroid which is on the most constant bearing with it:
+The [CBDR](https://en.wikipedia.org/wiki/Constant_bearing,_decreasing_range) Python client at [miner.py](clients/miner.py) will try and shoot the asteroid which is on the most constant bearing with it:
 
     pip3 install websocket-client
     python3 clients/miner.py --host localhost:8065 --name MCB
@@ -115,7 +113,7 @@ In order to get the latest version of the UI:
 
 ```bash
 cd asteroids-ui/asteroids-renderer
-npm run build
+npm run buildmin
 ````
 
 Copy the artefacts into the local folder which is served by the game webserver:
@@ -137,4 +135,3 @@ This software is published under the [MIT License](LICENSE) and Copyright ©2019
 [4]: https://github.com/jrothwell/sonic-asteroids
 [5]: https://github.com/jrothwell
 [6]: https://vimeo.com/330017229
-[7]: https://github.com/devstopfix/sonic-asteroids/releases/tag/v3.19.118
