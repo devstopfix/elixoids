@@ -6,10 +6,9 @@ defmodule Elixoids.Api do
 
   * /news - news feed of the game (shots, misses, hits etc)
   * /ship/AAA - player bots where AAA ~= /[A-Z]{3}/
-  * /sound - sound events for the audio client
-  * /websocket - UI
+  * /0/sound - sound events for the audio client
+  * /0/graphics - UI stream
 
-  TODO rename /websocket to /999/ui
   TODO add game ids to all paths
 
   """
@@ -24,6 +23,8 @@ defmodule Elixoids.Api do
 
         # Routes: { PathMatch, Handler, Options}
         [
+          {"/icon.png", :cowboy_static, {:priv_file, :elixoids, "html/icon.png"}},
+
           # Serve a single static file on the route "/".
           {"/", :cowboy_static, {:priv_file, :elixoids, "priv/html/index.html"}},
 
