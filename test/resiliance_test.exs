@@ -2,8 +2,10 @@ defmodule Elixoids.ResilianceTest do
   use ExUnit.Case, async: true
   use ExCheck
 
-  alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Asteroid.Server, as: Asteroid
+  alias Elixoids.Game.Supervisor, as: GameSupervisor
+  alias Elixoids.World.Point
+  alias Game.Server, as: Game
 
   test "When asteroid exits the game continues" do
     Process.flag(:trap_exit, true)
@@ -15,6 +17,22 @@ defmodule Elixoids.ResilianceTest do
 
     assert_receive {:EXIT, asteroid_pid, :killed}, 500
     refute Process.alive?(asteroid_pid)
+    assert Process.alive?(game_pid)
+  end
+
+  test "When bullet exits the game continues" do
+    tag = "FIR"
+    Process.flag(:trap_exit, true)
+    {:ok, game_pid, game_id} = GameSupervisor.start_game(asteroids: 1)
+    {:ok, ship_pid, ship1_id} = Game.spawn_player(game_id, tag)
+    {:ok, bullet_pid} = Bullet.Server.start_link(0, tag, %Point{}, 1.0)
+
+    assert Process.alive?(bullet_pid)
+    Process.exit(bullet_pid, :kill)
+
+    assert_receive {:EXIT, bullet_pid, :killed}, 100
+    refute Process.alive?(bullet_pid)
+    assert Process.alive?(ship_pid)
     assert Process.alive?(game_pid)
   end
 
@@ -47,5 +65,4 @@ defmodule Elixoids.ResilianceTest do
   #   refute Process.alive?(game_pid)
   #   refute Process.alive?(collision_pid)
   # end
-
 end
