@@ -34,7 +34,6 @@ if __name__ == "__main__":
     parser.add_argument("host", help="host[:port] of Elixoids server", default="localhost:8065")
     args = parser.parse_args()
     ws_url = news_url(args.host)
-    websocket.enableTrace(True)
     ws = websocket.WebSocketApp(ws_url,
                               header = {"Accept": "text/plain"},
                               on_message = on_message,
