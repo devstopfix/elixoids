@@ -15,6 +15,6 @@ defmodule Elixoids.Game.Zero do
       {Elixoids.Collision.Server, @zero}
     ]
 
-    Supervisor.init(children, strategy: :one_for_all)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end
