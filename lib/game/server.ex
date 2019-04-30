@@ -122,11 +122,7 @@ defmodule Game.Server do
   end
 
   def handle_cast({:update_entity, entity, state = %{pid: pid}}, game) do
-    {_, new_game} =
-      get_and_update_in(game, [:state, entity, pid], fn
-        nil -> :pop
-        old -> {old, state}
-      end)
+    {_, new_game} = get_and_update_in(game, [:state, entity, pid], fn old -> {old, state} end)
 
     {:noreply, new_game}
   end
@@ -167,16 +163,15 @@ defmodule Game.Server do
       {:EXIT, pid, :normal} ->
         {:noreply, remove_pid_from_game_state(pid, state)}
 
-      _ ->
-        [:EXIT, msg, state] |> inspect |> error()
-        {:noreply, state}
+      {:EXIT, pid, msg} ->
+        [:EXIT, msg, state] |> inspect |> warn()
+        {:noreply, remove_pid_from_game_state(pid, state)}
     end
   end
 
   def handle_call({:state_of_ship, ship_pid}, _from, game) do
     case game.state.ships[ship_pid] do
       nil -> {:reply, %Targets{}, game}
-      :spawn -> {:reply, %Targets{}, game}
       ship -> fetch_ship_state(ship, game)
     end
   end
@@ -195,12 +190,8 @@ defmodule Game.Server do
   """
   def handle_call({:spawn_player, player_tag}, _from, game) do
     case Ship.start_link(game.info, player_tag) do
-      {:ok, ship_pid, ship_id} ->
-        new_game = put_in(game.state.ships[ship_pid], :spawn)
-        {:reply, {:ok, ship_pid, ship_id}, new_game}
-
-      e ->
-        {:reply, e, game}
+      {:ok, ship_pid, ship_id} -> {:reply, {:ok, ship_pid, ship_id}, game}
+      e -> {:reply, e, game}
     end
   end
 
@@ -211,7 +202,7 @@ defmodule Game.Server do
     game_state = %{
       :dim => Elixoids.Space.dimensions(),
       :a => game.state.asteroids |> filter_active(),
-      :s => game.state.ships |> filter_active(),
+      :s => game.state.ships |> Map.values(),
       :b => game.state.bullets |> filter_active()
     }
 
@@ -220,7 +211,7 @@ defmodule Game.Server do
 
   defp fetch_ship_state(shiploc, game) do
     asteroids = game.state.asteroids |> filter_active()
-    ships = game.state.ships |> filter_active() |> ships_except(shiploc.tag)
+    ships = game.state.ships |> Map.values() |> ships_except(shiploc.tag)
 
     ship_state = %Targets{
       :theta => shiploc.theta,

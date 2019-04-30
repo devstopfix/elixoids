@@ -6,6 +6,7 @@ defmodule Elixoids.ResilianceTest do
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.World.Point
   alias Game.Server, as: Game
+  alias Ship.Server, as: Ship
 
   test "When asteroid exits the game continues" do
     Process.flag(:trap_exit, true)
@@ -24,7 +25,7 @@ defmodule Elixoids.ResilianceTest do
     tag = "FIR"
     Process.flag(:trap_exit, true)
     {:ok, game_pid, game_id} = GameSupervisor.start_game(asteroids: 1)
-    {:ok, ship_pid, ship1_id} = Game.spawn_player(game_id, tag)
+    {:ok, ship_pid, ship_id} = Game.spawn_player(game_id, tag)
     {:ok, bullet_pid} = Bullet.Server.start_link(0, tag, %Point{}, 1.0)
 
     assert Process.alive?(bullet_pid)
@@ -40,12 +41,11 @@ defmodule Elixoids.ResilianceTest do
     tag = "FIR"
     Process.flag(:trap_exit, true)
     {:ok, game_pid, game_id} = GameSupervisor.start_game(asteroids: 1)
-    {:ok, ship_pid, _ship_id} = Game.spawn_player(game_id, tag)
+    {:ok, ship_pid, ship_id} = Game.spawn_player(game_id, tag)
     {:ok, bullet_pid} = Bullet.Server.start_link(0, tag, %Point{}, 1.0)
 
     assert Process.alive?(bullet_pid)
     Process.exit(ship_pid, :kill)
-    # assert_receive {:EXIT, ship_pid, :killed}, 100
 
     refute Process.alive?(ship_pid)
     assert Process.alive?(bullet_pid)
@@ -67,7 +67,6 @@ defmodule Elixoids.ResilianceTest do
     Process.exit(game_pid, :shutdown)
     Process.sleep(100)
     # TODO link collision and game process refute Process.alive?(collision2_pid)
-    # TODO game will reject state from respawned ship. Remove :spawn feature
   end
 
   # TODO test "When game ends, collision process ends" do
