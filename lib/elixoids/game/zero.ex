@@ -5,6 +5,7 @@ defmodule Elixoids.Game.Zero do
 
   @zero 0
 
+  @spec start_link(any()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(_) do
     Supervisor.start_link(__MODULE__, :ok, name: :game_zero)
   end
