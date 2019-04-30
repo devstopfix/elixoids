@@ -13,6 +13,7 @@
 from math import floor, pi
 from random import choices, normalvariate
 from string import ascii_uppercase
+from time import sleep
 import argparse
 import datetime
 import json
@@ -29,15 +30,18 @@ except ImportError:
 def normalize(r):
     return r % (pi * 2)
 
+
 def perturb(r, sigma=0.1):
     return normalize(r + normalvariate(0, sigma))
 
 # Time
 
+
 def now():
     return floor(datetime.datetime.utcnow().timestamp() * 1000)
 
 # Base class
+
 
 class Miner:
 
@@ -53,7 +57,7 @@ class Miner:
 
     # Difference between two states - map of id => [state-1, state]
     def delta(self, s0, s1):
-        return [ (k,v0,v1) for k, v0 in s0.items() for k1,v1 in s1.items() if k==k1 ]
+        return [(k, v0, v1) for k, v0 in s0.items() for k1, v1 in s1.items() if k == k1]
 
     def rocks(self, state):
         return {rk: [theta, dist] for [rk, theta, radius, dist] in state['rocks']}
@@ -75,19 +79,19 @@ class Miner:
 
 class ConstantBearingMiner(Miner):
 
-    ANGULAR_SIZE=0.05
+    ANGULAR_SIZE = 0.05
     target_id = 0
 
     # Find the difference between thetas over successive game states
     # The dampen factor can be adjusted to stop switching targets too often
-    def delta_theta(self, a, dampen=1.2):
+    def delta_theta(self, a, dampen=1.1):
         [_, s0, s1] = a
         [t0, _] = s0
         [t1, _] = s1
         return abs(t1 - t0) / dampen
 
     def sort_smallest_change_in_bearing(self, delta_state):
-        return sorted(delta_state, key= lambda a: self.delta_theta(a))
+        return sorted(delta_state, key=lambda a: self.delta_theta(a))
 
     def choose_target(self, delta_state):
         targets = self.sort_smallest_change_in_bearing(delta_state)
@@ -101,7 +105,6 @@ class ConstantBearingMiner(Miner):
         [t0, _] = s0
         [t1, _] = s1
         return normalize(t1 + (t1 - t0))
-
 
     def strategy(self, delta_state, ship_theta):
         target = self.choose_target(delta_state)
@@ -124,6 +127,7 @@ def name():
 
 miner = ConstantBearingMiner(name())
 
+
 def on_message(ws, message):
     try:
         state = json.loads(message)
@@ -138,22 +142,36 @@ def on_message(ws, message):
         traceback.print_exc()
         sys.exit(1)
 
+
 def on_error(ws, error):
     sys.stderr.write("\n{}\n\n".format(str(error)))
 
+
 def on_close(ws):
-    sys.stderr.write("### Miner closed\n")
+    sys.stderr.write("GAME OVER!\n")
+
 
 def news_url(host, player_name="MIN"):
     return "ws://{}/ship/{}".format(host, player_name)
 
 # Runner
 
+
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host", default="localhost:8065", help="host[:port] of Elixoids server")
-    parser.add_argument("-n", "--name", default=None, help="Three character name")
+    parser.add_argument("--host", default="localhost:8065",
+                        help="host[:port] of Elixoids server")
+    parser.add_argument("-n", "--name", default=None,
+                        help="Three character name")
     return parser.parse_args()
+
+
+def run(ws):
+    retry = 5
+    while retry > 0:
+            ws.run_forever()
+            sleep(retry)
+            retry = retry - 1
 
 
 if __name__ == "__main__":
@@ -161,8 +179,8 @@ if __name__ == "__main__":
     player_name = args.name or miner.name
     ws_url = news_url(args.host, player_name)
     ws = websocket.WebSocketApp(ws_url,
-                              header = {"Accept": "application/json"},
-                              on_message = on_message,
-                              on_error = on_error,
-                              on_close = on_close)
-    ws.run_forever()
+                                header={"Accept": "application/json"},
+                                on_message=on_message,
+                                on_error=on_error,
+                                on_close=on_close)
+    run(ws)
