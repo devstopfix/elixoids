@@ -14,24 +14,22 @@ Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=ma
 
 # Build
 
-There are two versions of this game. Branch [v1](//github.com/devstopfix/elixoids/tree/v1) contains the version compatible with the UI and Sonic repositories. Switch to that branch until they are modified to be compatible with master.
-
-Check out this repository and run:
-
-    git checkout v1
-    mix deps.get
-
-You may need to install Elixir and Erlang, on a Mac you can use homebrew:
+To run the game [on Ubuntu](docs/ubuntu.md) or on OSX:
 
     brew install elixir
-
-*Master* is currently being refactored and a lot of code being removed and replaced with Elixir 1.4 features such as Registry.
+    git clone https://github.com/devstopfix/elixoids.git
+    cd elixoids
+    mix deps.get
 
 # Run
 
 This repo contains the game engine, a webserver, and a recent version of the [asteroids-ui][3].
 
 To start a game:
+
+    mix run --no-halt
+
+or a REPL:
 
     iex -S mix
 
@@ -41,15 +39,51 @@ Open the UI in your browser:
 
 The game runs well in full screen, on Chrome this can be enabled with `[cmd]-[↩]`
 
-To hear the sound effects on a Mac, download and run [SonicAsteroids.app](https://github.com/jrothwell/sonic-asteroids/releases) and set the address to listen to as:
+To hear the sound effects on a Mac, download and run [v3 of the SonicAsteroids.app][4] and set the address to listen to as:
 
-    ws://localhost:8065/sound
+    ws://localhost:8065/0/sound
+
+See the [sound format](docs/sound_protocol.md).
 
 ## Clients
 
-### Java Client
+Clients subscribe to an event stream from the game via Websockets.
+
+### Sound Client Protocol
+
+Sound events can be received at `ws://example.com/0/sound` and here is the [sound format](docs/sound_protocol.md).
+
+### Graphics Client
+
+Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] for reference implementation.
+
+### News Client
+
+There is a sample Python news client at [cat_news.py](clients/cat_news.py):
+
+The news stream is a stream of lines of the form:
+
+    [PLAYER|ASTEROID] VERB [PLAYER|ASTEROID]
+
+Examples:
+
+```
+PLY fires
+PLY shot ASTEROID
+PLY kills OTH
+ASTEROID hit PLY
+```
+
+### Java Ship Client
 
 See [Elixoids Java Client](https://github.com/jrothwell/asteroids-client) by [J Rothwell][5].
+
+### Python Asteroid Miner Client
+
+The [CBDR](https://en.wikipedia.org/wiki/Constant_bearing,_decreasing_range) Python client at [miner.py](clients/miner.py) will try and shoot the asteroid which is on the most constant bearing with it:
+
+    pip3 install websocket-client
+    python3 clients/miner.py --host localhost:8065 --name MCB
 
 ### Ruby Clients
 
@@ -68,6 +102,8 @@ If you are running the game other than at localhost, specify the websocket in th
 
     export ELIXOIDS_SERVER=rocks.example.com:8065
 
+NB The websocket library is troublesome. It will often fail to connect after a reboot. Keep trying and it will eventually connect and stay connected! These scripts will be migrated to Python3.
+
 ## Refresh UI
 
 In order to get the latest version of the UI:
@@ -75,98 +111,22 @@ In order to get the latest version of the UI:
 * checkout [asteroids-ui][3] in a sibling folder to this project
 * rebuild:
 
-```
+```bash
 cd asteroids-ui/asteroids-renderer
-npm run build
+npm run buildmin
 ````
 
 Copy the artefacts into the local folder which is served by the game webserver:
 
-    cp asteroids-ui/asteroids-renderer/bin/* elixoids/html/
+    cp asteroids-ui/asteroids-renderer/bin/* elixoids/priv/html/
 
-# Testing
+## Deploy
 
-Inspect source code for bad practice:
+See the [Ubuntu deployment guide](docs/ubuntu.md) to run the game engine on a server.
 
-    mix credo --strict
+## Licence
 
-Run tests whenever source changes:
-
-    mix test.watch
-
-
-# Deploy
-
-How to install to an Ubuntu 14.04 LTS server:
-
-## Packages
-
-```
-sudo apt-get -y update
-wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
-sudo dpkg -i erlang-solutions_1.0_all.deb
-sudo apt-get -y update
-sudo apt-get -y install esl-erlang
-sudo apt-get -y install elixir
-sudo apt-get -y install git
-sudo apt-get -y install nginx
-```
-
-## Reverse proxy websocket
-
-Edit NGINX conf:
-
-    sudo nano /etc/nginx/sites-enabled/default
-
-Before `server`:
-
-```
-upstream elixoids {
-  server 127.0.0.1:8065 max_fails=5 fail_timeout=6s;
-}
-```
-
-Server 'location':
-
-```
-    location / {
-
-        allow all;
-
-        # Proxy Headers
-        proxy_http_version 1.1;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Cluster-Client-Ip $remote_addr;
-
-        # The Important Websocket Bits!
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-
-        proxy_pass http://elixoids;
-    }
-```
-
-Restart:
-
-    sudo service nginx restart
-
-
-Install and build game:
-
-    git clone https://github.com/devstopfix/elixoids.git
-    cd elixoids/
-    mix deps.get
-    mix compile
-
-Run:
-
-    mix run --no-halt
-
-
-# Licence
-
-This software is published under the [MIT License](LICENSE) and Copyright ©2016 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5].
+This software is published under the [MIT License](LICENSE) and Copyright ©2019 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5].
 
 
 [1]: https://en.wikipedia.org/wiki/Asteroids_(video_game)

@@ -1,9 +1,10 @@
 defmodule Elixoids.News do
   @moduledoc """
   Allow games to broadcast game events to subscribers.
-
   The subscriber may produce score table, statistics etc
   """
+
+  alias Elixoids.Explosion.Location, as: ExplosionLoc
 
   def subscribe(game_id) when is_integer(game_id) do
     {:ok, _} = Registry.register(Registry.Elixoids.News, key(game_id), true)
@@ -11,9 +12,13 @@ defmodule Elixoids.News do
 
   def publish_audio(game_id, audio), do: publish(game_id, {:audio, audio})
 
-  def publish_explosion(game_id, audio), do: publish(game_id, {:explosion, audio})
+  def publish_explosion(game_id, [x, y]),
+    do: publish(game_id, {:explosion, %ExplosionLoc{x: x, y: y}})
 
-  def publish_news(game_id, audio), do: publish(game_id, {:news, audio})
+  def publish_news(game_id, news) when is_binary(news), do: publish(game_id, {:news, news})
+
+  def publish_news(game_id, news) when is_list(news),
+    do: publish(game_id, {:news, Enum.join(news, " ")})
 
   defp publish(game_id, news) when is_integer(game_id) do
     :ok =

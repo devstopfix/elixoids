@@ -25,16 +25,16 @@ defmodule Elixoids.Api do
         # Routes: { PathMatch, Handler, Options}
         [
           # Serve a single static file on the route "/".
-          {"/", :cowboy_static, {:priv_file, :elixoids, "html/index.html"}},
+          {"/", :cowboy_static, {:priv_file, :elixoids, "priv/html/index.html"}},
 
           # Serve all static files in a directory.
-          {"/game/[...]", :cowboy_static, {:dir, "html"}},
+          {"/game/[...]", :cowboy_static, {:dir, "priv/html"}},
 
           # Serve websocket requests.
-          {"/websocket", Elixoids.Server.WebsocketGameHandler, []},
+          {"/news", Elixoids.Server.WebsocketNewsHandler, []},
           {"/ship/:tag", Elixoids.Server.WebsocketShipHandler, []},
-          {"/sound", Elixoids.Server.WebsocketSoundHandler, []},
-          {"/news", Elixoids.Server.WebsocketNewsHandler, []}
+          {"/:game/sound", Elixoids.Server.WebsocketSoundHandler, []},
+          {"/:game/graphics", Elixoids.Server.WebsocketGameHandler, []}
         ]
       }
     ])

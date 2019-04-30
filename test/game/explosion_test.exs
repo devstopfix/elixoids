@@ -6,10 +6,11 @@ defmodule Game.ExplosionTest do
   alias Game.Server, as: Game
 
   test "Convert struct to state sent to client" do
-    {:ok, game, _game_id} = GameSupervisor.start_game(fps: 2, asteroids: 2)
-    News.subscribe(0)
-    Game.explosion(game, 1.0, 2.0)
-    assert_receive {:explosion, [1.0, 2.0]}, 500
-    Process.exit(game, :normal)
+    {:ok, pid, game_id} = GameSupervisor.start_game(asteroids: 2)
+    pos = %{x: 1.0, y: 2.0}
+    News.subscribe(game_id)
+    Game.explosion(game_id, pos, 100.0)
+    assert_receive {:explosion, pos}, 500
+    Process.exit(pid, :normal)
   end
 end

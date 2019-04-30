@@ -9,14 +9,18 @@ defmodule Ship.Server do
 
   use GenServer
 
-  alias Bullet.Server, as: Bullet
+  alias Elixoids.Api.SoundEvent
   alias Elixoids.Player
+  alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
-  import Game.Identifiers
-  alias Game.Server, as: Game
+  alias Elixoids.World.Velocity
+  alias Game.Server, as: GameServer
   alias World.Clock
-  alias World.Point
-  alias World.Velocity
+  import Elixoids.News
+  import Game.Identifiers
+  import Elixoids.World.Angle
+
+  use Elixoids.Game.Heartbeat
 
   # Ship radius (m)
   @ship_radius_m 20.0
@@ -28,164 +32,135 @@ defmodule Ship.Server do
   @ship_rotation_rad_per_sec :math.pi() * 2 / 3.0
 
   # Minimum time between shots
-  @laser_recharge_ms 500
+  @laser_recharge_ms 660
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
 
-  def start_link(id, game_pid, tag \\ Player.random_tag()) do
+  def start_link(game_info, tag \\ Player.random_tag()) do
     ship =
       Map.merge(random_ship(), %{
-        :id => id,
+        :id => next_id(),
         :tag => tag,
-        :game_pid => game_pid,
-        :clock_ms => Clock.now_ms(),
-        :tick_ms => Clock.ms_between_frames()
+        :game => game_info
       })
 
-    GenServer.start_link(__MODULE__, ship, name: process_name(id, tag))
+    ship_id = {game_info.id, tag}
+
+    case GenServer.start_link(__MODULE__, ship, name: via(ship_id)) do
+      {:ok, pid} -> {:ok, pid, ship_id}
+      e -> e
+    end
   end
 
-  defp process_name(id, tag) do
-    ["ship", String.downcase(tag), Integer.to_string(id)] |> Enum.join("_") |> String.to_atom()
-  end
+  defp via(ship_id),
+    do: {:via, Registry, {Registry.Elixoids.Ships, ship_id}}
 
   @doc """
   Player requests turn to given theta.
   """
-  def new_heading(pid, theta) do
-    GenServer.cast(pid, {:new_heading, theta})
-  end
+  def new_heading(ship_id, theta), do: GenServer.cast(via(ship_id), {:new_heading, theta})
 
   @doc """
   Move the ship to a random position on the map
   and prevent it firing.
   """
-  def hyperspace(pid) do
-    GenServer.cast(pid, :hyperspace)
-  end
+  def hyperspace(ship_pid) when is_pid(ship_pid), do: GenServer.cast(ship_pid, :hyperspace)
+
+  def hyperspace(ship_id), do: GenServer.cast(via(ship_id), :hyperspace)
 
   @doc """
-  Update laser recharge rate
+  Remove the ship from the game.
   """
-  def fire(pid) do
-    GenServer.cast(pid, :fire)
-  end
-
-  @doc """
-  Stop the process.
-  """
-  def stop(pid) do
-    GenServer.cast(pid, :stop)
+  def stop(ship_id) do
+    case Registry.lookup(Registry.Elixoids.Ships, ship_id) do
+      [{pid, _} | _] -> Process.exit(pid, :shutdown)
+      _ -> false
+    end
   end
 
   @doc """
   Player pulls trigger, which may fire a bullet
   if the ship is recharged.
   """
-  def player_pulls_trigger(pid) do
-    GenServer.cast(pid, :player_pulls_trigger)
-  end
+  def player_pulls_trigger(ship_id), do: GenServer.cast(via(ship_id), :player_pulls_trigger)
+
+  def game_state(ship_id), do: GenServer.call(via(ship_id), :game_state)
 
   # GenServer callbacks
 
   def init(ship) do
-    Process.send(self(), :tick, [])
+    start_heartbeat()
     {:ok, ship}
   end
 
-  def handle_cast(:stop, ship) do
-    {:stop, :normal, ship}
-  end
-
   @doc """
-  Rotate the ship and broadcast new state to the game.
+  Hyperspace the ship to a new position.
   """
-  def handle_cast(:move, ship) do
-    delta_t_ms = Clock.since(ship.clock_ms)
-
-    new_ship =
-      ship
-      |> rotate_ship(delta_t_ms)
-      |> Map.put(:clock_ms, Clock.now_ms())
-
-    Game.update_ship(ship.game_pid, state_tuple(new_ship))
-    {:noreply, new_ship}
-  end
-
   def handle_cast(:hyperspace, ship) do
-    p = random_ship_point()
-    theta = Velocity.random_direction()
-
     new_ship =
-      %{ship | pos: p, theta: theta}
+      %{ship | pos: random_ship_point(), theta: random_angle()}
       |> discharge_laser
 
     {:noreply, new_ship}
   end
 
-  def handle_cast(:fire, ship) do
-    {:noreply, recharge_laser(ship)}
-  end
-
   def handle_cast({:new_heading, theta}, ship) do
-    new_ship = %{ship | :target_theta => Velocity.wrap_angle(theta)}
-    {:noreply, new_ship}
+    if valid_theta?(theta) do
+      {:noreply, %{ship | target_theta: normalize_radians(theta)}}
+    else
+      {:noreply, ship}
+    end
   end
 
-  @doc """
-  Player pulls trigger. Do nothing if laser is recharging,
-  else spawn a bullet and add it the the game.
-  """
   def handle_cast(:player_pulls_trigger, ship) do
     if Clock.past?(ship.laser_charged_at) do
-      id = next_id()
-      pos = calculate_nose(ship)
-      {:ok, bullet_pid} = Bullet.start_link(id, pos, ship.theta, ship.tag, ship.game_pid)
-      Game.bullet_fired(ship.game_pid, id, bullet_pid)
-      Game.broadcast(ship.game_pid, id, [ship.tag, "fires"])
-      Elixoids.News.publish_audio(0, %{fires: World.Clock.now_ms(), pan: 0.0})
+      fire_bullet(ship)
       {:noreply, recharge_laser(ship)}
     else
       {:noreply, ship}
     end
   end
 
-  defp calculate_nose(ship) do
-    ship_centre = ship.pos
-    v = %Velocity{:theta => ship.theta, :speed => @nose_radius_m}
-    Point.apply_velocity(ship_centre, v, 1000.0)
+  def handle_call(:game_state, _from, ship = %{game: %{id: game_id}}) do
+    {:reply, Game.Server.state_of_ship(game_id, self()), ship}
   end
 
-  @doc """
-  Heartbeat. Causes ship to update itself at given interval.
-  """
-  def handle_info(:tick, a) do
-    GenServer.cast(self(), :move)
-    Process.send_after(self(), :tick, a.tick_ms)
-    {:noreply, a}
+  defp fire_bullet(ship) do
+    pos = calculate_nose(ship)
+    GameServer.bullet_fired(ship.game.id, ship.tag, pos, ship.theta)
+    publish_news(ship.game.id, [ship.tag, "fires"])
+    pan = Space.frac_x(ship.pos.x)
+    Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan))
+  end
+
+  defp calculate_nose(%{pos: ship_centre, theta: theta}) do
+    v = %Velocity{:theta => theta, :speed => @nose_radius_m}
+    Velocity.apply_velocity(ship_centre, v, 1000.0)
   end
 
   # Data
 
-  @doc """
-  The tuple that will be shown to the UI for rendering.
-  """
-  def state_tuple(ship) do
-    {ship.id, ship.tag, Point.round(ship.pos.x), Point.round(ship.pos.y),
-     Point.round(@ship_radius_m), Velocity.round_theta(ship.theta), "FFFFFF"}
+  defp state_tuple(ship) do
+    %ShipLoc{
+      pid: self(),
+      id: ship.id,
+      tag: ship.tag,
+      pos: ship.pos,
+      radius: @ship_radius_m,
+      # TODO protocol?
+      theta: Float.round(ship.theta, 3)
+    }
   end
 
-  def random_ship do
+  defp random_ship do
     %{
       :pos => random_ship_point(),
       :theta => 0.0,
       :target_theta => 0.0,
-      :laser_charged_at => Clock.now_ms()
+      :laser_charged_at => Clock.now_ms() - 1
     }
   end
 
-  def random_ship_point do
-    Space.random_grid_point()
-  end
+  def random_ship_point, do: Space.random_grid_point()
 
   defp clip_delta_theta(delta_theta, delta_t_ms) do
     max_theta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
@@ -195,13 +170,6 @@ defmodule Ship.Server do
     else
       delta_theta
     end
-  end
-
-  # 360º
-  @two_pi_radians 2 * :math.pi()
-
-  defp turn_positive?(theta, target_theta) do
-    Velocity.fmod(target_theta - theta + @two_pi_radians, @two_pi_radians) > :math.pi()
   end
 
   @doc """
@@ -219,7 +187,7 @@ defmodule Ship.Server do
         -delta_theta
       end
 
-    theta = Velocity.wrap_angle(ship.theta + turn)
+    theta = normalize_radians(ship.theta + turn)
     %{ship | :theta => theta}
   end
 
@@ -232,5 +200,13 @@ defmodule Ship.Server do
 
   def discharge_laser(ship) do
     %{ship | :laser_charged_at => Clock.now_ms() + @laser_recharge_penalty_ms}
+  end
+
+  # defimpl Elixoids.Game.Heartbeat.Tick do
+  def handle_tick(_pid, delta_t_ms, ship) do
+    new_ship = ship |> rotate_ship(delta_t_ms)
+
+    GameServer.update_ship(ship.game.id, state_tuple(new_ship))
+    {:ok, new_ship}
   end
 end

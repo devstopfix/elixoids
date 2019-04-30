@@ -4,15 +4,15 @@ defmodule Elixoids.Mixfile do
   def project do
     [
       app: :elixoids,
-      description: "Asteroids game and server",
+      description: "Asteroids Arcade Game Server",
       name: "Elixoids",
-      version: "2.17.277",
+      version: "3.19.120",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      package: package()
-      # dialyzer: [flags: ["-Wunmatched_returns", :error_handling, :underspecs]]
+      package: package(),
+      dialyzer: [flags: [:error_handling, :underspecs]]
     ]
   end
 
@@ -21,7 +21,12 @@ defmodule Elixoids.Mixfile do
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
       maintainers: ["J Every"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/devstopfix/elixoids"}
+      links: %{
+        "GitHub" => "https://github.com/devstopfix/elixoids",
+        "CI" => "https://travis-ci.org/devstopfix/elixoids",
+        "Audio" => "https://github.com/jrothwell/sonic-asteroids/",
+        "Graphics" => "https://github.com/lachok/asteroids"
+      }
     ]
   end
 
@@ -33,11 +38,13 @@ defmodule Elixoids.Mixfile do
     [
       {:cowboy, "~> 2.6"},
       {:chaos_monkey, git: "https://github.com/dLuna/chaos_monkey", only: [:dev]},
-      {:credo, "~> 1.0.4", only: [:dev, :test]},
+      {:credo, "~> 1.0.5", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:excheck, "~> 0.5.3", only: :test},
+      # {:excheck, path: "../../excheck/excheck-luc-tielen"},
+      {:gnuplot, "~> 1.19", only: :test},
       {:jason, "~> 1.1"},
-      {:mix_test_watch, "~> 0.9", only: :dev},
+      {:protobuf, "~> 0.6.1"},
       {:triq, "~> 1.3", only: [:dev, :test]}
     ]
   end

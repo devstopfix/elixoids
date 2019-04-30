@@ -4,11 +4,11 @@ require 'json'
 
 $SERVER = ENV['ELIXOIDS_SERVER'] || 'localhost:8065'
 
-$finished = false
+$GAME_ID = "0"
 
 def run()
 
-  url = "ws://#{$SERVER}/sound"
+  url = "ws://#{$SERVER}/#{$GAME_ID}/sound"
 
   EM.run {
     ws = Faye::WebSocket::Client.new(url)
@@ -17,7 +17,6 @@ def run()
       p [:open]
     end
 
-
     ws.on :message do |msg|
       begin
         state = JSON.parse(msg.data)
@@ -25,8 +24,6 @@ def run()
       rescue
         puts msg
       end
-      # explosions = state['x']
-      # puts explosions.inspect unless explosions.empty?
     end
 
     ws.on :error do |e|
@@ -35,9 +32,7 @@ def run()
     end
 
     ws.on :close do |e|
-      p e
       puts "GAME OVER!"
-      $finished = true
       abort()
     end
   }

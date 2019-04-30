@@ -4,7 +4,7 @@ defmodule Elixoids.Space do
   All units are in metres.
   """
 
-  alias World.Point
+  alias Elixoids.World.Point
 
   # The ratio of the play area
   @ratio 16.0 / 9.0
@@ -12,15 +12,12 @@ defmodule Elixoids.Space do
   # 4km
   @width 4000.0
   @height @width / @ratio
+  @half_width @width / 2.0
 
   @doc """
   Wrap point p so that its coordinates remain inside the world.
   """
-  def wrap(p) do
-    p
-    |> wrap_x
-    |> wrap_y
-  end
+  def wrap(p), do: p |> wrap_x |> wrap_y
 
   defp wrap_x(p) do
     cond do
@@ -50,34 +47,37 @@ defmodule Elixoids.Space do
     end
   end
 
-  def random_central_point do
-    x = Float.ceil(@width / 2 + :rand.normal() * (@width / 8.0))
-    y = Float.ceil(@height / 2 + :rand.normal() * (@height / 8.0))
-    %Point{x: x, y: y}
-  end
-
-  def dimensions do
-    [@width, @height]
-  end
+  def dimensions, do: [@width, @height]
 
   # Points on a grid
 
-  @grid_points 7
-  @gx @width / @grid_points
-  @gy @height / @grid_points
+  @grid_points 8
 
-  def rand_grid_index do
-    :rand.uniform(@grid_points - 1)
+  defp rand_grid_position(size_px, grid_count) do
+    grid_size = size_px / grid_count
+    p = :rand.uniform(grid_count - 1)
+    x = grid_size * p
+    perturb = :rand.normal() * grid_size / @grid_points
+    x + perturb
   end
 
-  def rand_grid_position(grid_size_px) do
-    perturb = :rand.normal() * (grid_size_px / 8.0)
-    grid_size_px * rand_grid_index() + perturb
-  end
+  @grid_points 8
 
   def random_grid_point do
-    x = rand_grid_position(@gx)
-    y = rand_grid_position(@gy)
+    x = rand_grid_position(@width, @grid_points)
+    y = rand_grid_position(@height, @grid_points - 2)
     %Point{x: x, y: y}
+  end
+
+  @doc """
+  Return the x ordinate as a fraction -1..1 of the screen width
+  """
+  def frac_x(x) do
+    cond do
+      x < 0.0 -> 0.0
+      x > @width -> 0.0
+      true -> (x - @half_width) / @half_width
+    end
+    |> Float.round(2)
   end
 end

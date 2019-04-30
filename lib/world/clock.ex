@@ -9,23 +9,17 @@ defmodule World.Clock do
   @doc """
   Current OS time in milliseconds since 1970.
   """
-  def now_ms do
-    :os.system_time(:milli_seconds)
-  end
+  def now_ms, do: :os.system_time(:milli_seconds)
 
   @doc """
   Return number of milliseconds between given time t and now
   """
-  def since(t) do
-    now_ms() - t
-  end
+  def since(t), do: now_ms() - t
 
   @doc """
   Return true if t is in the past, otherwise false
   """
-  def past?(t) do
-    t < now_ms()
-  end
+  def past?(t), do: t < now_ms()
 
   @doc """
   Sleep time between frames required to run at standard frame rate.
@@ -33,4 +27,9 @@ defmodule World.Clock do
   def ms_between_frames(fps \\ @default_fps) when is_integer(fps) and fps > 0 do
     div(1000, fps)
   end
+
+  @doc """
+  Seconds to milliseconds.
+  """
+  def s_to_ms(s), do: trunc(s * 1000.0)
 end

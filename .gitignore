@@ -9,3 +9,4 @@ verify.sh
 
 .idea/
 *.iml
+*.js.map

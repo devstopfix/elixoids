@@ -1,56 +1,37 @@
 defmodule Elixir.Translate do
   @moduledoc """
-  Translate the game state and center it over a co-ordinate.
+  Translate the game state to the position of a ship.
   """
 
   alias Bullet.Server, as: Bullet
-  alias World.Point
-  alias World.Velocity
+  alias Elixoids.World.Point
+  alias Elixoids.World.Polar
+  import Elixoids.World.RoundDP
 
   @doc """
-      {:ok, game} = Elixoids.Game.Supervisor.start_game([fps: 4, asteroids: 2])
-      Game.Server.show(game)
-      Game.Server.spawn_player(game, "OUR")
-      Game.Server.state_of_ship(game, "OUR")
+  Translate asteroids in game relative to ship.
   """
-  @spec asteroids_relative(list(map()), float(), float()) :: list(list())
-  def asteroids_relative(rocks, ship_x, ship_y) do
+  @spec asteroids_relative(list(map()), Point.t()) :: list(list())
+  def asteroids_relative(rocks, origin) do
     rocks
-    |> Enum.map(fn a -> asteroid_relative(a, ship_x, ship_y) end)
+    |> Enum.map(fn a -> asteroid_relative(a, origin) end)
     |> Enum.filter(fn s -> Bullet.in_range?(List.last(s)) end)
   end
 
-  defp asteroid_relative(asteroid, ox, oy) do
-    {id, ax, ay, r} = asteroid
-
-    d = Point.distance(ox, oy, ax, ay)
-
-    theta = :math.atan2(ay - oy, ax - ox)
-
-    theta
-    |> Velocity.wrap_angle()
-    |> Velocity.round_theta()
-
-    [id, theta, r, Point.round(d)]
+  defp asteroid_relative(asteroid, origin) do
+    %{id: id, pos: pos, radius: r} = asteroid
+    p = pos |> Polar.subtract(origin) |> round_dp()
+    [id, p.theta, r, p.distance]
   end
 
-  def ships_relative(ships, ship_x, ship_y) do
+  def ships_relative(ships, origin) do
     ships
-    |> Enum.map(fn s -> ship_relative(s, ship_x, ship_y) end)
+    |> Enum.map(fn s -> ship_relative(s, origin) end)
     |> Enum.filter(fn s -> Bullet.in_range?(List.last(s)) end)
   end
 
-  defp ship_relative(ship, ox, oy) do
-    {_, tag, sx, sy, _, _, _} = ship
-
-    d = Point.distance(ox, oy, sx, sy)
-
-    theta = :math.atan2(sy - oy, sx - ox)
-
-    theta
-    |> Velocity.wrap_angle()
-    |> Velocity.round_theta()
-
-    [tag, theta, Point.round(d)]
+  defp ship_relative(%{tag: tag, pos: pos}, origin) do
+    p = pos |> Polar.subtract(origin) |> round_dp()
+    [tag, p.theta, p.distance]
   end
 end

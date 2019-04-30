@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message Sound {
+    enum Noise {
+      FIRE = 0;
+      EXPLOSION = 1;
+      HYPERSPACE = 2; // Not used yet
+      RUMBLE = 3; // Not used yet
+      SAUCER = 4; // Not used yet
+    }
+
+    Noise noise = 1;
+    float pan = 2;
+    int32 size = 3;
+}
