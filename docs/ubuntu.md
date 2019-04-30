@@ -67,5 +67,5 @@ Run as the elixoids user and allow logout of SSH session:
 
 ```bash
 su - elixoids
-nohup mix run --no-halt >> /var/log/elixoids/ zero.log &
+MIX_ENV=prod nohup mix run --no-halt >> /var/log/elixoids/ zero.log &
 ```

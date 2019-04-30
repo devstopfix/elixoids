@@ -74,15 +74,8 @@ defmodule Game.Server do
 
   ## Initial state
 
-  @doc """
-  Generate n new asteroids and store as a map of their
-  identifier to a tuple of their {pid, state}.
-  """
   def generate_asteroids(n, game_info) do
-    Enum.reduce(1..n, %{}, fn _i, rocks ->
-      {:ok, pid} = Asteroid.start_link(game_info)
-      Map.put(rocks, pid, :spawn)
-    end)
+    Enum.map(1..n, fn _ -> {:ok, _pid} = Asteroid.start_link(game_info) end)
   end
 
   ## Server Callbacks
@@ -96,12 +89,12 @@ defmodule Game.Server do
 
   defp initial_game_state(asteroid_count, game_id) do
     info = game_info(game_id)
-    asteroids = generate_asteroids(asteroid_count, info)
+    generate_asteroids(asteroid_count, info)
 
     %{
       :game_id => game_id,
       :info => info,
-      :state => %{:asteroids => asteroids, :bullets => %{}, :ships => %{}},
+      :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
       :min_asteroid_count => asteroid_count
     }
   end
@@ -122,18 +115,14 @@ defmodule Game.Server do
   end
 
   def handle_cast({:update_entity, entity, state = %{pid: pid}}, game) do
-    {_, new_game} =
-      get_and_update_in(game, [:state, entity, pid], fn
-        nil -> :pop
-        old -> {old, state}
-      end)
+    {_, new_game} = get_and_update_in(game, [:state, entity, pid], fn old -> {old, state} end)
 
     {:noreply, new_game}
   end
 
   def handle_cast({:spawn_asteroids, rocks}, game) do
-    new_game = Enum.reduce(rocks, game, fn f, game -> new_asteroid_in_game(f, game) end)
-    {:noreply, new_game}
+    Enum.each(rocks, fn rock -> new_asteroid_in_game(rock, game) end)
+    {:noreply, game}
   end
 
   @doc """
@@ -167,40 +156,31 @@ defmodule Game.Server do
       {:EXIT, pid, :normal} ->
         {:noreply, remove_pid_from_game_state(pid, state)}
 
-      _ ->
-        [:EXIT, msg, state] |> inspect |> error()
-        {:noreply, state}
+      {:EXIT, pid, msg} ->
+        [:EXIT, msg, state] |> inspect |> warn()
+        {:noreply, remove_pid_from_game_state(pid, state)}
     end
   end
 
   def handle_call({:state_of_ship, ship_pid}, _from, game) do
     case game.state.ships[ship_pid] do
       nil -> {:reply, %Targets{}, game}
-      :spawn -> {:reply, %Targets{}, game}
       ship -> fetch_ship_state(ship, game)
     end
   end
 
-  @doc """
-  Put a marker for the spawned bullet into the game
-  """
   def handle_call({:bullet_fired, shooter_tag, pos, theta}, _from, game) do
     {:ok, bullet_pid} = Bullet.start_link(game.game_id, shooter_tag, pos, theta)
-    {:reply, {:ok, bullet_pid}, put_in(game.state.bullets[bullet_pid], :spawn)}
+    {:reply, {:ok, bullet_pid}, game}
   end
 
   @doc """
-  Spawn a new ship controlled by player with given tag
-  (unless that ship already exists)
+  Spawn a new ship controlled by player with given tag (unless that ship already exists)
   """
   def handle_call({:spawn_player, player_tag}, _from, game) do
     case Ship.start_link(game.info, player_tag) do
-      {:ok, ship_pid, ship_id} ->
-        new_game = put_in(game.state.ships[ship_pid], :spawn)
-        {:reply, {:ok, ship_pid, ship_id}, new_game}
-
-      e ->
-        {:reply, e, game}
+      {:ok, ship_pid, ship_id} -> {:reply, {:ok, ship_pid, ship_id}, game}
+      e -> {:reply, e, game}
     end
   end
 
@@ -210,17 +190,17 @@ defmodule Game.Server do
   def handle_call(:state, _from, game) do
     game_state = %{
       :dim => Elixoids.Space.dimensions(),
-      :a => game.state.asteroids |> filter_active(),
-      :s => game.state.ships |> filter_active(),
-      :b => game.state.bullets |> filter_active()
+      :a => game.state.asteroids |> Map.values(),
+      :s => game.state.ships |> Map.values(),
+      :b => game.state.bullets |> Map.values()
     }
 
     {:reply, game_state, game}
   end
 
   defp fetch_ship_state(shiploc, game) do
-    asteroids = game.state.asteroids |> filter_active()
-    ships = game.state.ships |> filter_active() |> ships_except(shiploc.tag)
+    asteroids = game.state.asteroids |> Map.values()
+    ships = game.state.ships |> Map.values() |> ships_except(shiploc.tag)
 
     ship_state = %Targets{
       :theta => shiploc.theta,
@@ -243,8 +223,7 @@ defmodule Game.Server do
   # Asteroids
 
   def new_asteroid_in_game(a, game) do
-    {:ok, pid} = Asteroid.start_link(game.info, a)
-    put_in(game.state.asteroids[pid], :spawn)
+    {:ok, _pid} = Asteroid.start_link(game.info, a)
   end
 
   def check_next_wave(game = %{min_asteroid_count: min_asteroid_count}) do
@@ -252,9 +231,9 @@ defmodule Game.Server do
 
     if active_asteroid_count < min_asteroid_count do
       new_asteroid_in_game(Asteroid.random_asteroid(), game)
-    else
-      game
     end
+
+    game
   end
 
   # TODO next_wave
@@ -279,12 +258,9 @@ defmodule Game.Server do
   # @spec snapshot(map()) :: Snapshot.t()
   defp snapshot(game_state) do
     %Snapshot{
-      asteroids: filter_active(game_state.state.asteroids),
-      bullets: filter_active(game_state.state.bullets),
-      ships: filter_active(game_state.state.ships)
+      asteroids: Map.values(game_state.state.asteroids),
+      bullets: Map.values(game_state.state.bullets),
+      ships: Map.values(game_state.state.ships)
     }
   end
-
-  # Remove actors that have a placeholder state of :spawn
-  defp filter_active(m), do: m |> Map.values() |> Enum.filter(&Kernel.is_map/1)
 end
