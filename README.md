@@ -60,7 +60,7 @@ Clients subscribe to an event stream from the game via Websockets. The resources
 
 ### Sound Client Protocol
 
-Sound events can be received at `ws://example.com/0/sound` and here is the [sound format](docs/sound_protocol.md).
+Sound events can be received at `ws://example.com/0/sound` and here is the [sound format](docs/sound_protocol.md). There is a Unicode visualizer using Protocol Buffers in [listen.py](clients/listen.py).
 
 ### News Client
 
