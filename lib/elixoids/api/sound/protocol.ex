@@ -28,8 +28,10 @@ defmodule Elixoids.Api.Sound.Protocol do
     field(:SAUCER, 4)
   end
 
-  defp convert(%{snd: "f", pan: pan, size: size}), do: Sound.new(kind: 0, pan: pan, size: size)
-  defp convert(%{snd: "x", pan: pan, size: size}), do: Sound.new(kind: 1, pan: pan, size: size)
+  defp convert(%{snd: "f", pan: pan, size: size}), do: Sound.new(noise: :FIRE, pan: pan, size: size)
+
+  defp convert(%{snd: "x", pan: pan, size: size}),
+    do: Sound.new(noise: :EXPLOSION, pan: pan, size: size)
 
   def encode(sound), do: Sound.encode(convert(sound))
 end
