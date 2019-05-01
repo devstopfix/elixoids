@@ -15,7 +15,7 @@ defmodule Elixoids.Event do
         pos: pos
       }) do
     Ship.hyperspace(ship_pid)
-    Game.Server.explosion(game_id, pos, radius)
+    Elixoids.Game.Server.explosion(game_id, pos, radius)
     Asteroid.destroyed(asteroid_pid)
     publish_news(game_id, [@asteroid, "hit", tag])
   end
@@ -27,7 +27,7 @@ defmodule Elixoids.Event do
         radius: radius
       }) do
     Process.exit(bullet_pid, :shutdown)
-    Game.Server.explosion(game_id, pos, radius)
+    Elixoids.Game.Server.explosion(game_id, pos, radius)
     Ship.hyperspace(ship_pid)
     publish_news(game_id, [shooter_tag, "kills", victim_tag])
   end
@@ -39,7 +39,7 @@ defmodule Elixoids.Event do
       ) do
     Process.exit(bullet_pid, :shutdown)
     Asteroid.destroyed(asteroid_pid)
-    Game.Server.explosion(game_id, pos, radius)
+    Elixoids.Game.Server.explosion(game_id, pos, radius)
     publish_news(game_id, [shooter_tag, "shot", @asteroid])
   end
 end

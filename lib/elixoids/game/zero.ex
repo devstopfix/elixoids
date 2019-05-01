@@ -10,10 +10,9 @@ defmodule Elixoids.Game.Zero do
     Supervisor.start_link(__MODULE__, :ok, name: :game_zero)
   end
 
-  @spec init(:ok) :: {:ok, {%{intensity: any(), period: any(), strategy: any()}, [any()]}}
   def init(:ok) do
     children = [
-      {Game.Server, game_id: @zero, asteroids: 8},
+      {Elixoids.Game.Server, game_id: @zero, asteroids: 8},
       {Elixoids.Collision.Server, @zero}
     ]
 

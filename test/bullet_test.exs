@@ -2,7 +2,7 @@ defmodule Elixoids.BulletTest do
   use ExUnit.Case, async: false
 
   alias Elixoids.Bullet.Server, as: Bullet
-  alias Game.Server, as: Game
+  alias Elixoids.Game.Server, as: Game
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.World.Point
   import World.Clock

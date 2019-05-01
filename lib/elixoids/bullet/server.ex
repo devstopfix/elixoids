@@ -9,9 +9,9 @@ defmodule Elixoids.Bullet.Server do
   use GenServer
 
   alias Elixoids.Bullet.Location, as: BulletLoc
+  alias Elixoids.Game.Server, as: GameServer
   alias Elixoids.Space
   alias Elixoids.World.Velocity
-  alias Game.Server, as: GameServer
   import Game.Identifiers
   import World.Clock
   use Elixoids.Game.Heartbeat

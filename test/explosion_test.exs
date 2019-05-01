@@ -3,7 +3,7 @@ defmodule Elixoids.ExplosionTest do
 
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
-  alias Game.Server, as: Game
+  alias Elixoids.Game.Server, as: Game
 
   test "Convert struct to state sent to client" do
     {:ok, pid, game_id} = GameSupervisor.start_game(asteroids: 2)

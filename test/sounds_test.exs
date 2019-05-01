@@ -5,7 +5,7 @@ defmodule Elixoids.SoundsTest do
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
   alias Elixoids.Ship.Server, as: Ship
-  alias Game.Server, as: Game
+  alias Elixoids.Game.Server, as: Game
 
   test "When a player shoots we receive a sound event" do
     tag = "FIR"

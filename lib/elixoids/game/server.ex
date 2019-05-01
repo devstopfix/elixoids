@@ -1,4 +1,4 @@
-defmodule Game.Server do
+defmodule Elixoids.Game.Server do
   @moduledoc """
   Game process. One process per running Game.
   Each object in the game is represented by a Process.
@@ -98,8 +98,8 @@ defmodule Game.Server do
   @doc """
   Echo the state of the game to the console.
 
-      {:ok, game} = Game.Server.start_link
-      Game.Server.show(game)
+      {:ok, game} = Elixoids.Game.Server.start_link
+      Elixoids.Game.Server.show(game)
 
   """
   def handle_cast(:show, game) do

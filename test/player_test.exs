@@ -5,7 +5,7 @@ defmodule Elixoids.PlayerTest do
   alias Elixoids.News
   alias Elixoids.Player, as: Player
   alias Elixoids.Ship.Server, as: Ship
-  alias Game.Server, as: Game
+  alias Elixoids.Game.Server, as: Game
 
   test "Valid player tags" do
     assert Player.valid_player_tag?("AAA")

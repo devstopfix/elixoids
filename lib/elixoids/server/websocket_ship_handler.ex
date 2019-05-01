@@ -3,9 +3,9 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   Websocket Handler. Queries the ship state at 8 fps and publishes it over the websocket.
   """
 
+  alias Elixoids.Game.Server, as: Game
   alias Elixoids.Player
   alias Elixoids.Ship.Server, as: Ship
-  alias Game.Server, as: Game
   import Elixir.Translate
 
   @ms_between_frames div(1000, 4)

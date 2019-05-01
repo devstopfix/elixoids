@@ -10,15 +10,15 @@ defmodule Elixoids.Ship.Server do
   use GenServer
 
   alias Elixoids.Api.SoundEvent
+  alias Elixoids.Game.Server, as: GameServer
   alias Elixoids.Player
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
   alias Elixoids.World.Velocity
-  alias Game.Server, as: GameServer
   alias World.Clock
   import Elixoids.News
-  import Game.Identifiers
   import Elixoids.World.Angle
+  import Game.Identifiers
 
   use Elixoids.Game.Heartbeat
 
@@ -121,7 +121,7 @@ defmodule Elixoids.Ship.Server do
   end
 
   def handle_call(:game_state, _from, ship = %{game: %{id: game_id}}) do
-    {:reply, Game.Server.state_of_ship(game_id, self()), ship}
+    {:reply, Elixoids.Game.Server.state_of_ship(game_id, self()), ship}
   end
 
   defp fire_bullet(ship) do
