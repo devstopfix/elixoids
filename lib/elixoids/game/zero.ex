@@ -1,5 +1,5 @@
 defmodule Elixoids.Game.Zero do
-  @moduledoc "Temporary zero game - used for default WS endpoints."
+  @moduledoc "Zero game - always running."
 
   use Supervisor
 
@@ -12,7 +12,7 @@ defmodule Elixoids.Game.Zero do
 
   def init(:ok) do
     children = [
-      {Elixoids.Game.Server, game_id: @zero, asteroids: 8},
+      {Elixoids.Game.Server, game_id: @zero, asteroids: 4},
       {Elixoids.Collision.Server, @zero}
     ]
 

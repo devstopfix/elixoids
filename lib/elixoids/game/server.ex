@@ -21,6 +21,8 @@ defmodule Elixoids.Game.Server do
   alias Elixoids.Ship.Targets
   import Logger
 
+  @max_asteroids 32
+
   def start_link(args = [game_id: game_id, asteroids: _]) do
     {:ok, _pid} = GenServer.start_link(__MODULE__, args, name: via(game_id))
   end
@@ -145,7 +147,7 @@ defmodule Elixoids.Game.Server do
   @doc """
   Remove processes that exit from the game state
   """
-  def handle_info(msg, state) do
+  def handle_info(msg = {:EXIT, _, _}, state) do
     case msg do
       {:EXIT, pid, :shutdown} ->
         {:noreply, remove_pid_from_game_state(pid, state)}
@@ -157,6 +159,22 @@ defmodule Elixoids.Game.Server do
         [:EXIT, msg, state] |> inspect |> warn()
         {:noreply, remove_pid_from_game_state(pid, state)}
     end
+  end
+
+  # Ceiling on maximum asteroids in a wave
+  def handle_info({:next_wave, inc_asteroid_count}, game)
+      when inc_asteroid_count > @max_asteroids,
+      do: {:noreply, game}
+
+  def handle_info(
+        {:next_wave, inc_asteroid_count},
+        game = %{min_asteroid_count: min_asteroid_count}
+      )
+      when inc_asteroid_count <= min_asteroid_count,
+      do: {:noreply, game}
+
+  def handle_info({:next_wave, inc_asteroid_count}, game) do
+    {:noreply, %{game | min_asteroid_count: inc_asteroid_count}}
   end
 
   def handle_call({:state_of_ship, ship_pid}, _from, game) do
@@ -224,21 +242,20 @@ defmodule Elixoids.Game.Server do
   end
 
   def check_next_wave(game = %{min_asteroid_count: min_asteroid_count, game_id: game_id}) do
-    active_asteroid_count = length(Map.keys(game.state.asteroids))
-
-    if active_asteroid_count < min_asteroid_count do
+    if few_asteroids?(game) do
       News.publish_news(game_id, ["ASTEROID", "spotted"])
       new_asteroid_in_game(Asteroid.random_asteroid(), game)
+
+      if !Enum.empty?(game.state.asteroids) && min_asteroid_count < @max_asteroids,
+        do: Process.send_after(self(), {:next_wave, min_asteroid_count + 1}, 8000)
     end
 
     game
   end
 
-  # TODO next_wave
-  # defp next_wave(game_state) do
-  #   game_state
-  #   |> Map.update!(:min_asteroid_count, &min(&1 + 1, @max_asteroids))
-  # end
+  defp few_asteroids?(%{min_asteroid_count: min_asteroid_count, state: %{asteroids: asteroids}}) do
+    length(Map.keys(asteroids)) < min_asteroid_count
+  end
 
   # Game state
 

@@ -12,7 +12,7 @@ defmodule Elixoids.ExplosionTest do
 
     Game.explosion(game_id, pos, 100.0)
     assert_receive {:explosion, pos}, 500
-    assert_receive {:audio, %Elixoids.Api.SoundEvent{pan: -1.0, size: 100, snd: "x"} }, 500
+    assert_receive {:audio, %Elixoids.Api.SoundEvent{pan: -1.0, size: 100, snd: "x"}}, 500
 
     Process.exit(pid, :normal)
   end
@@ -24,9 +24,8 @@ defmodule Elixoids.ExplosionTest do
 
     Game.explosion(game_id, pos, 101.0)
     assert_receive {:explosion, pos}, 500
-    assert_receive {:audio, %Elixoids.Api.SoundEvent{pan: 1.0, size: 101, snd: "x"} }, 500
+    assert_receive {:audio, %Elixoids.Api.SoundEvent{pan: 1.0, size: 101, snd: "x"}}, 500
 
     Process.exit(pid, :normal)
   end
-
 end
