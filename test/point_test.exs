@@ -1,4 +1,4 @@
-defmodule World.PointTest do
+defmodule Elixoids.World.PointTest do
   use ExUnit.Case, async: true
   use ExCheck
 

@@ -7,8 +7,7 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   """
 
   alias Elixoids.Api.State
-
-  import Logger
+  alias Elixoids.Game.Server, as: Game
 
   @fps 30
   @ms_between_frames div(1000, @fps)
@@ -19,29 +18,20 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   @behaviour :cowboy_handler
 
   def init(req, _state) do
-    [:http_connection, :game] |> inspect |> info()
     {:cowboy_websocket, req, [], @opts}
   end
 
   def websocket_init(_state) do
     {:ok, _pid} = Elixoids.News.subscribe(0)
-    [:ws_connection, :game] |> inspect |> info()
     :erlang.start_timer(@pause_ms, self(), [])
     {:ok, []}
   end
 
-  def terminate(_reason, _state) do
-    [:ws_disconnect, :game] |> inspect |> info()
-    :ok
-  end
+  def terminate(_reason, _state), do: :ok
 
-  def websocket_handle({:text, _ignore}, state) do
-    {:ok, state}
-  end
+  def websocket_handle({:text, _ignore}, state), do: {:ok, state}
 
-  def websocket_handle(_inframe, state) do
-    {:ok, state}
-  end
+  def websocket_handle(_inframe, state), do: {:ok, state}
 
   def websocket_info({:timeout, _ref, _}, explosions) do
     :erlang.start_timer(@ms_between_frames, self(), [])
@@ -49,7 +39,7 @@ defmodule Elixoids.Server.WebsocketGameHandler do
     # TODO game id should be in WS URL and the state
     game_state =
       0
-      |> Game.Server.state()
+      |> Game.state()
       |> Map.put(:x, Enum.take(explosions, @explosions_per_frame))
       |> convert()
 

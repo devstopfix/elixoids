@@ -3,7 +3,7 @@ defmodule Elixir.Translate do
   Translate the game state to the position of a ship.
   """
 
-  alias Bullet.Server, as: Bullet
+  alias Elixoids.Bullet.Server, as: Bullet
   alias Elixoids.World.Point
   alias Elixoids.World.Polar
   import Elixoids.World.RoundDP

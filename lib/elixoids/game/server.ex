@@ -1,4 +1,4 @@
-defmodule Game.Server do
+defmodule Elixoids.Game.Server do
   @moduledoc """
   Game process. One process per running Game.
   Each object in the game is represented by a Process.
@@ -10,15 +10,18 @@ defmodule Game.Server do
   use GenServer
   use Elixoids.Game.Heartbeat
 
-  alias Asteroid.Server, as: Asteroid
-  alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
+  alias Elixoids.Asteroid.Server, as: Asteroid
+  alias Elixoids.Bullet.Server, as: Bullet
   alias Elixoids.Collision.Server, as: CollisionServer
   alias Elixoids.Game.Info
   alias Elixoids.Game.Snapshot
+  alias Elixoids.News
+  alias Elixoids.Ship.Server, as: Ship
   alias Elixoids.Ship.Targets
-  alias Ship.Server, as: Ship
   import Logger
+
+  @max_asteroids 32
 
   def start_link(args = [game_id: game_id, asteroids: _]) do
     {:ok, _pid} = GenServer.start_link(__MODULE__, args, name: via(game_id))
@@ -31,45 +34,42 @@ defmodule Game.Server do
     GenServer.cast(pid, :show)
   end
 
-  @doc """
-  Retrieve the game state as a Map.
-  """
   def state(game_id) do
     GenServer.call(via(game_id), :state)
-  end
-
-  @spec state_of_ship(integer(), pid()) :: map()
-  def state_of_ship(game_id, ship_pid) do
-    GenServer.call(via(game_id), {:state_of_ship, ship_pid})
-  end
-
-  def update_asteroid(game_id, new_state) do
-    GenServer.cast(via(game_id), {:update_entity, :asteroids, new_state})
-  end
-
-  def spawn_asteroids(game_id, rocks) do
-    GenServer.cast(via(game_id), {:spawn_asteroids, rocks})
-  end
-
-  def update_ship(game_id, new_state) do
-    GenServer.cast(via(game_id), {:update_entity, :ships, new_state})
   end
 
   def bullet_fired(game_id, shooter_tag, pos, theta) do
     GenServer.call(via(game_id), {:bullet_fired, shooter_tag, pos, theta})
   end
 
-  def update_bullet(game_id, new_state) do
-    GenServer.cast(via(game_id), {:update_entity, :bullets, new_state})
-  end
-
   def explosion(game_id, pos, radius) do
     GenServer.cast(via(game_id), {:explosion, pos, radius})
   end
 
-  @spec spawn_player(integer(), String.t()) :: {:ok, pid(), term()} | {:error, :tag_in_use}
+  def update_asteroid(game_id, new_state) do
+    GenServer.cast(via(game_id), {:update_entity, :asteroids, new_state})
+  end
+
+  def update_bullet(game_id, new_state) do
+    GenServer.cast(via(game_id), {:update_entity, :bullets, new_state})
+  end
+
+  def update_ship(game_id, new_state) do
+    GenServer.cast(via(game_id), {:update_entity, :ships, new_state})
+  end
+
+  def spawn_asteroids(game_id, rocks) do
+    GenServer.cast(via(game_id), {:spawn_asteroids, rocks})
+  end
+
+  @spec spawn_player(integer(), String.t()) ::
+          {:ok, pid(), term()} | {:error, {:already_started, pid()}}
   def spawn_player(game_id, player_tag) do
     GenServer.call(via(game_id), {:spawn_player, player_tag})
+  end
+
+  def state_of_ship(game_id, ship_pid) do
+    GenServer.call(via(game_id), {:state_of_ship, ship_pid})
   end
 
   ## Initial state
@@ -102,8 +102,8 @@ defmodule Game.Server do
   @doc """
   Echo the state of the game to the console.
 
-      {:ok, game} = Game.Server.start_link
-      Game.Server.show(game)
+      {:ok, game} = Elixoids.Game.Server.start_link
+      Elixoids.Game.Server.show(game)
 
   """
   def handle_cast(:show, game) do
@@ -148,7 +148,7 @@ defmodule Game.Server do
   @doc """
   Remove processes that exit from the game state
   """
-  def handle_info(msg, state) do
+  def handle_info(msg = {:EXIT, _, _}, state) do
     case msg do
       {:EXIT, pid, :shutdown} ->
         {:noreply, remove_pid_from_game_state(pid, state)}
@@ -160,6 +160,22 @@ defmodule Game.Server do
         [:EXIT, msg, state] |> inspect |> warn()
         {:noreply, remove_pid_from_game_state(pid, state)}
     end
+  end
+
+  # Ceiling on maximum asteroids in a wave
+  def handle_info({:next_wave, inc_asteroid_count}, game)
+      when inc_asteroid_count > @max_asteroids,
+      do: {:noreply, game}
+
+  def handle_info(
+        {:next_wave, inc_asteroid_count},
+        game = %{min_asteroid_count: min_asteroid_count}
+      )
+      when inc_asteroid_count <= min_asteroid_count,
+      do: {:noreply, game}
+
+  def handle_info({:next_wave, inc_asteroid_count}, game) do
+    {:noreply, %{game | min_asteroid_count: inc_asteroid_count}}
   end
 
   def handle_call({:state_of_ship, ship_pid}, _from, game) do
@@ -226,21 +242,21 @@ defmodule Game.Server do
     {:ok, _pid} = Asteroid.start_link(game.info, a)
   end
 
-  def check_next_wave(game = %{min_asteroid_count: min_asteroid_count}) do
-    active_asteroid_count = length(Map.keys(game.state.asteroids))
-
-    if active_asteroid_count < min_asteroid_count do
+  def check_next_wave(game = %{min_asteroid_count: min_asteroid_count, game_id: game_id}) do
+    if few_asteroids?(game) do
+      News.publish_news(game_id, ["ASTEROID", "spotted"])
       new_asteroid_in_game(Asteroid.random_asteroid(), game)
+
+      if !Enum.empty?(game.state.asteroids) && min_asteroid_count < @max_asteroids,
+        do: Process.send_after(self(), {:next_wave, min_asteroid_count + 1}, 8000)
     end
 
     game
   end
 
-  # TODO next_wave
-  # defp next_wave(game_state) do
-  #   game_state
-  #   |> Map.update!(:min_asteroid_count, &min(&1 + 1, @max_asteroids))
-  # end
+  defp few_asteroids?(%{min_asteroid_count: min_asteroid_count, state: %{asteroids: asteroids}}) do
+    length(Map.keys(asteroids)) < min_asteroid_count
+  end
 
   # Game state
 

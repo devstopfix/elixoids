@@ -13,4 +13,4 @@ before_script:
   - mix credo --strict
   - if [[ "$TRAVIS_ELIXIR_VERSION" =~ "1.8" ]]; then mix format mix.exs "lib/**/*.{ex,exs}" "test/**/*.{ex,exs}" --check-formatted; fi
 
-script: mix test --include large --exclude gnuplot
+script: mix test --include large --include slow --exclude gnuplot

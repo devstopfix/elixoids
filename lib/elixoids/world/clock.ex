@@ -1,10 +1,5 @@
-defmodule World.Clock do
-  @moduledoc """
-  Functions that deal with time.
-  """
-
-  # 60 FPS
-  @default_fps 60
+defmodule Elixoids.World.Clock do
+  @moduledoc false
 
   @doc """
   Current OS time in milliseconds since 1970.
@@ -20,13 +15,6 @@ defmodule World.Clock do
   Return true if t is in the past, otherwise false
   """
   def past?(t), do: t < now_ms()
-
-  @doc """
-  Sleep time between frames required to run at standard frame rate.
-  """
-  def ms_between_frames(fps \\ @default_fps) when is_integer(fps) and fps > 0 do
-    div(1000, fps)
-  end
 
   @doc """
   Seconds to milliseconds.

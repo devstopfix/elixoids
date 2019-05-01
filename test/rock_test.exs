@@ -1,6 +1,5 @@
 defmodule Elixoids.RockTest do
   use ExUnit.Case, async: true
-  doctest Asteroid.Server
 
   alias Elixoids.Asteroid.Rock
   alias Elixoids.World.Point

@@ -26,7 +26,7 @@ end
 def start_ship(ship_tag, retry_count)
   abort() unless retry_count > 0
 
-  url = "ws://#{$SERVER}/ship/#{ship_tag}"
+  url = "ws://#{$SERVER}/0/ship/#{ship_tag}"
   target_id = nil
   EM.run {
     ws = Faye::WebSocket::Client.new(url)
@@ -50,10 +50,7 @@ def start_ship(ship_tag, retry_count)
           target = sort_ships_by_distance(opponents).first
           tag, theta, dist = target
           ws.send({'theta'=>theta}.to_json)
-          if target_id != tag
-            puts sprintf("%s is Targeting %s at %f", ship_tag, tag, theta)
-            target_id = tag
-          end
+          target_id = tag if target_id != tag
         end
     end
 

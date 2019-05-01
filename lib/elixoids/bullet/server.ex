@@ -1,4 +1,4 @@
-defmodule Bullet.Server do
+defmodule Elixoids.Bullet.Server do
   @moduledoc """
   Bullets are spawned by a game. They fly in the direction
   in which the are spawned and then expire. They report their
@@ -9,11 +9,11 @@ defmodule Bullet.Server do
   use GenServer
 
   alias Elixoids.Bullet.Location, as: BulletLoc
+  alias Elixoids.Game.Server, as: GameServer
   alias Elixoids.Space
   alias Elixoids.World.Velocity
-  alias Game.Server, as: GameServer
+  import Elixoids.World.Clock
   import Game.Identifiers
-  import World.Clock
   use Elixoids.Game.Heartbeat
 
   @bullet_range_m 2000.0
@@ -24,7 +24,7 @@ defmodule Bullet.Server do
   @doc """
   Fire with:
 
-      {:ok, b} = Bullet.Server.start_link(0, "XXX", %{:x=>0.0, :y=>0.0}, 1.0)
+      {:ok, b} = Elixoids.Bullet.Server.start_link(0, "XXX", %{:x=>0.0, :y=>0.0}, 1.0)
   """
   def start_link(game_id, shooter, pos, theta)
       when is_integer(game_id) and

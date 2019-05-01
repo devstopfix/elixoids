@@ -3,32 +3,32 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   Websocket Handler. Queries the ship state at 8 fps and publishes it over the websocket.
   """
 
+  alias Elixoids.Game.Server, as: Game
   alias Elixoids.Player
-  alias Game.Server, as: Game
-  alias Ship.Server, as: Ship
+  alias Elixoids.Ship.Server, as: Ship
   import Elixir.Translate
 
-  @ms_between_frames div(1000, 8)
+  @ms_between_frames div(1000, 4)
   @pause_ms 250
 
   @behaviour :cowboy_handler
 
   @opts %{idle_timeout: 60 * 1000}
 
-  def init(req = %{bindings: %{tag: tag}}, _state) do
-    {:cowboy_websocket, req, %{url_tag: tag, game_id: 0}, @opts}
+  def init(req = %{bindings: %{game: game, tag: tag}}, _state) do
+    {:cowboy_websocket, req, %{url_tag: tag, game_id: game}, @opts}
   end
 
-  def websocket_init(state = %{url_tag: tag, game_id: game_id}) do
+  def websocket_init(state = %{url_tag: tag, game_id: game}) do
     :erlang.start_timer(@pause_ms, self(), [])
 
-    if Player.valid_player_tag?(tag) do
-      case Game.spawn_player(game_id, tag) do
-        {:ok, _pid, ship_id} -> {:ok, %{tag: tag, ship_id: ship_id}}
-        {:error, _} -> {:stop, state}
-      end
+    with {game_id, ""} <- Integer.parse(game),
+         Player.valid_player_tag?(tag),
+         {:ok, _pid, ship_id} <- Game.spawn_player(game_id, tag) do
+      {:ok, %{tag: tag, ship_id: ship_id}}
     else
-      {:stop, state}
+      :error -> {:stop, state}
+      {:error, {:already_started, _}} -> {:stop, state}
     end
   end
 
@@ -36,6 +36,8 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     Ship.stop(ship_id)
     :ok
   end
+
+  def terminate(_reason, _partial_req, _), do: :ok
 
   def websocket_handle({:text, content}, state) do
     case Jason.decode(content) do
@@ -52,10 +54,10 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   end
 
   def websocket_info({:timeout, _ref, _}, state = %{ship_id: ship_id}) do
+    :erlang.start_timer(@ms_between_frames, self(), [])
+
     ship_state = Ship.game_state(ship_id)
     send_state = convert(ship_state)
-
-    :erlang.start_timer(@ms_between_frames, self(), [])
 
     case Jason.encode(send_state) do
       {:ok, message} -> {:reply, {:text, message}, state}
