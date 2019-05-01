@@ -15,20 +15,19 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   @opts %{idle_timeout: 60 * 1000}
 
-  def init(req = %{bindings: %{tag: tag}}, _state) do
-    {:cowboy_websocket, req, %{url_tag: tag, game_id: 0}, @opts}
+  def init(req = %{bindings: %{game: game, tag: tag}}, _state) do
+    {:cowboy_websocket, req, %{url_tag: tag, game_id: game}, @opts}
   end
 
-  def websocket_init(state = %{url_tag: tag, game_id: game_id}) do
+  def websocket_init(state = %{url_tag: tag, game_id: game}) do
     :erlang.start_timer(@pause_ms, self(), [])
 
-    if Player.valid_player_tag?(tag) do
-      case Game.spawn_player(game_id, tag) do
-        {:ok, _pid, ship_id} -> {:ok, %{tag: tag, ship_id: ship_id}}
-        {:error, _} -> {:stop, state}
-      end
+    with {game_id, ""} <- Integer.parse(game),
+         Player.valid_player_tag?(tag),
+         {:ok, _pid, ship_id} <- Game.spawn_player(game_id, tag) do
+      {:ok, %{tag: tag, ship_id: ship_id}}
     else
-      {:stop, state}
+      :error -> {:stop, state}
     end
   end
 

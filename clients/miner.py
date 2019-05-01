@@ -151,8 +151,8 @@ def on_close(ws):
     sys.stderr.write("GAME OVER!\n")
 
 
-def news_url(host, player_name="MIN"):
-    return "ws://{}/ship/{}".format(host, player_name)
+def news_url(host, game, player_name="MIN"):
+    return "ws://{}/{}/ship/{}".format(host, game, player_name)
 
 # Runner
 
@@ -163,6 +163,8 @@ def options():
                         help="host[:port] of Elixoids server")
     parser.add_argument("-n", "--name", default=None,
                         help="Three character name")
+    parser.add_argument("--game", default=0,
+                        help="Game id")
     return parser.parse_args()
 
 
@@ -177,7 +179,7 @@ def run(ws):
 if __name__ == "__main__":
     args = options()
     player_name = args.name or miner.name
-    ws_url = news_url(args.host, player_name)
+    ws_url = news_url(args.host, args.game, player_name)
     ws = websocket.WebSocketApp(ws_url,
                                 header={"Accept": "application/json"},
                                 on_message=on_message,

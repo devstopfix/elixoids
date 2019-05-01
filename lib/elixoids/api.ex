@@ -4,13 +4,10 @@ defmodule Elixoids.Api do
 
   Channels available:
 
-  * /news - news feed of the game (shots, misses, hits etc)
-  * /ship/AAA - player bots where AAA ~= /[A-Z]{3}/
+  * /0/news - news feed of the game (shots, misses, hits etc)
+  * /0/ship/AAA - player bots where AAA ~= /[A-Z]{3}/
   * /0/sound - sound events for the audio client
   * /0/graphics - UI stream
-
-  TODO add game ids to all paths
-
   """
 
   @port 8065
@@ -33,7 +30,7 @@ defmodule Elixoids.Api do
 
           # Serve websocket requests.
           {"/:game/news", Elixoids.Server.WebsocketNewsHandler, []},
-          {"/ship/:tag", Elixoids.Server.WebsocketShipHandler, []},
+          {"/:game/ship/:tag", Elixoids.Server.WebsocketShipHandler, []},
           {"/:game/sound", Elixoids.Server.WebsocketSoundHandler, []},
           {"/:game/graphics", Elixoids.Server.WebsocketGameHandler, []}
         ]
