@@ -44,7 +44,6 @@ def options():
 if __name__ == "__main__":
     args = options()
     ws_url = news_url(args.host, args.game)
-    print(ws_url)
     ws = websocket.WebSocketApp(ws_url,
                                 header={"Accept": "text/plain"},
                                 on_message=on_message,

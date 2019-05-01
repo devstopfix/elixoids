@@ -16,6 +16,7 @@ defmodule Elixoids.Game.Server do
   alias Elixoids.Collision.Server, as: CollisionServer
   alias Elixoids.Game.Info
   alias Elixoids.Game.Snapshot
+  alias Elixoids.News
   alias Elixoids.Ship.Server, as: Ship
   alias Elixoids.Ship.Targets
   import Logger
@@ -222,14 +223,11 @@ defmodule Elixoids.Game.Server do
     {:ok, _pid} = Asteroid.start_link(game.info, a)
   end
 
-  @spec check_next_wave(%{min_asteroid_count: any(), state: atom() | %{asteroids: map()}}) :: %{
-          min_asteroid_count: any(),
-          state: atom() | %{asteroids: map()}
-        }
-  def check_next_wave(game = %{min_asteroid_count: min_asteroid_count}) do
+  def check_next_wave(game = %{min_asteroid_count: min_asteroid_count, game_id: game_id}) do
     active_asteroid_count = length(Map.keys(game.state.asteroids))
 
     if active_asteroid_count < min_asteroid_count do
+      News.publish_news(game_id, ["ASTEROID", "spotted"])
       new_asteroid_in_game(Asteroid.random_asteroid(), game)
     end
 

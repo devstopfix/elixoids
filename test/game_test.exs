@@ -3,6 +3,7 @@ defmodule Elixoids.Game.ServerTest do
 
   alias Elixoids.Game.Server, as: Game
   alias Elixoids.Game.Supervisor, as: GameSupervisor
+  alias Elixoids.News
 
   test "We can retrieve game state of Asteroids" do
     {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 2)
@@ -40,34 +41,19 @@ defmodule Elixoids.Game.ServerTest do
     Process.exit(game, :normal)
   end
 
-  test "We do not spawn asteroid" do
-    {:ok, game, _game_id} = GameSupervisor.start_game(asteroids: 1)
-
-    next_state = Game.check_next_wave(%{min_asteroid_count: 1, state: %{asteroids: %{1 => %{}}}})
-
-    assert 1 == next_state.min_asteroid_count
-    assert [1] == Map.keys(next_state.state.asteroids)
-    assert Process.exit(game, :normal)
-  end
-
   test "We do spawn asteroid" do
     min_asteroid_count = 2
     {:ok, game, game_id} = GameSupervisor.start_game(asteroids: min_asteroid_count)
+    {:ok, _} = News.subscribe(game_id)
 
-    info = %{id: game_id}
-
-    # next_state =
     Game.check_next_wave(%{
       min_asteroid_count: min_asteroid_count,
-      info: info,
-      state: %{asteroids: %{1 => %{}}}
+      info: %{id: game_id},
+      game_id: game_id,
+      state: %{asteroids: %{self() => %{}}}
     })
 
-    # Process.sleep(100)
-
-    # TODO how to test this as it is async: assert 2 == next_state.state.asteroids |> Map.keys() |> length
-    # TODO add a news event "ASTEROID spotted"
-    # TODO fix wave assert min_asteroid_count + 1 == next_state.min_asteroid_count
+    assert_receive {:news, "ASTEROID spotted"}, 100
     assert Process.exit(game, :normal)
   end
 end

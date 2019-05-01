@@ -75,6 +75,7 @@ PLY fires
 PLY shot ASTEROID
 PLY kills OTH
 ASTEROID hit PLY
+ASTEROID spotted
 ```
 
 ### Java Ship Client
