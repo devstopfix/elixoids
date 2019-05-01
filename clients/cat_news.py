@@ -1,10 +1,10 @@
 #
 # cat the news stream of an Elixoids game
 #
-# To run:
+# To run and filter out the frequent fire events:
 #
 #     pip3 install websocket-client
-#     python3 clients/cat_news.py --host example.com
+#     python3 clients/cat_news.py --host example.com | grep -v fires
 #
 
 import argparse
@@ -17,7 +17,9 @@ except ImportError:
 
 
 def on_message(ws, message):
-    print(message)
+    sys.stdout.write(message)
+    sys.stdout.write("\n")
+    sys.stdout.flush()
 
 
 def on_error(ws, error):
