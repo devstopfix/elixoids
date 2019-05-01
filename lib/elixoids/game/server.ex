@@ -62,7 +62,8 @@ defmodule Elixoids.Game.Server do
     GenServer.cast(via(game_id), {:spawn_asteroids, rocks})
   end
 
-  @spec spawn_player(integer(), String.t()) :: {:ok, pid(), term()} | {:error, {:already_started, pid()}}
+  @spec spawn_player(integer(), String.t()) ::
+          {:ok, pid(), term()} | {:error, {:already_started, pid()}}
   def spawn_player(game_id, player_tag) do
     GenServer.call(via(game_id), {:spawn_player, player_tag})
   end

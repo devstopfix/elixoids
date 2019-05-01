@@ -28,7 +28,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
       {:ok, %{tag: tag, ship_id: ship_id}}
     else
       :error -> {:stop, state}
-      {:error, {:already_started, _ } } -> {:stop, state}
+      {:error, {:already_started, _}} -> {:stop, state}
     end
   end
 
