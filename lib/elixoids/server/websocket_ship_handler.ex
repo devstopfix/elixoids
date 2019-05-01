@@ -28,6 +28,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
       {:ok, %{tag: tag, ship_id: ship_id}}
     else
       :error -> {:stop, state}
+      {:error, {:already_started, _ } } -> {:stop, state}
     end
   end
 
@@ -35,6 +36,8 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     Ship.stop(ship_id)
     :ok
   end
+
+  def terminate(_reason, _partial_req, _), do: :ok
 
   def websocket_handle({:text, content}, state) do
     case Jason.decode(content) do
