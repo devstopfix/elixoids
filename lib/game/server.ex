@@ -10,9 +10,9 @@ defmodule Game.Server do
   use GenServer
   use Elixoids.Game.Heartbeat
 
-  alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Asteroid.Server, as: Asteroid
+  alias Elixoids.Bullet.Server, as: Bullet
   alias Elixoids.Collision.Server, as: CollisionServer
   alias Elixoids.Game.Info
   alias Elixoids.Game.Snapshot
