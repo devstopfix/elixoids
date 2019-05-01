@@ -39,19 +39,24 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   def terminate(_reason, _partial_req, _), do: :ok
 
+  @bad_json {:text, '{"bad":"json"}'}
+
   def websocket_handle({:text, content}, state) do
     case Jason.decode(content) do
       {:ok, player_input} ->
         handle_input(player_input, state)
 
       {:error, _} ->
-        {:reply, {:text, '{"bad":"json"}'}, state}
+        {:reply, @bad_json, state}
+
+      {:error, :badarg, _} ->
+        {:reply, @bad_json, state}
     end
+  catch
+    _, _ -> {:stop, state}
   end
 
-  def websocket_handle(_inframe, state) do
-    {:ok, state}
-  end
+  def websocket_handle(_inframe, state), do: {:ok, state}
 
   def websocket_info({:timeout, _ref, _}, state = %{ship_id: ship_id}) do
     :erlang.start_timer(@ms_between_frames, self(), [])
@@ -71,13 +76,17 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   # Player
 
-  defp handle_input(player_input, state) do
+  defp handle_input(player_input, state) when is_list(player_input), do: {:ok, state}
+
+  defp handle_input(player_input, state) when is_map(player_input) do
     for {k, v} <- player_input do
       handle_input(k, v, state)
     end
 
     {:ok, state}
   end
+
+  defp handle_input(_, state), do: {:ok, state}
 
   defp handle_input("fire", true, state), do: player_pulls_trigger(state)
   defp handle_input("theta", theta, state) when is_float(theta), do: player_turns(theta, state)
