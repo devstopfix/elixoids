@@ -4,11 +4,11 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   """
 
   alias Elixoids.Player
+  alias Elixoids.Ship.Server, as: Ship
   alias Game.Server, as: Game
-  alias Ship.Server, as: Ship
   import Elixir.Translate
 
-  @ms_between_frames div(1000, 8)
+  @ms_between_frames div(1000, 4)
   @pause_ms 250
 
   @behaviour :cowboy_handler
@@ -52,10 +52,10 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   end
 
   def websocket_info({:timeout, _ref, _}, state = %{ship_id: ship_id}) do
+    :erlang.start_timer(@ms_between_frames, self(), [])
+
     ship_state = Ship.game_state(ship_id)
     send_state = convert(ship_state)
-
-    :erlang.start_timer(@ms_between_frames, self(), [])
 
     case Jason.encode(send_state) do
       {:ok, message} -> {:reply, {:text, message}, state}

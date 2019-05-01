@@ -1,4 +1,4 @@
-defmodule Ship.Server do
+defmodule Elixoids.Ship.Server do
   @moduledoc """
   Space ship controlled by a player or bot over a websocker.
   Ships have position and size.

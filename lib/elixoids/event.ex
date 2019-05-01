@@ -4,6 +4,7 @@ defmodule Elixoids.Event do
   """
 
   alias Asteroid.Server, as: Asteroid
+  alias Elixoids.Ship.Server, as: Ship
   import Elixoids.News
 
   @asteroid "ASTEROID"
@@ -13,7 +14,7 @@ defmodule Elixoids.Event do
         tag: tag,
         pos: pos
       }) do
-    Ship.Server.hyperspace(ship_pid)
+    Ship.hyperspace(ship_pid)
     Game.Server.explosion(game_id, pos, radius)
     Asteroid.destroyed(asteroid_pid)
     publish_news(game_id, [@asteroid, "hit", tag])
@@ -27,7 +28,7 @@ defmodule Elixoids.Event do
       }) do
     Process.exit(bullet_pid, :shutdown)
     Game.Server.explosion(game_id, pos, radius)
-    Ship.Server.hyperspace(ship_pid)
+    Ship.hyperspace(ship_pid)
     publish_news(game_id, [shooter_tag, "kills", victim_tag])
   end
 

@@ -16,8 +16,8 @@ defmodule Game.Server do
   alias Elixoids.Collision.Server, as: CollisionServer
   alias Elixoids.Game.Info
   alias Elixoids.Game.Snapshot
+  alias Elixoids.Ship.Server, as: Ship
   alias Elixoids.Ship.Targets
-  alias Ship.Server, as: Ship
   import Logger
 
   def start_link(args = [game_id: game_id, asteroids: _]) do
@@ -226,6 +226,10 @@ defmodule Game.Server do
     {:ok, _pid} = Asteroid.start_link(game.info, a)
   end
 
+  @spec check_next_wave(%{min_asteroid_count: any(), state: atom() | %{asteroids: map()}}) :: %{
+          min_asteroid_count: any(),
+          state: atom() | %{asteroids: map()}
+        }
   def check_next_wave(game = %{min_asteroid_count: min_asteroid_count}) do
     active_asteroid_count = length(Map.keys(game.state.asteroids))
 

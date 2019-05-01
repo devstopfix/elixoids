@@ -6,7 +6,6 @@ defmodule Elixoids.ResilianceTest do
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.World.Point
   alias Game.Server, as: Game
-  alias Ship.Server, as: Ship
 
   test "When asteroid exits the game continues" do
     Process.flag(:trap_exit, true)
@@ -24,7 +23,7 @@ defmodule Elixoids.ResilianceTest do
     tag = "FIR"
     Process.flag(:trap_exit, true)
     {:ok, game_pid, game_id} = GameSupervisor.start_game(asteroids: 1)
-    {:ok, ship_pid, ship_id} = Game.spawn_player(game_id, tag)
+    {:ok, ship_pid, _ship_id} = Game.spawn_player(game_id, tag)
     {:ok, bullet_pid} = Bullet.Server.start_link(0, tag, %Point{}, 1.0)
 
     assert Process.alive?(bullet_pid)
@@ -40,7 +39,7 @@ defmodule Elixoids.ResilianceTest do
     tag = "FIR"
     Process.flag(:trap_exit, true)
     {:ok, game_pid, game_id} = GameSupervisor.start_game(asteroids: 1)
-    {:ok, ship_pid, ship_id} = Game.spawn_player(game_id, tag)
+    {:ok, ship_pid, _ship_id} = Game.spawn_player(game_id, tag)
     {:ok, bullet_pid} = Bullet.Server.start_link(0, tag, %Point{}, 1.0)
 
     assert Process.alive?(bullet_pid)

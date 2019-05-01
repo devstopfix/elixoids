@@ -1,6 +1,5 @@
-defmodule Game.ServerTest do
+defmodule Elixoids.Game.ServerTest do
   use ExUnit.Case, async: false
-  doctest Game.Server
 
   alias Game.Server, as: Game
   alias Elixoids.Game.Supervisor, as: GameSupervisor
@@ -132,12 +131,12 @@ defmodule Game.ServerTest do
 
     info = %{id: game_id}
 
-    next_state =
-      Game.check_next_wave(%{
-        min_asteroid_count: min_asteroid_count,
-        info: info,
-        state: %{asteroids: %{1 => %{}}}
-      })
+    # next_state =
+    Game.check_next_wave(%{
+      min_asteroid_count: min_asteroid_count,
+      info: info,
+      state: %{asteroids: %{1 => %{}}}
+    })
 
     # Process.sleep(100)
 

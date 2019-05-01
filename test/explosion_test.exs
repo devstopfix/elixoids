@@ -1,4 +1,4 @@
-defmodule Game.ExplosionTest do
+defmodule Elixoids.ExplosionTest do
   use ExUnit.Case, async: true
 
   alias Elixoids.Game.Supervisor, as: GameSupervisor

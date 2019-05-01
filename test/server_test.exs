@@ -1,8 +1,8 @@
-defmodule Ship.ServerTest do
+defmodule Elixoids.Ship.ServerTest do
   use ExUnit.Case, async: true
   use ExCheck
 
-  alias Ship.Server, as: Ship
+  alias Elixoids.Ship.Server, as: Ship
 
   test "ship pointing east does not rotate" do
     ship = %{theta: 0.0, target_theta: 0.0}

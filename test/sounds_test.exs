@@ -1,11 +1,11 @@
 defmodule Elixoids.SoundsTest do
   use ExUnit.Case, async: true
 
+  alias Elixoids.Api.Sound.Protocol, as: SoundProtocol
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
-  alias Elixoids.Api.Sound.Protocol, as: SoundProtocol
+  alias Elixoids.Ship.Server, as: Ship
   alias Game.Server, as: Game
-  alias Ship.Server, as: Ship
 
   test "When a player shoots we receive a sound event" do
     tag = "FIR"
