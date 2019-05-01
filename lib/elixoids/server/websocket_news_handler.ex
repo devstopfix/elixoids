@@ -1,20 +1,23 @@
 defmodule Elixoids.Server.WebsocketNewsHandler do
   @moduledoc """
-  Websocket Handler. Receives strings from the game and publishes them to the subscriber.
+  Receives strings from the game and publishes them to the subscriber.
   """
 
   @behaviour :cowboy_handler
 
   @opts %{idle_timeout: 60 * 60 * 1000}
 
-  def init(req, _opts) do
-    {:cowboy_websocket, req, [], @opts}
+  def init(req = %{bindings: %{game: game}}, _opts) do
+    {:cowboy_websocket, req, game, @opts}
   end
 
-  def websocket_init(_state) do
-    # TODO game from URL
-    {:ok, _pid} = Elixoids.News.subscribe(0)
-    {:ok, []}
+  def websocket_init(game) do
+    with {game_id, ""} <- Integer.parse(game),
+         {:ok, _pid} <- Elixoids.News.subscribe(game_id) do
+      {:ok, []}
+    else
+      :error -> {:stop, []}
+    end
   end
 
   def websocket_terminate(_reason, _req, _state), do: :ok

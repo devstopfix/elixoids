@@ -59,13 +59,11 @@ Graphics stream can be received at `ws://example.com/0/graphics` - to be documen
 
 ### News Client
 
-There is a sample Python news client at [cat_news.py](clients/cat_news.py):
+There is a sample Python news client at [cat_news.py](clients/cat_news.py). The news stream at `ws://example.com/0/news` is a stream of text lines of the form:
 
-The news stream is a stream of lines of the form:
+    [PLY|ASTEROID] VERB [PLY|ASTEROID]
 
-    [PLAYER|ASTEROID] VERB [PLAYER|ASTEROID]
-
-Examples:
+Example dialogue:
 
 ```
 PLY fires
@@ -87,22 +85,16 @@ The [CBDR](https://en.wikipedia.org/wiki/Constant_bearing,_decreasing_range) Pyt
 
 ### Ruby Clients
 
-There are some sample clients, written in Ruby, in the [clients](clients) folder. They require two libraries (which may require *sudo* depending on your Ruby installation):
+There are some sample clients, written in Ruby, in the [clients](clients) folder. They require two libraries:
 
     gem install eventmachine
     gem install faye-websocket
 
-    gem list --local
+To run a simple client that instructs a ship to [shoot the nearest ship](clients/client_shoot_nearest_ship.rb):
 
-To run a simple client that instructs a ship to [shoot the nearest asteroid](clients/client_shoot_nearest_rock.rb):
+    export ELIXOIDS_SERVER=rocks.example.com:8065 ruby clients/client_shoot_nearest_ship.rb
 
-    ruby clients/client_shoot_nearest_rock.rb
-
-If you are running the game other than at localhost, specify the websocket in the environment:
-
-    export ELIXOIDS_SERVER=rocks.example.com:8065
-
-NB The websocket library is troublesome. It will often fail to connect after a reboot. Keep trying and it will eventually connect and stay connected! These scripts will be migrated to Python3.
+NB The websocket connection can be *troublesome* on OSX. It will often fail to connect after a reboot. Keep trying and it will eventually connect and stay connected! These scripts will be migrated to Python3.
 
 ## Refresh UI
 

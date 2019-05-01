@@ -32,7 +32,7 @@ defmodule Elixoids.Api do
           {"/game/[...]", :cowboy_static, {:dir, "priv/html"}},
 
           # Serve websocket requests.
-          {"/news", Elixoids.Server.WebsocketNewsHandler, []},
+          {"/:game/news", Elixoids.Server.WebsocketNewsHandler, []},
           {"/ship/:tag", Elixoids.Server.WebsocketShipHandler, []},
           {"/:game/sound", Elixoids.Server.WebsocketSoundHandler, []},
           {"/:game/graphics", Elixoids.Server.WebsocketGameHandler, []}
