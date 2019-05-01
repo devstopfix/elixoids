@@ -2,7 +2,7 @@ defmodule Elixoids.ResilianceTest do
   use ExUnit.Case, async: true
   use ExCheck
 
-  alias Asteroid.Server, as: Asteroid
+  alias Elixoids.Asteroid.Server, as: Asteroid
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.World.Point
   alias Game.Server, as: Game

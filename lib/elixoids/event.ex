@@ -3,7 +3,7 @@ defmodule Elixoids.Event do
   Logic to dispatch game events to processes.
   """
 
-  alias Asteroid.Server, as: Asteroid
+  alias Elixoids.Asteroid.Server, as: Asteroid
   alias Elixoids.Ship.Server, as: Ship
   import Elixoids.News
 

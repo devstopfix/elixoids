@@ -10,9 +10,9 @@ defmodule Game.Server do
   use GenServer
   use Elixoids.Game.Heartbeat
 
-  alias Asteroid.Server, as: Asteroid
   alias Bullet.Server, as: Bullet
   alias Elixoids.Api.SoundEvent
+  alias Elixoids.Asteroid.Server, as: Asteroid
   alias Elixoids.Collision.Server, as: CollisionServer
   alias Elixoids.Game.Info
   alias Elixoids.Game.Snapshot
@@ -31,45 +31,41 @@ defmodule Game.Server do
     GenServer.cast(pid, :show)
   end
 
-  @doc """
-  Retrieve the game state as a Map.
-  """
   def state(game_id) do
     GenServer.call(via(game_id), :state)
-  end
-
-  @spec state_of_ship(integer(), pid()) :: map()
-  def state_of_ship(game_id, ship_pid) do
-    GenServer.call(via(game_id), {:state_of_ship, ship_pid})
-  end
-
-  def update_asteroid(game_id, new_state) do
-    GenServer.cast(via(game_id), {:update_entity, :asteroids, new_state})
-  end
-
-  def spawn_asteroids(game_id, rocks) do
-    GenServer.cast(via(game_id), {:spawn_asteroids, rocks})
-  end
-
-  def update_ship(game_id, new_state) do
-    GenServer.cast(via(game_id), {:update_entity, :ships, new_state})
   end
 
   def bullet_fired(game_id, shooter_tag, pos, theta) do
     GenServer.call(via(game_id), {:bullet_fired, shooter_tag, pos, theta})
   end
 
+  def explosion(game_id, pos, radius) do
+    GenServer.cast(via(game_id), {:explosion, pos, radius})
+  end
+
+  def update_asteroid(game_id, new_state) do
+    GenServer.cast(via(game_id), {:update_entity, :asteroids, new_state})
+  end
+
   def update_bullet(game_id, new_state) do
     GenServer.cast(via(game_id), {:update_entity, :bullets, new_state})
   end
 
-  def explosion(game_id, pos, radius) do
-    GenServer.cast(via(game_id), {:explosion, pos, radius})
+  def update_ship(game_id, new_state) do
+    GenServer.cast(via(game_id), {:update_entity, :ships, new_state})
+  end
+
+  def spawn_asteroids(game_id, rocks) do
+    GenServer.cast(via(game_id), {:spawn_asteroids, rocks})
   end
 
   @spec spawn_player(integer(), String.t()) :: {:ok, pid(), term()} | {:error, :tag_in_use}
   def spawn_player(game_id, player_tag) do
     GenServer.call(via(game_id), {:spawn_player, player_tag})
+  end
+
+  def state_of_ship(game_id, ship_pid) do
+    GenServer.call(via(game_id), {:state_of_ship, ship_pid})
   end
 
   ## Initial state

@@ -1,4 +1,4 @@
-defmodule Asteroid.Server do
+defmodule Elixoids.Asteroid.Server do
   @moduledoc """
   Asteroid process. Asteroids have position, size and velocity,
   and wander the game area.
