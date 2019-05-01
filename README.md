@@ -47,15 +47,20 @@ See the [sound format](docs/sound_protocol.md).
 
 ## Clients
 
-Clients subscribe to an event stream from the game via Websockets.
+Clients subscribe to an event stream from the game via Websockets. The resources available are:
+
+| Path               | Accept                   | Content                   |
+| ------------------ | ------------------------ | ------------------------- |
+| /0/graphics        | application/json         | Graphics stream           |
+| /0/news            | text/plain               | News stream               |
+| /0/ship/PLY        | application/json         | Game state for player PLY |
+| /0/sound           | application/json         | Sound stream              |
+| /0/sound           | application/octet-stream | Binary sound stream       |
+
 
 ### Sound Client Protocol
 
 Sound events can be received at `ws://example.com/0/sound` and here is the [sound format](docs/sound_protocol.md).
-
-### Graphics Client
-
-Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] for reference implementation.
 
 ### News Client
 
@@ -83,20 +88,20 @@ The [CBDR](https://en.wikipedia.org/wiki/Constant_bearing,_decreasing_range) Pyt
     pip3 install websocket-client
     python3 clients/miner.py --host localhost:8065 --name MCB
 
-### Ruby Clients
+### Ruby Client
 
-There are some sample clients, written in Ruby, in the [clients](clients) folder. They require two libraries:
+There is a simple Ruby client that [shoots the nearest ship](clients/shoot_nearest_ship.rb):
 
     gem install eventmachine
     gem install faye-websocket
 
-To run a simple client that instructs a ship to [shoot the nearest ship](clients/client_shoot_nearest_ship.rb):
-
-    export ELIXOIDS_SERVER=rocks.example.com:8065 ruby clients/client_shoot_nearest_ship.rb
+    export ELIXOIDS_SERVER=rocks.example.com:8065 ruby clients/shoot_nearest_ship.rb
 
 NB The websocket connection can be *troublesome* on OSX. It will often fail to connect after a reboot. Keep trying and it will eventually connect and stay connected! These scripts will be migrated to Python3.
 
-## Refresh UI
+### Graphics Client
+
+Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] for reference implementation.
 
 In order to get the latest version of the UI:
 
@@ -107,10 +112,11 @@ In order to get the latest version of the UI:
 cd asteroids-ui/asteroids-renderer
 npm run buildmin
 ````
-
 Copy the artefacts into the local folder which is served by the game webserver:
 
-    cp asteroids-ui/asteroids-renderer/bin/* elixoids/priv/html/
+```bash
+cp asteroids-ui/asteroids-renderer/bin/* elixoids/priv/html/
+```
 
 ## Deploy
 

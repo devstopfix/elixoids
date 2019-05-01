@@ -55,7 +55,6 @@ This is the default protocol - you can request it with the HTTP header:
 
 Each JSON event is around 36 bytes, compared to 5-7 bytes for the protobuf.
 
-# Clients
+## Clients
 
-* [Sonic Asteroids v3 2019](https://github.com/devstopfix/sonic-asteroids/releases/tag/v3.19.118)
-* [Sonic Asteroids v1 2016](https://github.com/jrothwell/sonic-asteroids) for [branch v1 2016](https://github.com/devstopfix/elixoids/tree/v1)
+* [Sonic Asteroids v3 2019](https://github.com/jrothwell/sonic-asteroids)
