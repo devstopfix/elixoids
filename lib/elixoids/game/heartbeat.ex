@@ -27,12 +27,12 @@ defmodule Elixoids.Game.Heartbeat do
       def start_heartbeat(pid \\ self()), do: Process.send(pid, :tick, [])
 
       def handle_info(:tick, state = %{clock_ms: clock_ms}) do
-        delta_t_ms = World.Clock.since(clock_ms)
+        delta_t_ms = Elixoids.World.Clock.since(clock_ms)
 
         case handle_tick(self(), delta_t_ms, state) do
           {:ok, new_state} ->
             next_heartbeat()
-            {:noreply, %{new_state | clock_ms: World.Clock.now_ms()}}
+            {:noreply, %{new_state | clock_ms: Elixoids.World.Clock.now_ms()}}
 
           other ->
             other
@@ -41,7 +41,7 @@ defmodule Elixoids.Game.Heartbeat do
 
       def handle_info(:tick, state) do
         next_heartbeat()
-        {:noreply, Map.put(state, :clock_ms, World.Clock.now_ms())}
+        {:noreply, Map.put(state, :clock_ms, Elixoids.World.Clock.now_ms())}
       end
 
       defp next_heartbeat do

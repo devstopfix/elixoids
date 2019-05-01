@@ -12,8 +12,8 @@ defmodule Elixoids.Bullet.Server do
   alias Elixoids.Game.Server, as: GameServer
   alias Elixoids.Space
   alias Elixoids.World.Velocity
+  import Elixoids.World.Clock
   import Game.Identifiers
-  import World.Clock
   use Elixoids.Game.Heartbeat
 
   @bullet_range_m 2000.0

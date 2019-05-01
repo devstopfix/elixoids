@@ -15,8 +15,8 @@ defmodule Elixoids.Ship.Server do
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
   alias Elixoids.World.Velocity
-  alias World.Clock
   import Elixoids.News
+  import Elixoids.World.Clock
   import Elixoids.World.Angle
   import Game.Identifiers
 
@@ -112,7 +112,7 @@ defmodule Elixoids.Ship.Server do
   end
 
   def handle_cast(:player_pulls_trigger, ship) do
-    if Clock.past?(ship.laser_charged_at) do
+    if past?(ship.laser_charged_at) do
       fire_bullet(ship)
       {:noreply, recharge_laser(ship)}
     else
@@ -156,7 +156,7 @@ defmodule Elixoids.Ship.Server do
       :pos => random_ship_point(),
       :theta => 0.0,
       :target_theta => 0.0,
-      :laser_charged_at => Clock.now_ms() - 1
+      :laser_charged_at => now_ms() - 1
     }
   end
 
@@ -195,11 +195,11 @@ defmodule Elixoids.Ship.Server do
   Update game state with time at which they can fire again
   """
   def recharge_laser(ship) do
-    %{ship | :laser_charged_at => Clock.now_ms() + @laser_recharge_ms}
+    %{ship | :laser_charged_at => now_ms() + @laser_recharge_ms}
   end
 
   def discharge_laser(ship) do
-    %{ship | :laser_charged_at => Clock.now_ms() + @laser_recharge_penalty_ms}
+    %{ship | :laser_charged_at => now_ms() + @laser_recharge_penalty_ms}
   end
 
   # defimpl Elixoids.Game.Heartbeat.Tick do
