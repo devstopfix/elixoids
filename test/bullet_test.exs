@@ -7,7 +7,7 @@ defmodule Elixoids.BulletTest do
   alias Elixoids.World.Point
   import Elixoids.World.Clock
 
-  @max_bullet_flight_time 2800
+  @max_bullet_flight_time 2999
 
   @tag :slow
   test "Bullet lives 2.6 seconds" do
