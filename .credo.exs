@@ -63,7 +63,7 @@
         # For some checks, like AliasUsage, you can only customize the priority
         # Priority values are: `low, normal, high, higher`
         # TODO!
-        {Credo.Check.Design.AliasUsage, priority: :low, if_called_more_often_than: 10},
+        {Credo.Check.Design.AliasUsage, priority: :low, if_called_more_often_than: 5},
 
         # For others you can set parameters
 

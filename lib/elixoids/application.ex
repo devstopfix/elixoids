@@ -2,6 +2,7 @@ defmodule Elixoids.Application do
   @moduledoc false
 
   use Application
+  @port 8065
 
   def start(_start_type, _start_args) do
     children = [
@@ -9,7 +10,7 @@ defmodule Elixoids.Application do
       {Registry, name: Registry.Elixoids.Games, keys: :unique},
       {Registry, name: Registry.Elixoids.News, keys: :duplicate},
       {Registry, name: Registry.Elixoids.Ships, keys: :unique},
-      Elixoids.Api,
+      {Elixoids.Api, [{:port, @port}]},
       Elixoids.Collision.Supervisor,
       Elixoids.Game.Supervisor,
       Elixoids.Game.Zero

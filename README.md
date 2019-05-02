@@ -35,7 +35,7 @@ or a REPL:
 
 Open the UI in your browser:
 
-    open http://localhost:8065/game/index.html
+    open http://localhost:8065/0/game
 
 The game runs well in full screen, on Chrome this can be enabled with `[cmd]-[↩]`
 

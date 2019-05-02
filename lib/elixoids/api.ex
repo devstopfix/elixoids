@@ -1,48 +1,29 @@
 defmodule Elixoids.Api do
-  @moduledoc """
-  WebSocket API for clients to connect to games.
-
-  Channels available:
-
-  * /0/news - news feed of the game (shots, misses, hits etc)
-  * /0/ship/AAA - player bots where AAA ~= /[A-Z]{3}/
-  * /0/sound - sound events for the audio client
-  * /0/graphics - UI stream
-  """
-
-  @port 8065
+  @moduledoc "HTTP server to serve game HTML and WS channels available"
 
   defp dispatch do
     :cowboy_router.compile([
-      # :_ match on all hostnames -> localhost:8065.
       {
         :_,
-
-        # Routes: { PathMatch, Handler, Options}
         [
-          {"/icon.png", :cowboy_static, {:priv_file, :elixoids, "html/icon.png"}},
-
-          # Serve a single static file on the route "/".
-          {"/", :cowboy_static, {:priv_file, :elixoids, "priv/html/index.html"}},
-
-          # Serve all static files in a directory.
-          {"/game/[...]", :cowboy_static, {:dir, "priv/html"}},
-
-          # Serve websocket requests.
+          {"/", Elixoids.Server.RedirectHandler, []},
+          {"/game/index.html", Elixoids.Server.RedirectHandler, []},
+          {"/:game/game", :cowboy_static, {:priv_file, :elixoids, "html/game.html"}},
+          {"/:game/graphics", Elixoids.Server.WebsocketGameHandler, []},
           {"/:game/news", Elixoids.Server.WebsocketNewsHandler, []},
           {"/:game/ship/:tag", Elixoids.Server.WebsocketShipHandler, []},
           {"/:game/sound", Elixoids.Server.WebsocketSoundHandler, []},
-          {"/:game/graphics", Elixoids.Server.WebsocketGameHandler, []}
+          {"/[...]", :cowboy_static, {:priv_dir, :elixoids, "html"}}
         ]
       }
     ])
   end
 
-  def start_link(_opts) do
+  def start_link(opts = [{:port, _}]) do
     {:ok, _} =
       :cowboy.start_clear(
         :elixoids_http,
-        [{:port, @port}],
+        opts,
         %{env: %{dispatch: dispatch()}}
       )
   end

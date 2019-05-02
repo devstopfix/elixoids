@@ -17,14 +17,19 @@ defmodule Elixoids.Server.WebsocketGameHandler do
 
   @behaviour :cowboy_handler
 
-  def init(req, _state) do
-    {:cowboy_websocket, req, [], @opts}
+  def init(req = %{bindings: %{game: game}}, _state) do
+    {:cowboy_websocket, req, game, @opts}
   end
 
-  def websocket_init(_state) do
-    {:ok, _pid} = Elixoids.News.subscribe(0)
-    :erlang.start_timer(@pause_ms, self(), [])
-    {:ok, []}
+  def websocket_init(game) do
+    with {game_id, ""} <- Integer.parse(game),
+         {:ok, _pid} <- Elixoids.News.subscribe(game_id),
+         state <- %{game_id: game_id, explosions: []},
+         _ref <- :erlang.start_timer(@pause_ms, self(), state) do
+      {:ok, state}
+    else
+      :error -> {:stop, game}
+    end
   end
 
   def terminate(_reason, _state), do: :ok
@@ -33,29 +38,28 @@ defmodule Elixoids.Server.WebsocketGameHandler do
 
   def websocket_handle(_inframe, state), do: {:ok, state}
 
-  def websocket_info({:timeout, _ref, _}, explosions) do
+  def websocket_info({:timeout, _ref, _}, %{game_id: game_id, explosions: explosions}) do
     :erlang.start_timer(@ms_between_frames, self(), [])
 
-    # TODO game id should be in WS URL and the state
     game_state =
-      0
+      game_id
+      # TODO this call can fail with :noproc
       |> Game.state()
-      |> Map.put(:x, Enum.take(explosions, @explosions_per_frame))
+      |> Map.put(:x, explosions)
       |> convert()
 
     case Jason.encode(game_state) do
-      {:ok, message} -> {:reply, {:text, message}, []}
-      {:error, _} -> {:ok, explosions}
+      {:ok, message} -> {:reply, {:text, message}, %{game_id: game_id, explosions: []}}
+      {:error, _} -> {:ok, %{game_id: game_id, explosions: []}}
     end
   end
 
-  def websocket_info({:explosion, x}, state) do
-    {:ok, [x | state]}
+  # Keep a bounded FIFO list of the recent explosion
+  def websocket_info({:explosion, x}, state = %{explosions: explosions}) do
+    {:ok, %{state | explosions: Enum.take([x | explosions], @explosions_per_frame)}}
   end
 
-  def websocket_info(_info, state) do
-    {:ok, state}
-  end
+  def websocket_info(_info, state), do: {:ok, state}
 
   defp convert(game_state) do
     game_state
