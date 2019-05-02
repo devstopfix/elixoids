@@ -5,11 +5,11 @@
 [![Elixoids](docs/elixoids-8fps.gif)][6] [![Elixoids](docs/elixoids.vimeo.JPG)][6]
 
 
-The UI is rendered by [asteroids-ui][3]. Audio provided by [SonicAsteroids][4].
+The UI is rendered by [JavaScript asteroids-ui][3]. Audio provided by [SonicAsteroids][4].
 
 Watch the [Elixoids movie][6] on [Vimeo](https://vimeo.com) recorded at a Coding Night. Participants were given one hour to write an AI bot that could pilot a ship and play the game! See the original [Arcade Asteroids video](https://www.youtube.com/watch?v=WYSupJ5r2zo).
 
-Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids) Stable v1: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=v1)](https://travis-ci.org/devstopfix/elixoids)
+Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
 
 
 # Build
@@ -29,10 +29,6 @@ To start a game:
 
     mix run --no-halt
 
-or a REPL:
-
-    iex -S mix
-
 Open the UI in your browser:
 
     open http://localhost:8065/0/game
@@ -43,7 +39,19 @@ To hear the sound effects on a Mac, download and run [v3 of the SonicAsteroids.a
 
     ws://localhost:8065/0/sound
 
-See the [sound format](docs/sound_protocol.md).
+In the REPL you can start multiple games on the same server:
+
+```elixir
+iex -S mix
+
+{:ok, pid, id} = Elixoids.Game.Supervisor.start_game([asteroids: 16])
+{:ok, #PID<0.538.0>, 2}
+```
+
+```bash
+open http://localhost:8065/2/game
+python3 clients/miner.py --name TWO --game 2
+```
 
 ## Clients
 
@@ -51,11 +59,11 @@ Clients subscribe to an event stream from the game via Websockets. The resources
 
 | Path               | Accept                   | Content                   |
 | ------------------ | ------------------------ | ------------------------- |
-| /0/graphics        | application/json         | Graphics stream           |
-| /0/news            | text/plain               | News stream               |
-| /0/ship/PLY        | application/json         | Game state for player PLY |
-| /0/sound           | application/json         | Sound stream              |
-| /0/sound           | application/octet-stream | Binary sound stream       |
+| `/0/graphics`      | application/json         | Graphics stream           |
+| `/0/news`          | text/plain               | News stream               |
+| `/0/ship/PLY`      | application/json         | Game state for player PLY |
+| `/0/sound`         | application/json         | Sound stream              |
+| `/0/sound`         | application/octet-stream | Binary sound stream       |
 
 
 ### Sound Client Protocol
