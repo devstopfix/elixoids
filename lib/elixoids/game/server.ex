@@ -62,6 +62,10 @@ defmodule Elixoids.Game.Server do
     GenServer.cast(via(game_id), {:spawn_asteroids, rocks})
   end
 
+  def link(game_id, pid) do
+    GenServer.cast(via(game_id), {:link, pid})
+  end
+
   @spec spawn_player(integer(), String.t()) ::
           {:ok, pid(), term()} | {:error, {:already_started, pid()}}
   def spawn_player(game_id, player_tag) do
@@ -122,6 +126,11 @@ defmodule Elixoids.Game.Server do
 
   def handle_cast({:spawn_asteroids, rocks}, game) do
     Enum.each(rocks, fn rock -> new_asteroid_in_game(rock, game) end)
+    {:noreply, game}
+  end
+
+  def handle_cast({:link, pid}, game) do
+    Process.link(pid)
     {:noreply, game}
   end
 
