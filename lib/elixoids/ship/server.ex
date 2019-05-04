@@ -18,7 +18,7 @@ defmodule Elixoids.Ship.Server do
   import Elixoids.News
   import Elixoids.World.Clock
   import Elixoids.World.Angle
-  import Game.Identifiers
+  import Elixoids.Game.Identifiers
 
   use Elixoids.Game.Heartbeat
 

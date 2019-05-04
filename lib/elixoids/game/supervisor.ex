@@ -12,7 +12,7 @@ defmodule Elixoids.Game.Supervisor do
   use DynamicSupervisor
   alias Elixoids.Collision.Supervisor, as: CollisionSupervisor
   alias Elixoids.Game.Server, as: GameServer
-  import Game.Identifiers
+  import Elixoids.Game.Identifiers
 
   def start_link(_arg) do
     DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)

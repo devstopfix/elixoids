@@ -11,7 +11,7 @@ defmodule Elixoids.Asteroid.Server do
   alias Elixoids.Game.Server, as: GameServer
   alias Elixoids.Space
   alias Elixoids.World.Velocity
-  import Game.Identifiers
+  import Elixoids.Game.Identifiers
   use Elixoids.Game.Heartbeat
 
   # Radius of random asteroid
