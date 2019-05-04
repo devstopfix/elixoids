@@ -50,7 +50,7 @@ defmodule Elixoids.World.Testcard do
 
   defp this_way_up(game = {_, _, game_id}) do
     [w, h] = dimensions()
-    p = %Point{x: w * 0.8, y: h * 0.9}
+    p = %Point{x: w * 0.5, y: h * 0.95}
     north = :math.pi() / 2
     ship(game_id, Point.translate(p, -60, 0), "THI", north)
     ship(game_id, Point.translate(p, 0, 0), "SWA", north)
@@ -61,7 +61,7 @@ defmodule Elixoids.World.Testcard do
   defp corners(game = {_, _, game_id}) do
     dimensions()
     |> corner_points()
-    |> Enum.each(fn p -> asteroid(game_id, p) end)
+    |> Enum.each(fn p -> stationary_asteroid(game_id, p) end)
 
     game
   end
@@ -78,8 +78,16 @@ defmodule Elixoids.World.Testcard do
     for x <- [0, w], y <- [0, h], do: %Point{x: x, y: y}
   end
 
-  defp asteroid(game_id, p, r \\ 120.0) do
-    rock = %Rock{pos: p, velocity: %Velocity{}, radius: r}
+  defp stationary_asteroid(game_id, p, r \\ 120.0) do
+    asteroid(game_id, p, r, %Velocity{})
+  end
+
+  defp asteroid_drifting_west(game_id, p, r) do
+    asteroid(game_id, p, r, %Velocity{theta: :math.pi, speed: 4.0})
+  end
+
+  defp asteroid(game_id, p, r, v) do
+    rock = %Rock{pos: p, velocity: v, radius: r}
     Asteroid.start_link(%{id: game_id}, rock)
   end
 
@@ -102,7 +110,7 @@ defmodule Elixoids.World.Testcard do
           do: Point.translate(p, radius + x * radius * 2, radius + y * radius * 2)
 
     points = Enum.take(points, 16)
-    Enum.map(points, fn p -> asteroid(game_id, p, radius) end)
+    Enum.map(points, fn p -> asteroid_drifting_west(game_id, p, radius) end)
   end
 
   defp ship(game_id, pos, tag, theta, radius \\ 20.0) do
