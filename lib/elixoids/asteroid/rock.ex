@@ -3,7 +3,7 @@ defmodule Elixoids.Asteroid.Rock do
 
   alias Elixoids.World.Velocity
 
-  defstruct pos: nil, velocity: nil, radius: 0.0
+  defstruct pos: nil, velocity: %Velocity{}, radius: 0.0
 
   # 45º
   @quarter_pi_radians :math.pi() / 4.0
@@ -39,7 +39,7 @@ defmodule Elixoids.Asteroid.Rock do
 
   # Bump the asteroid in the direction it is facing, by half its radius
   defp bump(a) do
-    t_ms = a.radius / a.velocity.speed * 1000 / 1.8
+    t_ms = a.radius / (a.velocity.speed + 0.01) * 1000 / 1.8
     update_in(a.pos, &Velocity.apply_velocity(&1, a.velocity, t_ms))
   end
 

@@ -8,11 +8,10 @@ defmodule Elixoids.Asteroid.Location do
           pid: pid(),
           id: integer(),
           pos: Elixoids.World.Point.t(),
-          radius: float(),
-          velocity: Elixoids.World.Velocity.t()
+          radius: float()
         }
 
-  defstruct pid: nil, id: 0, pos: nil, radius: 0.0, velocity: nil
+  defstruct pid: nil, id: 0, pos: nil, radius: 0.0
 
   defimpl WorldJSON, for: __MODULE__ do
     def to_json_list(%{id: id, pos: pos, radius: radius}) do

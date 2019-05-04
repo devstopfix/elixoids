@@ -117,6 +117,15 @@ In order to get the latest version of the UI:
 * checkout [asteroids-ui][3] in a sibling folder to this project
 * rebuild:
 
+While developing the UI you can start a test card game that allows you to prove your rendering:
+
+```elixir
+Elixoids.World.Testcard.start_testcard
+{:ok, #PID<0.267.0>, 23}
+```
+
+Then connect to `open ws://localhost:8065/23/game`.
+
 ```bash
 cd asteroids-ui/asteroids-renderer
 npm run buildmin

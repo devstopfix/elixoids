@@ -35,9 +35,11 @@ defmodule Elixoids.Ship.Server do
   @laser_recharge_ms 660
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
 
-  def start_link(game_info, tag \\ Player.random_tag()) do
+  def start_link(game_info, tag \\ Player.random_tag(), opts \\ %{}) do
     ship =
-      Map.merge(random_ship(), %{
+      random_ship()
+      |> Map.merge(opts)
+      |> Map.merge(%{
         :id => next_id(),
         :tag => tag,
         :game => game_info
@@ -145,7 +147,7 @@ defmodule Elixoids.Ship.Server do
       id: ship.id,
       tag: ship.tag,
       pos: ship.pos,
-      radius: @ship_radius_m,
+      radius: ship.radius,
       # TODO protocol?
       theta: Float.round(ship.theta, 3)
     }
@@ -153,10 +155,11 @@ defmodule Elixoids.Ship.Server do
 
   defp random_ship do
     %{
+      :laser_charged_at => now_ms() - 1,
       :pos => random_ship_point(),
+      :radius => @ship_radius_m,
       :theta => 0.0,
-      :target_theta => 0.0,
-      :laser_charged_at => now_ms() - 1
+      :target_theta => 0.0
     }
   end
 

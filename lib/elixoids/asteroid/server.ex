@@ -23,11 +23,11 @@ defmodule Elixoids.Asteroid.Server do
   # Initial speed of asteroid
   @asteroid_speed_m_per_s 20.0
 
-  def start_link(game_info, rock \\ random_asteroid()) do
+  def start_link(game_info, rock \\ %{}) do
     a = %{
       :id => next_id(),
       :game => game_info,
-      :rock => rock
+      :rock => Map.merge(random_asteroid(), rock)
     }
 
     GenServer.start_link(__MODULE__, a)
