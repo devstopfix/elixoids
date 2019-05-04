@@ -22,7 +22,7 @@ defmodule Elixoids.World.Testcard do
 
   defp middle(game = {_, _, game_id}) do
     [w, h] = dimensions()
-    ship(game_id, %Point{x: w / 2, y: h / 2}, "MID", 0.0)
+    stationary_asteroid(game_id, %Point{x: w / 2, y: h / 2}, 5.0)
     game
   end
 
@@ -83,7 +83,7 @@ defmodule Elixoids.World.Testcard do
   end
 
   defp asteroid_drifting_west(game_id, p, r) do
-    asteroid(game_id, p, r, %Velocity{theta: :math.pi, speed: 4.0})
+    asteroid(game_id, p, r, %Velocity{theta: :math.pi, speed: 1.0})
   end
 
   defp asteroid(game_id, p, r, v) do
