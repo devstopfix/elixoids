@@ -84,7 +84,7 @@ defmodule Elixoids.World.Testcard do
   end
 
   defp asteroid_drifting_west(game_id, p, r) do
-    asteroid(game_id, p, r, %Velocity{theta: :math.pi, speed: 1.0})
+    asteroid(game_id, p, r, %Velocity{theta: :math.pi(), speed: 1.0})
   end
 
   defp asteroid(game_id, p, r, v) do
@@ -111,12 +111,12 @@ defmodule Elixoids.World.Testcard do
           y <- fit,
           do: Point.translate(p, radius + x * radius * 2, radius + y * radius * 2)
 
-    points = Enum.take(points, 16)
+    # points = Enum.take(points, 16)
     Enum.map(points, fn p -> asteroid_drifting_west(game_id, p, radius) end)
   end
 
   defp ship(game_id, pos, tag, theta, radius \\ 20.0) do
-    {:ok, pid , ship_id} = Ship.start_link(%{id: game_id}, tag, %{pos: pos, radius: radius})
+    {:ok, pid, ship_id} = Ship.start_link(%{id: game_id}, tag, %{pos: pos, radius: radius})
     Game.link(game_id, pid)
     Ship.new_heading(ship_id, theta)
   end

@@ -119,12 +119,11 @@ In order to get the latest version of the UI:
 
 While developing the UI you can start a test card game that allows you to prove your rendering:
 
-```elixir
-Elixoids.World.Testcard.start_testcard
-{:ok, #PID<0.267.0>, 23}
+```base
+mix run --no-halt -e "Elixoids.World.Testcard.start_testcard"
 ```
 
-Then connect to `open ws://localhost:8065/23/game`.
+Then connect to `ws://localhost:8065/1/game`.
 
 ```bash
 cd asteroids-ui/asteroids-renderer

@@ -24,7 +24,7 @@ defmodule Elixoids.Game.Heartbeat do
     quote do
       @fps 60
       @ms_between_ticks div(1000, @fps)
-      def start_heartbeat(pid \\ self()), do: Process.send(pid, :tick, [])
+      def start_heartbeat(), do: Process.send(self(), :tick, [])
 
       def handle_info(:tick, state = %{clock_ms: clock_ms}) do
         delta_t_ms = Elixoids.World.Clock.since(clock_ms)
