@@ -14,6 +14,14 @@ defmodule Elixoids.Space do
   @height @width / @ratio
   @half_width @width / 2.0
 
+  @border @width / 100
+
+  @min_x -@border
+  @max_x @width + @border
+
+  @min_y -@border
+  @max_y @height + @border
+
   @doc """
   Wrap point p so that its coordinates remain inside the world.
   """
@@ -21,16 +29,16 @@ defmodule Elixoids.Space do
 
   defp wrap_x(p) do
     cond do
-      p.x < 0.0 -> %{p | x: p.x + @width}
-      p.x > @width -> %{p | x: p.x - @width}
+      p.x < @min_x -> %{p | x: p.x + @width + @border + @border}
+      p.x > @max_x -> %{p | x: p.x - @width - @border - @border}
       true -> p
     end
   end
 
   defp wrap_y(p) do
     cond do
-      p.y < 0.0 -> %{p | y: p.y + @height}
-      p.y > @height -> %{p | y: p.y - @height}
+      p.y < @min_y -> %{p | y: p.y + @height + @border + @border}
+      p.y > @max_y -> %{p | y: p.y - @height - @border - @border}
       true -> p
     end
   end
@@ -74,8 +82,8 @@ defmodule Elixoids.Space do
   """
   def frac_x(x) do
     cond do
-      x < 0.0 -> 0.0
-      x > @width -> 0.0
+      x <= 0.0 -> -1.0
+      x >= @width -> 1.0
       true -> (x - @half_width) / @half_width
     end
     |> Float.round(2)
