@@ -1,0 +1,85 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Asteroids Arcade (ELM)</title>
+    <link rel="icon" type="image/png" href="/icon.png" >
+    <style>
+        body,
+        div:first-child {
+          margin: 0;
+          height: 100;
+        }
+
+        div, canvas {
+          margin-left: auto;
+          margin-right: auto;
+        }
+        canvas {
+          border: darkred 1px solid;
+        }
+
+        body {
+            background-color: #0f1213;
+        }
+      </style>
+
+  </head>
+  <body>
+    <!--[if lt IE 10]>
+      <div class="old-browser-message">
+        <div class="header"><div class="nav-back"></div><div class="nav-right"></div> </div>
+        <span>This browser is not supported<br/> Please use Google Chrome which can be downloaded free at
+          <a href="https://www.google.co.uk/chrome/browser/desktop/">https://www.google.co.uk/chrome/browser/desktop</a>
+        </span>
+      </div>
+    <![endif]-->
+
+    <main></main>
+    <script src="/elixoids.js"></script>
+    <script>
+        function graphicsURL(window_location_href) {
+            var url = new URL(window_location_href);
+
+            switch (url.protocol) {
+                case 'http:':
+                    url.protocol = 'ws';
+                    break;
+                case 'https:':
+                    url.protocol = 'wss';
+                    break;
+            }
+
+            /* If running in development, override with default ports. TODO config? */
+            switch (url.port) {
+                case '3030':
+                    url.port = 8065;
+            }
+
+            /* If in development, hardcode to game zero. TODO config? */
+            if (url.pathname.match(/\/\d+\/game\w*/)) {
+                url.pathname = url.pathname.replace(/game\w*$/, 'graphics');
+            } else {
+                url.pathname = "/0/graphics";
+            }
+
+            return url;
+        }
+
+      var app = Elm.Main.init({ node: document.querySelector("main") });
+      var nextGameId = 0;
+
+      if (app && app.ports) {
+        const id = nextGameId+=1;
+        var ws = new WebSocket(graphicsURL(window.location.href));
+        app.ports.addGame.send(id);
+        ws.onmessage = function(message)
+        {
+            app.ports.graphicsIn.send(message.data);
+        };
+      }
+    </script>
+  </body>
+</html>

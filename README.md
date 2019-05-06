@@ -110,7 +110,7 @@ NB The websocket connection can be *troublesome* on OSX. It will often fail to c
 
 ### Graphics Client
 
-Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] for reference implementation.
+Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] for reference implementation or the [Elm conversion][7].
 
 In order to get the latest version of the UI:
 
@@ -150,3 +150,4 @@ This software is published under the [MIT License](LICENSE) and Copyright ©2019
 [4]: https://github.com/jrothwell/sonic-asteroids
 [5]: https://github.com/jrothwell
 [6]: https://vimeo.com/330017229
+[7]: https://github.com/devstopfix/asteroids-graphics/tree/elm
