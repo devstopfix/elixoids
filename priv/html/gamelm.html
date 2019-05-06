@@ -40,34 +40,6 @@
     <main></main>
     <script src="/elixoids.js"></script>
     <script>
-        function graphicsURL(window_location_href) {
-            var url = new URL(window_location_href);
-
-            switch (url.protocol) {
-                case 'http:':
-                    url.protocol = 'ws';
-                    break;
-                case 'https:':
-                    url.protocol = 'wss';
-                    break;
-            }
-
-            /* If running in development, override with default ports. TODO config? */
-            switch (url.port) {
-                case '3030':
-                    url.port = 8065;
-            }
-
-            /* If in development, hardcode to game zero. TODO config? */
-            if (url.pathname.match(/\/\d+\/game\w*/)) {
-                url.pathname = url.pathname.replace(/game\w*$/, 'graphics');
-            } else {
-                url.pathname = "/0/graphics";
-            }
-
-            return url;
-        }
-
       var app = Elm.Main.init({ node: document.querySelector("main") });
       var nextGameId = 0;
 
