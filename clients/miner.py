@@ -84,14 +84,14 @@ class ConstantBearingMiner(Miner):
 
     # Find the difference between thetas over successive game states
     # The dampen factor can be adjusted to stop switching targets too often
-    def delta_theta(self, a, dampen=1.1):
+    def delta_theta(self, a, dampen=1.5):
         [_, s0, s1] = a
         [t0, _] = s0
         [t1, _] = s1
         return abs(t1 - t0) / dampen
 
     def sort_smallest_change_in_bearing(self, delta_state):
-        return sorted(delta_state, key=lambda a: self.delta_theta(a))
+        return sorted(delta_state, key=lambda a: (self.delta_theta(a), a[0]) )
 
     def choose_target(self, delta_state):
         targets = self.sort_smallest_change_in_bearing(delta_state)
