@@ -53,6 +53,8 @@ open http://localhost:8065/2/game
 python3 clients/miner.py --name TWO --game 2
 ```
 
+There is also an [Elm UI conversion][7] - just use [/0/gamelm](http://localhost:8065/0/gamelm) to switch to it.
+
 ## Clients
 
 Clients subscribe to an event stream from the game via Websockets. The resources available are:
@@ -69,6 +71,7 @@ Clients subscribe to an event stream from the game via Websockets. The resources
 ### Sound Client Protocol
 
 Sound events can be received at `ws://example.com/0/sound` and here is the [sound format](docs/sound_protocol.md). There is a Unicode visualizer using Protocol Buffers in [listen.py](clients/listen.py).
+
 
 ### News Client
 
@@ -110,7 +113,7 @@ NB The websocket connection can be *troublesome* on OSX. It will often fail to c
 
 ### Graphics Client
 
-Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] for reference implementation or the [Elm conversion][7].
+Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] for reference implementation.
 
 In order to get the latest version of the UI:
 
