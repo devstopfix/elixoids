@@ -7,25 +7,27 @@
     <title>Asteroids Arcade (ELM)</title>
     <link rel="icon" type="image/png" href="/icon.png" >
     <style>
-        body,
-        div:first-child {
-          margin: 0;
-          height: 100;
-        }
 
         div, canvas {
           margin-left: auto;
           margin-right: auto;
         }
         canvas {
-          border: darkred 1px solid;
+          display: block;
+        }
+
+        #fullscreen {
+          margin-left: auto;
+          margin-right: auto;
+          margin-top: 2em;
+          display: block;
         }
 
         body {
             background-color: #0f1213;
         }
       </style>
-
+      <link rel="stylesheet" href="/buttons.css">
   </head>
   <body>
     <!--[if lt IE 10]>
@@ -37,11 +39,24 @@
       </div>
     <![endif]-->
 
-    <main></main>
+    <div id="cabinet">
+        <main></main>
+        <div class="dark">
+            <button id="fullscreen" class="btn btn-white btn-mid" > FULLSCREEN </button>
+        </div>
+
+    </div>
+
+
     <script src="/elixoids.js"></script>
     <script>
       var app = Elm.Main.init({ node: document.querySelector("main") });
       var nextGameId = 0;
+
+      window.addEventListener('load', function() {
+        run(graphicsURL(window.location.href), nextGameId += 1);
+        fullscreenFirstCanvas(document.getElementById("fullscreen"));
+      })
 
       function run(url, id) {
         var ws = new WebSocket(url);
@@ -60,10 +75,20 @@
         };
       }
 
-      window.addEventListener('load', function() {
-        run(graphicsURL(window.location.href), nextGameId += 1);
-        // fullscreenFirstCanvas(document.getElementById("fullscreen"));
-      })
+      function fullscreenFirstCanvas(ctrl) {
+        ctrl.onclick = function () {
+            var elem = document.querySelector("canvas");
+            if (elem && elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem && elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            } else if (elem && elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen();
+            } else if (elem && elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+      }
+}
 
     </script>
   </body>
