@@ -1,9 +1,8 @@
 defmodule Elixoids.Server.WebsocketGameHandler do
   @moduledoc """
   Websocket Handler for the graphics engine. Queries the game state at 30fps
-  and publishes it to subscriber.
-
-  1 hour idle timeout.
+  and publishes it to subscriber. Should the call from this process to the game
+  process fail, the connection will close and the client is expected to reconnect.
   """
 
   alias Elixoids.Api.State
@@ -43,7 +42,6 @@ defmodule Elixoids.Server.WebsocketGameHandler do
 
     game_state =
       game_id
-      # TODO this call can fail with :noproc
       |> Game.state()
       |> Map.put(:x, explosions)
       |> convert()
@@ -56,7 +54,7 @@ defmodule Elixoids.Server.WebsocketGameHandler do
 
   # Keep a bounded FIFO list of the recent explosion
   def websocket_info({:explosion, x}, state = %{explosions: []}) do
-    {:ok, %{state | explosions: [x] }}
+    {:ok, %{state | explosions: [x]}}
   end
 
   def websocket_info({:explosion, x}, state = %{explosions: explosions}) do
