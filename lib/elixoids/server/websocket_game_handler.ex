@@ -1,6 +1,6 @@
 defmodule Elixoids.Server.WebsocketGameHandler do
   @moduledoc """
-  Websocket Handler. Queries the game state at 30fps
+  Websocket Handler for the graphics engine. Queries the game state at 30fps
   and publishes it to subscriber.
 
   1 hour idle timeout.
@@ -13,7 +13,7 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   @ms_between_frames div(1000, @fps)
   @pause_ms 1000
   @opts %{idle_timeout: 60 * 60 * 1000, compress: false}
-  @explosions_per_frame 5
+  @explosions_per_frame 7
 
   @behaviour :cowboy_handler
 
@@ -55,6 +55,10 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   end
 
   # Keep a bounded FIFO list of the recent explosion
+  def websocket_info({:explosion, x}, state = %{explosions: []}) do
+    {:ok, %{state | explosions: [x] }}
+  end
+
   def websocket_info({:explosion, x}, state = %{explosions: explosions}) do
     {:ok, %{state | explosions: Enum.take([x | explosions], @explosions_per_frame)}}
   end
