@@ -34,6 +34,7 @@ defmodule Elixoids.Ship.Server do
   # Minimum time between shots
   @laser_recharge_ms 660
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
+  @max_shields 3
 
   def start_link(game_info, tag \\ Player.random_tag(), opts \\ %{}) do
     ship =
@@ -42,7 +43,8 @@ defmodule Elixoids.Ship.Server do
       |> Map.merge(%{
         :id => next_id(),
         :tag => tag,
-        :game => game_info
+        :game => game_info,
+        :shields => @max_shields
       })
 
     ship_id = {game_info.id, tag}
@@ -68,6 +70,9 @@ defmodule Elixoids.Ship.Server do
   def hyperspace(ship_pid) when is_pid(ship_pid), do: GenServer.cast(ship_pid, :hyperspace)
 
   def hyperspace(ship_id), do: GenServer.cast(via(ship_id), :hyperspace)
+
+  def bullet_hit_ship(ship_pid, shooter_tag) when is_pid(ship_pid),
+    do: GenServer.cast(ship_pid, {:bullet_hit_ship, shooter_tag})
 
   @doc """
   Remove the ship from the game.
@@ -103,6 +108,22 @@ defmodule Elixoids.Ship.Server do
       |> discharge_laser
 
     {:noreply, new_ship}
+  end
+
+  def handle_cast({:bullet_hit_ship, _shooter_tag}, ship = %{shields: shields})
+      when shields > 0 do
+    {:noreply, %{ship | shields: shields - 1}}
+  end
+
+  def handle_cast(
+        {:bullet_hit_ship, shooter_tag},
+        ship = %{pos: pos, radius: radius, game: %{id: game_id}, tag: tag}
+      ) do
+    Elixoids.Game.Server.explosion(game_id, pos, radius)
+    hyperspace(self())
+    publish_news(game_id, [shooter_tag, "kills", tag])
+
+    {:noreply, %{ship | shields: @max_shields}}
   end
 
   def handle_cast({:new_heading, theta}, ship) do
