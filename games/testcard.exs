@@ -134,4 +134,5 @@ defmodule Elixoids.Games.Testcard do
   end
 end
 
-{:ok, _, _} = Elixoids.Games.Testcard.start_link()
+{:ok, _, g} = Elixoids.Games.Testcard.start_link()
+:io.fwrite("localhost:~B/~B/game~n", [Application.get_env(:elixoids, :cowboy_port), g])

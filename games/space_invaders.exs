@@ -60,4 +60,5 @@ defmodule Elixoids.Games.SpaceInvaders do
   end
 end
 
-{:ok, _, _} = Elixoids.Games.SpaceInvaders.start_link()
+{:ok, _, g} = Elixoids.Games.SpaceInvaders.start_link()
+:io.fwrite("localhost:~B/~B/game~n", [Application.get_env(:elixoids, :cowboy_port), g])

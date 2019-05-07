@@ -4,7 +4,6 @@ use Mix.Config
 
 config :elixoids, cowboy_port: 8065
 
-
 # Or configure a 3rd-party app:
 #
 #     config :logger, level: :info

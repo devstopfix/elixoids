@@ -5,7 +5,6 @@ defmodule Elixoids.Application do
   @port Application.get_env(:elixoids, :cowboy_port)
 
   def start(_start_type, _start_args) do
-
     children = [
       {Registry, name: Registry.Elixoids.Collisions, keys: :unique},
       {Registry, name: Registry.Elixoids.Games, keys: :unique},
