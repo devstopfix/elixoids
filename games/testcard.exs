@@ -1,5 +1,9 @@
 defmodule Elixoids.World.Testcard do
-  @moduledoc "Starts a game where the entities form a test card layout"
+  @moduledoc """
+  Starts a game where the entities form a test card layout
+
+      mix run --no-halt games/testcard.exs
+  """
 
   alias Elixoids.Asteroid.Rock
   alias Elixoids.Asteroid.Server, as: Asteroid
@@ -10,7 +14,7 @@ defmodule Elixoids.World.Testcard do
   import Elixoids.Game.Supervisor, only: [start_game: 1]
   import Elixoids.Space
 
-  def start_testcard do
+  def start_link do
     [asteroids: 0]
     |> start_game()
     |> corners()
@@ -130,3 +134,5 @@ defmodule Elixoids.World.Testcard do
     |> Enum.map(fn {p, n} -> {p, :math.pi() * 2 * n / n_points} end)
   end
 end
+
+{:ok, _, _} = Elixoids.World.Testcard.start_link()

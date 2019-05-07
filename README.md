@@ -122,9 +122,7 @@ In order to get the latest version of the UI:
 
 While developing the UI you can start a [test card](docs/testcard-classic.jpg) game that allows you to prove your rendering:
 
-```base
-mix run --no-halt -e "Elixoids.World.Testcard.start_testcard"
-```
+    mix run --no-halt games/testcard.exs
 
 Then connect to `ws://localhost:8065/1/game`.
 
