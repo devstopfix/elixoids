@@ -43,15 +43,28 @@
       var app = Elm.Main.init({ node: document.querySelector("main") });
       var nextGameId = 0;
 
-      if (app && app.ports) {
-        const id = nextGameId+=1;
-        var ws = new WebSocket(graphicsURL(window.location.href));
-        app.ports.addGame.send(id);
-        ws.onmessage = function(message)
-        {
-            app.ports.graphicsIn.send(message.data);
+      function run(url, id) {
+        var ws = new WebSocket(url);
+
+        app.ports.addGame.send({
+          id: id,
+          height: 788,
+          width: 1400,
+        });
+
+        ws.onmessage = function (message) {
+            app.ports.graphicsIn.send({
+              id: id,
+              frame: message.data
+            });
         };
       }
+
+      window.addEventListener('load', function() {
+        run(graphicsURL(window.location.href), nextGameId += 1);
+        // fullscreenFirstCanvas(document.getElementById("fullscreen"));
+      })
+
     </script>
   </body>
 </html>
