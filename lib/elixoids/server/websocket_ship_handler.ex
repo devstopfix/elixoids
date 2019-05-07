@@ -61,7 +61,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   def websocket_info({:timeout, _ref, _}, state = %{ship_id: ship_id}) do
     :erlang.start_timer(@ms_between_frames, self(), [])
 
-    ship_state = Ship.game_state(ship_id)
+    ship_state = Ship.game_state_req(ship_id)
     send_state = convert(ship_state)
 
     case Jason.encode(send_state) do

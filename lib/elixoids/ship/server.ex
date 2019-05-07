@@ -85,7 +85,7 @@ defmodule Elixoids.Ship.Server do
   """
   def player_pulls_trigger(ship_id), do: GenServer.cast(via(ship_id), :player_pulls_trigger)
 
-  def game_state(ship_id), do: GenServer.call(via(ship_id), :game_state)
+  def game_state_req(ship_id), do: GenServer.call(via(ship_id), :game_state_req)
 
   # GenServer callbacks
 
@@ -122,8 +122,9 @@ defmodule Elixoids.Ship.Server do
     end
   end
 
-  def handle_call(:game_state, _from, ship = %{game: %{id: game_id}}) do
-    {:reply, Elixoids.Game.Server.state_of_ship(game_id, self()), ship}
+  def handle_call(:game_state_req, from, ship = %{game: %{id: game_id}}) do
+    :ok = GameServer.state_of_ship(game_id, self(), from)
+    {:noreply, ship}
   end
 
   defp fire_bullet(ship) do

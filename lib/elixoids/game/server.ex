@@ -72,8 +72,8 @@ defmodule Elixoids.Game.Server do
     GenServer.call(via(game_id), {:spawn_player, player_tag})
   end
 
-  def state_of_ship(game_id, ship_pid) do
-    GenServer.call(via(game_id), {:state_of_ship, ship_pid})
+  def state_of_ship(game_id, ship_pid, from) do
+    GenServer.cast(via(game_id), {:state_of_ship, ship_pid, from})
   end
 
   ## Initial state
@@ -144,6 +144,17 @@ defmodule Elixoids.Game.Server do
     {:noreply, game}
   end
 
+  def handle_cast({:state_of_ship, ship_pid, from}, game) do
+    case game.state.ships[ship_pid] do
+      nil ->
+        {:noreply, game}
+
+      ship ->
+        GenServer.reply(from, fetch_ship_state(ship, game))
+        {:noreply, game}
+    end
+  end
+
   @doc """
   Update the game state and check for collisions.
   """
@@ -187,13 +198,6 @@ defmodule Elixoids.Game.Server do
     {:noreply, %{game | min_asteroid_count: inc_asteroid_count}}
   end
 
-  def handle_call({:state_of_ship, ship_pid}, _from, game) do
-    case game.state.ships[ship_pid] do
-      nil -> {:reply, %Targets{}, game}
-      ship -> fetch_ship_state(ship, game)
-    end
-  end
-
   def handle_call({:bullet_fired, shooter_tag, pos, theta}, _from, game) do
     {:ok, bullet_pid} = Bullet.start_link(game.game_id, shooter_tag, pos, theta)
     {:reply, {:ok, bullet_pid}, game}
@@ -227,14 +231,12 @@ defmodule Elixoids.Game.Server do
     asteroids = game.state.asteroids |> Map.values()
     ships = game.state.ships |> Map.values() |> ships_except(shiploc.tag)
 
-    ship_state = %Targets{
+    %Targets{
       :theta => shiploc.theta,
       :ships => ships,
       :rocks => asteroids,
       :origin => shiploc.pos
     }
-
-    {:reply, ship_state, game}
   end
 
   def ships_except(ships, tag) do
