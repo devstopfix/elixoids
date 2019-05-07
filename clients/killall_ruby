@@ -1,5 +1,0 @@
-#!/bin/bash
-
-echo Looking for all your Ruby processes...
-
-killall -9 ruby
