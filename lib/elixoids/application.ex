@@ -2,9 +2,10 @@ defmodule Elixoids.Application do
   @moduledoc false
 
   use Application
-  @port 8065
+  @port Application.get_env(:elixoids, :cowboy_port)
 
   def start(_start_type, _start_args) do
+
     children = [
       {Registry, name: Registry.Elixoids.Collisions, keys: :unique},
       {Registry, name: Registry.Elixoids.Games, keys: :unique},
