@@ -8,19 +8,18 @@
     <link rel="icon" type="image/png" href="/icon.png" >
     <style>
 
-        div, canvas {
+        div.cabinet, canvas {
           margin-left: auto;
           margin-right: auto;
         }
+
         canvas {
           display: block;
         }
 
         #fullscreen {
-          margin-left: auto;
-          margin-right: auto;
           margin-top: 2em;
-          display: block;
+          margin-left: auto;
         }
 
         body {
@@ -41,8 +40,12 @@
 
     <div id="cabinet">
         <main></main>
-        <div class="dark">
-            <button id="fullscreen" class="btn btn-white btn-mid" > FULLSCREEN </button>
+        <div class="buttons dark">
+          <div>
+              <a class="btn btn-white btn-mid" href="https://github.com/jrothwell/sonic-asteroids">AUDIO</a>
+              <a class="btn btn-white btn-mid" id="fullscreen">FULLSCREEN</a>
+            <a class="btn btn-white btn-mid" onclick="stop()">STOP</a>
+          </div>
         </div>
 
     </div>
@@ -51,10 +54,10 @@
     <script src="/elixoids.js"></script>
     <script>
       var app = Elm.Main.init({ node: document.querySelector("main") });
-      var nextGameId = 0;
+      var gameWS;
 
       window.addEventListener('load', function() {
-        run(graphicsURL(window.location.href), nextGameId += 1);
+        gameWS = run(graphicsURL(window.location.href), 1);
         fullscreenFirstCanvas(document.getElementById("fullscreen"));
       })
 
@@ -73,6 +76,8 @@
               frame: message.data
             });
         };
+
+        return ws;
       }
 
       function fullscreenFirstCanvas(ctrl) {
@@ -87,8 +92,13 @@
             } else if (elem && elem.webkitRequestFullscreen) {
                 elem.webkitRequestFullscreen();
             }
+        }
       }
-}
+
+      function stop() {
+        gameWS.close();
+      }
+
 
     </script>
   </body>
