@@ -120,7 +120,7 @@ In order to get the latest version of the UI:
 * checkout [asteroids-ui][3] in a sibling folder to this project
 * rebuild:
 
-While developing the UI you can start a test card game that allows you to prove your rendering:
+While developing the UI you can start a [test card](docs/testcard-classic.jpg) game that allows you to prove your rendering:
 
 ```base
 mix run --no-halt -e "Elixoids.World.Testcard.start_testcard"
