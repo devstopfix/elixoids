@@ -4,7 +4,6 @@ defmodule Elixoids.SpaceTest do
   doctest Elixoids.Space
 
   alias Elixoids.Space, as: Space
-  alias Elixoids.World.Point, as: Point
 
   test "Random_point_on_border" do
     p1 = Space.random_point_on_border()
