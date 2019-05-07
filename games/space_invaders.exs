@@ -1,6 +1,6 @@
 defmodule Elixoids.Games.SpaceInvaders do
   @moduledoc """
-  Starts a game where the entities form a test card layout
+  Starts a game where the Asteroids form a Space Invader formation.
 
       mix run --no-halt games/space_invaders.exs
   """
@@ -20,12 +20,11 @@ defmodule Elixoids.Games.SpaceInvaders do
     |> barriers()
   end
 
-
   defp aliens(game = {_, _, game_id}) do
     [w, h] = dimensions()
 
     r = h / 11 / 2.0
-    v = %Velocity{theta: (:math.pi * 2 * 31 / 32.0), speed: 20.0}
+    v = %Velocity{theta: theta(), speed: 20.0}
 
     points([w, h], 11, 5, 2, 5, 1)
     |> Enum.map(fn p -> asteroid(game_id, p, r, v) end)
@@ -36,9 +35,8 @@ defmodule Elixoids.Games.SpaceInvaders do
   defp barriers(game = {_, _, game_id}) do
     [w, h] = dimensions()
 
-    radius =  14.0 * (:math.pow 2, 4)
-    theta = (:math.pi * 2 * 59 / 60.0)
-    v = %Velocity{theta: theta, speed: 20.0}
+    radius = 14.0 * :math.pow(2, 4)
+    v = %Velocity{theta: theta(), speed: 20.0}
 
     points([w, h], 4, 1, 1, 1, 3)
     |> Enum.map(fn p -> asteroid(game_id, p, radius, v) end)
@@ -46,6 +44,9 @@ defmodule Elixoids.Games.SpaceInvaders do
     game
   end
 
+  def theta, do: :math.pi() * 2 * 59 / 60.0
+
+  # Create a grid of points sized (x y) with borders (bx bx) and (by1 by2)
   defp points([w, h], x, y, bx, by1, by2) do
     sx = w / (bx + x + bx - 1)
     sy = h / (by1 + y + by2 - 1)

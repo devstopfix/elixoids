@@ -115,7 +115,6 @@ defmodule Elixoids.Games.Testcard do
           y <- fit,
           do: Point.translate(p, radius + x * radius * 2, radius + y * radius * 2)
 
-    # points = Enum.take(points, 16)
     Enum.map(points, fn p -> asteroid_drifting_west(game_id, p, radius) end)
   end
 
