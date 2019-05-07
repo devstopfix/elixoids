@@ -4,8 +4,7 @@
 
 [![Elixoids](docs/elixoids-8fps.gif)][6] [![Elixoids](docs/elixoids.vimeo.JPG)][6]
 
-
-The UI is rendered by [JavaScript asteroids-ui][3]. Audio provided by [SonicAsteroids][4].
+The original UI was rendered by [JavaScript asteroids-ui][3] and has had a recent [Elm conversion][7]. Audio provided by [SonicAsteroids][4].
 
 Watch the [Elixoids movie][6] on [Vimeo](https://vimeo.com) recorded at a Coding Night. Participants were given one hour to write an AI bot that could pilot a ship and play the game! See the original [Arcade Asteroids video](https://www.youtube.com/watch?v=WYSupJ5r2zo).
 
@@ -14,7 +13,7 @@ Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=ma
 
 # Build
 
-To run the game [on Ubuntu](docs/ubuntu.md) or on OSX:
+To run the game [on Ubuntu](docs/ubuntu.md), or on OSX:
 
     brew install elixir
     git clone https://github.com/devstopfix/elixoids.git
@@ -33,8 +32,6 @@ Open the UI in your browser:
 
     open http://localhost:8065/0/game
 
-The game runs well in full screen, on Chrome this can be enabled with `[cmd]-[↩]`
-
 To hear the sound effects on a Mac, download and run [v3 of the SonicAsteroids.app][4] and set the address to listen to as:
 
     ws://localhost:8065/0/sound
@@ -52,8 +49,6 @@ iex -S mix
 open http://localhost:8065/2/game
 python3 clients/miner.py --name TWO --game 2
 ```
-
-There is also an [Elm UI conversion][7] - just use [/0/gamelm](http://localhost:8065/0/gamelm) to switch to it.
 
 ## Clients
 
@@ -113,28 +108,13 @@ NB The websocket connection can be *troublesome* on OSX. It will often fail to c
 
 ### Graphics Client
 
-Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] for reference implementation.
-
-In order to get the latest version of the UI:
-
-* checkout [asteroids-ui][3] in a sibling folder to this project
-* rebuild:
+Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] and [asteroids-elm][7] for reference implementation.
 
 While developing the UI you can start a [test card](docs/testcard-classic.jpg) game that allows you to prove your rendering:
 
     mix run --no-halt games/testcard.exs
 
-Then connect to `ws://localhost:8065/1/game`.
-
-```bash
-cd asteroids-ui/asteroids-renderer
-npm run buildmin
-````
-Copy the artefacts into the local folder which is served by the game webserver:
-
-```bash
-cp asteroids-ui/asteroids-renderer/bin/* elixoids/priv/html/
-```
+Then connect to `ws://localhost:8065/1/game`. The original 2016 UI is available at `/1/gamejs`.
 
 ## Deploy
 
@@ -142,7 +122,7 @@ See the [Ubuntu deployment guide](docs/ubuntu.md) to run the game engine on a se
 
 ## Licence
 
-This software is published under the [MIT License](LICENSE) and Copyright ©2019 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5].
+This software is published under the [MIT License](LICENSE) and Copyright ©2019 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5]. Button CSS by [ozer][8].
 
 
 [1]: https://en.wikipedia.org/wiki/Asteroids_(video_game)
@@ -152,3 +132,4 @@ This software is published under the [MIT License](LICENSE) and Copyright ©2019
 [5]: https://github.com/jrothwell
 [6]: https://vimeo.com/330017229
 [7]: https://github.com/devstopfix/asteroids-graphics/tree/elm
+[8]: https://codepen.io/ozer/pen/KwvKoR

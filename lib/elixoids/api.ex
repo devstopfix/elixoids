@@ -8,8 +8,8 @@ defmodule Elixoids.Api do
         [
           {"/", Elixoids.Server.RedirectHandler, []},
           {"/game/index.html", Elixoids.Server.RedirectHandler, []},
-          {"/:game/game", :cowboy_static, {:priv_file, :elixoids, "html/game.html"}},
-          {"/:game/gamelm", :cowboy_static, {:priv_file, :elixoids, "html/gamelm.html"}},
+          {"/:game/game", :cowboy_static, {:priv_file, :elixoids, "html/game_elm.html"}},
+          {"/:game/gamejs", :cowboy_static, {:priv_file, :elixoids, "html/game_js.html"}},
           {"/:game/graphics", Elixoids.Server.WebsocketGameHandler, []},
           {"/:game/news", Elixoids.Server.WebsocketNewsHandler, []},
           {"/:game/ship/:tag", Elixoids.Server.WebsocketShipHandler, []},
