@@ -1,4 +1,4 @@
-defmodule Elixoids.World.Testcard do
+defmodule Elixoids.Games.Testcard do
   @moduledoc """
   Starts a game where the entities form a test card layout
 
@@ -135,4 +135,4 @@ defmodule Elixoids.World.Testcard do
   end
 end
 
-{:ok, _, _} = Elixoids.World.Testcard.start_link()
+{:ok, _, _} = Elixoids.Games.Testcard.start_link()
