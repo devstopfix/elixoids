@@ -93,7 +93,7 @@ defmodule Elixoids.Games.Testcard do
 
   defp asteroid(game_id, p, r, v) do
     rock = %Rock{pos: p, velocity: v, radius: r}
-    {:ok, pid} = Asteroid.start_link(%{id: game_id}, rock)
+    {:ok, pid} = Asteroid.start_link(game_id, rock)
     Game.link(game_id, pid)
   end
 
@@ -119,7 +119,7 @@ defmodule Elixoids.Games.Testcard do
   end
 
   defp ship(game_id, pos, tag, theta, radius \\ 20.0) do
-    {:ok, pid, ship_id} = Ship.start_link(%{id: game_id}, tag, %{pos: pos, radius: radius})
+    {:ok, pid, ship_id} = Ship.start_link(game_id, tag, %{pos: pos, radius: radius})
     Game.link(game_id, pid)
     Ship.new_heading(ship_id, theta)
   end

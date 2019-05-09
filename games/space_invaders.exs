@@ -55,7 +55,7 @@ defmodule Elixoids.Games.SpaceInvaders do
 
   defp asteroid(game_id, p, r, v) do
     rock = %Rock{pos: p, velocity: v, radius: r}
-    {:ok, pid} = Asteroid.start_link(%{id: game_id}, rock)
+    {:ok, pid} = Asteroid.start_link(game_id, rock)
     Game.link(game_id, pid)
   end
 end
