@@ -36,18 +36,18 @@ defmodule Elixoids.Ship.Server do
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
   @max_shields 3
 
-  def start_link(game_info, tag \\ Player.random_tag(), opts \\ %{}) do
+  def start_link(game_id, tag \\ Player.random_tag(), opts \\ %{}) do
     ship =
       random_ship()
       |> Map.merge(opts)
       |> Map.merge(%{
         :id => next_id(),
         :tag => tag,
-        :game => game_info,
+        :game_id => game_id,
         :shields => @max_shields
       })
 
-    ship_id = {game_info.id, tag}
+    ship_id = {game_id, tag}
 
     case GenServer.start_link(__MODULE__, ship, name: via(ship_id)) do
       {:ok, pid} -> {:ok, pid, ship_id}
@@ -143,17 +143,17 @@ defmodule Elixoids.Ship.Server do
     end
   end
 
-  def handle_call(:game_state_req, from, ship = %{game: %{id: game_id}}) do
+  def handle_call(:game_state_req, from, ship = %{game_id: game_id}) do
     :ok = GameServer.state_of_ship(game_id, self(), from)
     {:noreply, ship}
   end
 
-  defp fire_bullet(ship) do
+  defp fire_bullet(ship = %{game_id: game_id}) do
     pos = calculate_nose(ship)
-    GameServer.bullet_fired(ship.game.id, ship.tag, pos, ship.theta)
-    publish_news(ship.game.id, [ship.tag, "fires"])
+    GameServer.bullet_fired(game_id, ship.tag, pos, ship.theta)
+    publish_news(game_id, [ship.tag, "fires"])
     pan = Space.frac_x(ship.pos.x)
-    Elixoids.News.publish_audio(ship.game.id, SoundEvent.fire(pan))
+    Elixoids.News.publish_audio(game_id, SoundEvent.fire(pan))
   end
 
   defp calculate_nose(%{pos: ship_centre, theta: theta}) do
@@ -228,10 +228,10 @@ defmodule Elixoids.Ship.Server do
   end
 
   # defimpl Elixoids.Game.Heartbeat.Tick do
-  def handle_tick(_pid, delta_t_ms, ship) do
+  def handle_tick(_pid, delta_t_ms, ship = %{game_id: game_id}) do
     new_ship = ship |> rotate_ship(delta_t_ms)
 
-    GameServer.update_ship(ship.game.id, state_tuple(new_ship))
+    GameServer.update_ship(game_id, state_tuple(new_ship))
     {:ok, new_ship}
   end
 end

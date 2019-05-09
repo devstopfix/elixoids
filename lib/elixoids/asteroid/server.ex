@@ -23,10 +23,10 @@ defmodule Elixoids.Asteroid.Server do
   # Initial speed of asteroid
   @asteroid_speed_m_per_s 20.0
 
-  def start_link(game_info, rock \\ %{}) do
+  def start_link(game_id, rock \\ %{}) when is_integer(game_id) do
     a = %{
       :id => next_id(),
-      :game => game_info,
+      :game_id => game_id,
       :rock => Map.merge(random_asteroid(), rock)
     }
 
@@ -44,16 +44,16 @@ defmodule Elixoids.Asteroid.Server do
     {:ok, a}
   end
 
-  def handle_tick(_pid, delta_t_ms, asteroid = %{game: %{id: game_id}}) do
+  def handle_tick(_pid, delta_t_ms, asteroid = %{game_id: game_id}) do
     moved_asteroid = asteroid |> move(delta_t_ms)
     GameServer.update_asteroid(game_id, state_tuple(moved_asteroid))
     {:ok, moved_asteroid}
   end
 
-  def handle_cast(:destroyed, asteroid = %{rock: rock}) do
+  def handle_cast(:destroyed, asteroid = %{rock: rock, game_id: game_id}) do
     if rock.radius >= @splittable_radius_m do
       rocks = Rock.cleave(rock, 2)
-      GameServer.spawn_asteroids(asteroid.game.id, rocks)
+      GameServer.spawn_asteroids(game_id, rocks)
     end
 
     {:stop, :normal, asteroid}

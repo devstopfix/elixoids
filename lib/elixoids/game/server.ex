@@ -8,18 +8,18 @@ defmodule Elixoids.Game.Server do
   """
 
   use GenServer
-  use Elixoids.Game.Heartbeat
 
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Asteroid.Server, as: Asteroid
   alias Elixoids.Bullet.Server, as: Bullet
   alias Elixoids.Collision.Server, as: CollisionServer
-  alias Elixoids.Game.Info
   alias Elixoids.Game.Snapshot
   alias Elixoids.News
   alias Elixoids.Ship.Server, as: Ship
   alias Elixoids.Ship.Targets
   import Logger
+
+  use Elixoids.Game.Heartbeat
 
   @max_asteroids 32
 
@@ -78,8 +78,8 @@ defmodule Elixoids.Game.Server do
 
   ## Initial state
 
-  def generate_asteroids(n, game_info) do
-    Enum.map(1..n, fn _ -> {:ok, _pid} = Asteroid.start_link(game_info) end)
+  def generate_asteroids(n, game_id) do
+    Enum.map(1..n, fn _ -> {:ok, _pid} = Asteroid.start_link(game_id) end)
   end
 
   ## Server Callbacks
@@ -92,12 +92,10 @@ defmodule Elixoids.Game.Server do
   end
 
   defp initial_game_state(asteroid_count, game_id) do
-    info = game_info(game_id)
-    generate_asteroids(asteroid_count, info)
+    generate_asteroids(asteroid_count, game_id)
 
     %{
       :game_id => game_id,
-      :info => info,
       :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
       :min_asteroid_count => asteroid_count
     }
@@ -124,8 +122,8 @@ defmodule Elixoids.Game.Server do
     {:noreply, new_game}
   end
 
-  def handle_cast({:spawn_asteroids, rocks}, game) do
-    Enum.each(rocks, fn rock -> new_asteroid_in_game(rock, game) end)
+  def handle_cast({:spawn_asteroids, rocks}, game = %{game_id: game_id}) do
+    Enum.each(rocks, fn rock -> new_asteroid_in_game(rock, game_id) end)
     {:noreply, game}
   end
 
@@ -134,9 +132,6 @@ defmodule Elixoids.Game.Server do
     {:noreply, game}
   end
 
-  @doc """
-  Append an Explosion to the game state at given co-ordinates.
-  """
   def handle_cast({:explosion, %{x: x, y: y}, radius}, game) do
     pan = Elixoids.Space.frac_x(x)
     Elixoids.News.publish_audio(game.game_id, SoundEvent.explosion(pan, radius))
@@ -206,8 +201,8 @@ defmodule Elixoids.Game.Server do
   @doc """
   Spawn a new ship controlled by player with given tag (unless that ship already exists)
   """
-  def handle_call({:spawn_player, player_tag}, _from, game) do
-    case Ship.start_link(game.info, player_tag) do
+  def handle_call({:spawn_player, player_tag}, _from, game = %{game_id: game_id}) do
+    case Ship.start_link(game_id, player_tag) do
       {:ok, ship_pid, ship_id} -> {:reply, {:ok, ship_pid, ship_id}, game}
       e -> {:reply, e, game}
     end
@@ -249,14 +244,14 @@ defmodule Elixoids.Game.Server do
 
   # Asteroids
 
-  def new_asteroid_in_game(a, game) do
-    {:ok, _pid} = Asteroid.start_link(game.info, a)
+  def new_asteroid_in_game(a, game_id) do
+    {:ok, _pid} = Asteroid.start_link(game_id, a)
   end
 
   def check_next_wave(game = %{min_asteroid_count: min_asteroid_count, game_id: game_id}) do
     if few_asteroids?(game) do
       News.publish_news(game_id, ["ASTEROID", "spotted"])
-      new_asteroid_in_game(Asteroid.random_asteroid(), game)
+      new_asteroid_in_game(Asteroid.random_asteroid(), game_id)
 
       if !Enum.empty?(game.state.asteroids) && min_asteroid_count < @max_asteroids,
         do: Process.send_after(self(), {:next_wave, min_asteroid_count + 1}, 8000)
@@ -279,8 +274,6 @@ defmodule Elixoids.Game.Server do
       end
     end)
   end
-
-  defp game_info(game_id), do: %Info{id: game_id}
 
   # @spec snapshot(map()) :: Snapshot.t()
   defp snapshot(game_state) do
