@@ -12,7 +12,6 @@ defmodule Elixoids.Ship.Server do
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Game.Server, as: GameServer
   alias Elixoids.News
-  alias Elixoids.Player
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
   alias Elixoids.World.Point
@@ -119,9 +118,16 @@ defmodule Elixoids.Ship.Server do
     end
   end
 
-  def handle_cast(:player_pulls_trigger, ship) do
+  def handle_cast(
+        :player_pulls_trigger,
+        ship = %{game_id: game_id, pos: ship_centre, theta: theta}
+      ) do
     if past?(ship.laser_charged_at) do
-      fire_bullet(ship)
+      pos = Point.move(ship_centre, theta, @nose_radius_m)
+      {:ok, _ } = GameServer.bullet_fired(game_id, ship.tag, pos, theta)
+      publish_news(game_id, [ship.tag, "fires"])
+      e = pos.x |> Space.frac_x() |> SoundEvent.fire()
+      News.publish_audio(game_id, e)
       {:noreply, recharge_laser(ship)}
     else
       {:noreply, ship}
@@ -133,14 +139,6 @@ defmodule Elixoids.Ship.Server do
   def handle_call(:game_state_req, from, ship = %{game_id: game_id}) do
     :ok = GameServer.state_of_ship(game_id, self(), from)
     {:noreply, ship}
-  end
-
-  defp fire_bullet(ship = %{game_id: game_id, pos: ship_centre, theta: theta}) do
-    pos = Point.move(ship_centre, theta, @nose_radius_m)
-    GameServer.bullet_fired(game_id, ship.tag, pos, theta)
-    publish_news(game_id, [ship.tag, "fires"])
-    e = pos.x |> Space.frac_x() |> SoundEvent.fire()
-    News.publish_audio(game_id, e)
   end
 
   # Data
