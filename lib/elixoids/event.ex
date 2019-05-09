@@ -25,7 +25,7 @@ defmodule Elixoids.Event do
         tag: victim_tag
       }) do
     Process.exit(bullet_pid, :shutdown)
-    publish_news(game_id, [shooter_tag, "hits", victim_tag])
+    publish_news(game_id, [shooter_tag, "shot", victim_tag])
     Ship.bullet_hit_ship(ship_pid, shooter_tag)
   end
 

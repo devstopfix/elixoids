@@ -20,8 +20,12 @@ defmodule Elixoids.Game.Heartbeat do
 
   """
 
+  @callback handle_tick(pid(), integer(), term()) :: {:noreply, term()} | {:stop, :normal, term()}
+
   defmacro __using__(_opts) do
     quote do
+      @behaviour Elixoids.Game.Heartbeat
+
       @fps 60
       @ms_between_ticks div(1000, @fps)
       def start_heartbeat, do: Process.send(self(), :tick, [])
@@ -34,8 +38,8 @@ defmodule Elixoids.Game.Heartbeat do
             next_heartbeat()
             {:noreply, %{new_state | clock_ms: Elixoids.World.Clock.now_ms()}}
 
-          other ->
-            other
+          {:stop, :normal, new_state} ->
+            {:stop, :normal, new_state}
         end
       end
 
@@ -44,9 +48,7 @@ defmodule Elixoids.Game.Heartbeat do
         {:noreply, Map.put(state, :clock_ms, Elixoids.World.Clock.now_ms())}
       end
 
-      defp next_heartbeat do
-        Process.send_after(self(), :tick, @ms_between_ticks)
-      end
+      defp next_heartbeat, do: Process.send_after(self(), :tick, @ms_between_ticks)
     end
   end
 end
