@@ -106,6 +106,7 @@ defmodule Elixoids.Ship.Server do
     new_ship =
       %{ship | pos: random_ship_point(), theta: random_angle()}
       |> discharge_laser
+      |> recharge_shields
 
     {:noreply, new_ship}
   end
@@ -117,13 +118,13 @@ defmodule Elixoids.Ship.Server do
 
   def handle_cast(
         {:bullet_hit_ship, shooter_tag},
-        ship = %{pos: pos, radius: radius, game: %{id: game_id}, tag: tag}
+        ship = %{pos: pos, radius: radius, game_id: game_id, tag: tag}
       ) do
-    Elixoids.Game.Server.explosion(game_id, pos, radius)
     hyperspace(self())
+    Elixoids.Game.Server.explosion(game_id, pos, radius)
     publish_news(game_id, [shooter_tag, "kills", tag])
 
-    {:noreply, %{ship | shields: @max_shields}}
+    {:noreply, ship}
   end
 
   def handle_cast({:new_heading, theta}, ship) do
@@ -226,6 +227,8 @@ defmodule Elixoids.Ship.Server do
   def discharge_laser(ship) do
     %{ship | :laser_charged_at => now_ms() + @laser_recharge_penalty_ms}
   end
+
+  defp recharge_shields(ship), do: %{ship | shields: @max_shields}
 
   # defimpl Elixoids.Game.Heartbeat.Tick do
   def handle_tick(_pid, delta_t_ms, ship = %{game_id: game_id}) do
