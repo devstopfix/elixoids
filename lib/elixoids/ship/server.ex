@@ -11,10 +11,11 @@ defmodule Elixoids.Ship.Server do
 
   alias Elixoids.Api.SoundEvent
   alias Elixoids.Game.Server, as: GameServer
+  alias Elixoids.News
   alias Elixoids.Player
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
-  alias Elixoids.World.Velocity
+  alias Elixoids.World.Point
   import Elixoids.News
   import Elixoids.World.Clock
   import Elixoids.World.Angle
@@ -26,7 +27,7 @@ defmodule Elixoids.Ship.Server do
   @ship_radius_m 20.0
 
   # The spawn point of a bullet
-  @nose_radius_m @ship_radius_m * 1.1
+  @nose_radius_m @ship_radius_m * 1.05
 
   # Rotation rate (radians/sec). Three seconds to turn a complete circle.
   @ship_rotation_rad_per_sec :math.pi() * 2 / 3.0
@@ -149,17 +150,12 @@ defmodule Elixoids.Ship.Server do
     {:noreply, ship}
   end
 
-  defp fire_bullet(ship = %{game_id: game_id}) do
-    pos = calculate_nose(ship)
-    GameServer.bullet_fired(game_id, ship.tag, pos, ship.theta)
+  defp fire_bullet(ship = %{game_id: game_id, pos: ship_centre, theta: theta}) do
+    pos = Point.move(ship_centre, theta, @nose_radius_m)
+    GameServer.bullet_fired(game_id, ship.tag, pos, theta)
     publish_news(game_id, [ship.tag, "fires"])
-    pan = Space.frac_x(ship.pos.x)
-    Elixoids.News.publish_audio(game_id, SoundEvent.fire(pan))
-  end
-
-  defp calculate_nose(%{pos: ship_centre, theta: theta}) do
-    v = %Velocity{:theta => theta, :speed => @nose_radius_m}
-    Velocity.apply_velocity(ship_centre, v, 1000.0)
+    e = pos.x |> Space.frac_x() |> SoundEvent.fire()
+    News.publish_audio(game_id, e)
   end
 
   # Data

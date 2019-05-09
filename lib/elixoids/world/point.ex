@@ -16,6 +16,11 @@ defmodule Elixoids.World.Point do
     :math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
   end
 
+  @spec move(t(), number(), number()) :: t()
+  def move(p, theta, distance) do
+    translate(p, :math.cos(theta) * distance, :math.sin(theta) * distance)
+  end
+
   defimpl RoundDP, for: __MODULE__ do
     @doc "Round position accruate to cm"
     def round_dp(%{x: x, y: y} = p), do: %{p | x: Float.round(x, 2), y: Float.round(y, 2)}

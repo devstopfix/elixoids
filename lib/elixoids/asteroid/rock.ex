@@ -1,6 +1,7 @@
 defmodule Elixoids.Asteroid.Rock do
   @moduledoc "Attributes of an asteroid"
 
+  alias Elixoids.World.Point
   alias Elixoids.World.Velocity
 
   defstruct pos: nil, velocity: %Velocity{}, radius: 0.0
@@ -11,15 +12,9 @@ defmodule Elixoids.Asteroid.Rock do
   @doc """
   Cleave the rock into n pieces
   """
-  # @spec cleave(map(), integer()) :: map()
-  def cleave(rock, _n) do
-    angle_offsets()
-    |> Enum.map(&new(&1, rock))
-  end
+  def cleave(rock, _n), do: Enum.map(angle_offsets(), &new(&1, rock))
 
-  defp halve(a, d \\ 2.0) do
-    %{a | radius: a.radius / d}
-  end
+  defp halve(a, d \\ 2.0), do: %{a | radius: a.radius / d}
 
   defp angle_offsets, do: [@quarter_pi_radians, -@quarter_pi_radians]
 
@@ -37,17 +32,8 @@ defmodule Elixoids.Asteroid.Rock do
 
   defp speedup(a), do: update_in(a.velocity, &Velocity.double_speed(&1))
 
-  # Bump the asteroid in the direction it is facing, by half its radius
-  defp bump(a) do
-    t_ms = a.radius / (a.velocity.speed + 0.01) * 1000 / 1.8
-    update_in(a.pos, &Velocity.apply_velocity(&1, a.velocity, t_ms))
+  defp bump(a = %{radius: radius, velocity: %{theta: theta}}) do
+    update_in(a.pos, &Point.move(&1, theta, radius))
   end
 
-  # @doc """
-  # Modify the angle by a small amount
-  # """
-  # def perturb(theta) do
-  #   delta_theta = :rand.uniform() * :math.pi() / 24.0
-  #   wrap_angle(theta + delta_theta)
-  # end
 end
