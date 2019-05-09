@@ -36,12 +36,6 @@ defmodule Elixoids.Collision.Server do
     {:noreply, game_id}
   end
 
-  @spec collision_check(
-          list(Elixoids.Asteroid.Location.t()),
-          list(Elixoids.Bullet.Location.t()),
-          list(Elixoids.Ship.Location.t())
-        ) ::
-          list(tuple())
   def collision_check(asteroids, bullets, ships) do
     tally = [a: MapSet.new(asteroids), b: MapSet.new(bullets), s: MapSet.new(ships), hits: []]
 

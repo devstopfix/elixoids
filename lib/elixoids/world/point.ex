@@ -3,7 +3,7 @@ defmodule Elixoids.World.Point do
 
   alias Elixoids.World.RoundDP
 
-  @type t :: %{x: float(), y: float()}
+  @type t :: %{x: number(), y: number()}
 
   defstruct x: 0.0, y: 0.0
 

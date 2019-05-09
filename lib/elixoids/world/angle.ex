@@ -1,7 +1,7 @@
 defmodule Elixoids.World.Angle do
   @moduledoc "Angle in Radians"
 
-  @type t :: float()
+  @type t :: number()
 
   # 360º
   @pi2_radians 2 * :math.pi()

@@ -48,9 +48,6 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
       {:error, _} ->
         {:reply, @bad_json, state}
-
-      # {:error, :badarg, _} ->
-      #   {:reply, @bad_json, state}
     end
   catch
     _, _ -> {:stop, state}

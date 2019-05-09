@@ -5,8 +5,8 @@ defmodule Elixoids.World.Velocity do
   2) a speed in metres/second.
   """
 
-  @type angle :: float()
-  @type speed :: float()
+  @type angle :: number()
+  @type speed :: number()
 
   @type t :: %{theta: angle(), speed: speed()}
 
