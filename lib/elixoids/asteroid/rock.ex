@@ -35,5 +35,4 @@ defmodule Elixoids.Asteroid.Rock do
   defp bump(a = %{radius: radius, velocity: %{theta: theta}}) do
     update_in(a.pos, &Point.move(&1, theta, radius))
   end
-
 end

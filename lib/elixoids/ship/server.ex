@@ -167,7 +167,6 @@ defmodule Elixoids.Ship.Server do
       tag: ship.tag,
       pos: ship.pos,
       radius: ship.radius,
-      # TODO protocol?
       theta: Float.round(ship.theta, 3)
     }
   end
