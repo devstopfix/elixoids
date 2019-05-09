@@ -59,31 +59,16 @@ defmodule Elixoids.Ship.Server do
   defp via(ship_id),
     do: {:via, Registry, {Registry.Elixoids.Ships, ship_id}}
 
-  @doc """
-  Player requests turn to given theta.
-  """
   def new_heading(ship_id, theta), do: GenServer.cast(via(ship_id), {:new_heading, theta})
 
-  @doc """
-  Move the ship to a random position on the map
-  and prevent it firing.
-  """
-  def hyperspace(ship_pid) when is_pid(ship_pid), do: GenServer.cast(ship_pid, :hyperspace)
 
   def hyperspace(ship_id), do: GenServer.cast(via(ship_id), :hyperspace)
+
+  def player_disconnect(ship_id), do: GenServer.cast(via(ship_id), :player_disconnect)
 
   def bullet_hit_ship(ship_pid, shooter_tag) when is_pid(ship_pid),
     do: GenServer.cast(ship_pid, {:bullet_hit_ship, shooter_tag})
 
-  @doc """
-  Remove the ship from the game.
-  """
-  def stop(ship_id) do
-    case Registry.lookup(Registry.Elixoids.Ships, ship_id) do
-      [{pid, _} | _] -> Process.exit(pid, :shutdown)
-      _ -> false
-    end
-  end
 
   @doc """
   Player pulls trigger, which may fire a bullet
@@ -144,6 +129,8 @@ defmodule Elixoids.Ship.Server do
       {:noreply, ship}
     end
   end
+
+  def handle_cast(:player_disconnect, ship), do: {:stop, :normal, ship}
 
   def handle_call(:game_state_req, from, ship = %{game_id: game_id}) do
     :ok = GameServer.state_of_ship(game_id, self(), from)
@@ -225,7 +212,6 @@ defmodule Elixoids.Ship.Server do
 
   defp recharge_shields(ship), do: %{ship | shields: @max_shields}
 
-  # defimpl Elixoids.Game.Heartbeat.Tick do
   def handle_tick(_pid, delta_t_ms, ship = %{game_id: game_id}) do
     new_ship = ship |> rotate_ship(delta_t_ms)
 

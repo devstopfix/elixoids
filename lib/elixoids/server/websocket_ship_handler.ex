@@ -32,10 +32,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     end
   end
 
-  def terminate(_reason, _partial_req, %{ship_id: ship_id}) do
-    Ship.stop(ship_id)
-    :ok
-  end
+  def terminate(_reason, _partial_req, %{ship_id: ship_id}), do: Ship.player_disconnect(ship_id)
 
   def terminate(_reason, _partial_req, _), do: :ok
 
