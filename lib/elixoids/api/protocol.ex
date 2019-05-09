@@ -1,4 +1,4 @@
-defmodule Elixoids.Api.Sound.Protocol do
+defmodule Elixoids.Api.Sound do
   defmodule Sound do
     @moduledoc false
     use Protobuf, syntax: :proto3

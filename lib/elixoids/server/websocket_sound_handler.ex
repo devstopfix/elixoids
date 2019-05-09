@@ -1,7 +1,7 @@
 defmodule Elixoids.Server.WebsocketSoundHandler do
   @moduledoc "Forwards game sounds to the subscriber."
 
-  alias Elixoids.Api.Sound.Protocol, as: SoundProtocol
+  alias Elixoids.Api.Sound, as: SoundProtocol
 
   @opts %{idle_timeout: 60 * 60 * 1000}
 
