@@ -20,7 +20,7 @@ defmodule Elixoids.Game.Heartbeat do
 
   """
 
-  @callback handle_tick(pid(), integer(), term()) :: {:noreply, term()} | {:stop, :normal, term()}
+  @callback handle_tick(pid(), integer(), term()) :: {:ok, term()} | {:stop, :normal, term()}
 
   defmacro __using__(_opts) do
     quote do

@@ -61,14 +61,12 @@ defmodule Elixoids.Ship.Server do
 
   def new_heading(ship_id, theta), do: GenServer.cast(via(ship_id), {:new_heading, theta})
 
-
   def hyperspace(ship_id), do: GenServer.cast(via(ship_id), :hyperspace)
 
   def player_disconnect(ship_id), do: GenServer.cast(via(ship_id), :player_disconnect)
 
   def bullet_hit_ship(ship_pid, shooter_tag) when is_pid(ship_pid),
     do: GenServer.cast(ship_pid, {:bullet_hit_ship, shooter_tag})
-
 
   @doc """
   Player pulls trigger, which may fire a bullet
