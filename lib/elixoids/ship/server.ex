@@ -37,7 +37,7 @@ defmodule Elixoids.Ship.Server do
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
   @max_shields 3
 
-  def start_link(game_id, tag \\ Player.random_tag(), opts \\ %{}) do
+  def start_link(game_id, tag, opts \\ %{}) do
     ship =
       random_ship()
       |> Map.merge(opts)

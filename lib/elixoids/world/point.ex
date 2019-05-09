@@ -22,7 +22,7 @@ defmodule Elixoids.World.Point do
   end
 
   defimpl RoundDP, for: __MODULE__ do
-    @doc "Round position accruate to cm"
+    @doc "Round position accurate to cm"
     def round_dp(%{x: x, y: y} = p), do: %{p | x: Float.round(x, 2), y: Float.round(y, 2)}
   end
 end

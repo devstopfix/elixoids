@@ -3,20 +3,8 @@ defmodule Elixoids.PlayerTest do
 
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
-  alias Elixoids.Player, as: Player
   alias Elixoids.Ship.Server, as: Ship
   alias Elixoids.Game.Server, as: Game
-
-  test "Valid player tags" do
-    assert Player.valid_player_tag?("AAA")
-    assert Player.valid_player_tag?("ZZZ")
-  end
-
-  test "Invalid player tags" do
-    refute Player.valid_player_tag?("AA")
-    refute Player.valid_player_tag?("ZZZZ")
-    refute Player.valid_player_tag?("A1A")
-  end
 
   test "Two players with can connect" do
     tag1 = "ALC"

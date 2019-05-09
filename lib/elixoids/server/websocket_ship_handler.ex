@@ -4,7 +4,6 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   """
 
   alias Elixoids.Game.Server, as: Game
-  alias Elixoids.Player
   alias Elixoids.Ship.Server, as: Ship
   import Elixir.Translate
 
@@ -23,7 +22,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     :erlang.start_timer(@pause_ms, self(), [])
 
     with {game_id, ""} <- Integer.parse(game),
-         Player.valid_player_tag?(tag),
+         valid_player_tag?(tag),
          {:ok, _pid, ship_id} <- Game.spawn_player(game_id, tag) do
       {:ok, %{tag: tag, ship_id: ship_id}}
     else
@@ -107,4 +106,6 @@ defmodule Elixoids.Server.WebsocketShipHandler do
       theta: theta
     }
   end
+
+  defp valid_player_tag?(tag), do: Regex.match?(~r/^[A-Z]{3}$/, tag)
 end
