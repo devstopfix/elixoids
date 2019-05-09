@@ -4,10 +4,10 @@ defmodule Elixoids.Server.RedirectHandler do
   @behaviour :cowboy_handler
 
   def init(req, any) do
-    {:ok, new_req} =
+    new_req =
       :cowboy_req.reply(
         303,
-        %{"Location" => "/0/game"},
+        %{"location" => "/0/game"},
         "",
         req
       )
