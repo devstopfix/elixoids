@@ -177,7 +177,7 @@ def run(ws):
 
 if __name__ == "__main__":
     args = options()
-    player_name = args.name or miner.name
+    player_name = args.name or name()
     miner = ConstantBearingMiner(player_name)
 
     ws_url = news_url(args.host, args.game, player_name)

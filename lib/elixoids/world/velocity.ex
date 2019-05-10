@@ -14,7 +14,6 @@ defmodule Elixoids.World.Velocity do
 
   alias Elixoids.World.Angle
   alias Elixoids.World.Point
-  alias Elixoids.World.RoundDP
   import Elixoids.World.Angle
 
   def north(speed \\ 0.0), do: %__MODULE__{theta: :math.pi() / 2, speed: speed}
@@ -36,11 +35,5 @@ defmodule Elixoids.World.Velocity do
     dx = :math.cos(theta) * speed * delta_t_ms / @ms_in_s
     dy = :math.sin(theta) * speed * delta_t_ms / @ms_in_s
     Point.translate(p, dx, dy)
-  end
-
-  defimpl RoundDP, for: __MODULE__ do
-    @doc "Round angle to 3dp"
-    def round_dp(%{theta: theta} = v),
-      do: %{v | theta: Float.round(theta, 3)}
   end
 end

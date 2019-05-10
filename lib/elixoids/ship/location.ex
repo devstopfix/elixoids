@@ -2,7 +2,6 @@ defmodule Elixoids.Ship.Location do
   @moduledoc false
 
   alias Elixoids.Api.State.WorldJSON
-  import Elixoids.World.RoundDP
 
   @type t :: %{
           pid: pid(),
@@ -18,12 +17,11 @@ defmodule Elixoids.Ship.Location do
   defimpl WorldJSON, for: __MODULE__ do
     def to_json_list(%{
           tag: tag,
-          pos: pos,
+          pos: %{x: x, y: y},
           theta: theta,
           radius: radius
         }) do
-      %{x: x, y: y} = round_dp(pos)
-      [tag, x, y, radius, theta]
+      [tag, Float.round(x, 2), Float.round(y, 2), Float.round(radius), Float.round(theta, 3)]
     end
   end
 end

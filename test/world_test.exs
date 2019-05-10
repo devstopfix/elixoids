@@ -4,19 +4,6 @@ defmodule Elixoids.WorldTest do
 
   alias Elixoids.World.Point
   import Elixoids.Test.Generators
-  import Elixoids.World.RoundDP
-
-  property :round_positions_to_1_dp do
-    for_all p in gen_point() do
-      rp = round_dp(p)
-
-      if p.x <= p.y do
-        assert round(rp.x) <= round(rp.y)
-      else
-        assert round(rp.y) >= round(rp.y)
-      end
-    end
-  end
 
   test "Origin" do
     p = %Point{}

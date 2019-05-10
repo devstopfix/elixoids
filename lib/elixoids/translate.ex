@@ -6,7 +6,6 @@ defmodule Elixir.Translate do
   alias Elixoids.Bullet.Server, as: Bullet
   alias Elixoids.World.Point
   alias Elixoids.World.Polar
-  import Elixoids.World.RoundDP
 
   @doc """
   Translate asteroids in game relative to ship.
@@ -20,8 +19,8 @@ defmodule Elixir.Translate do
 
   defp asteroid_relative(asteroid, origin) do
     %{id: id, pos: pos, radius: r} = asteroid
-    p = pos |> Polar.subtract(origin) |> round_dp()
-    [id, p.theta, r, p.distance]
+    p = pos |> Polar.subtract(origin)
+    [id, Float.round(p.theta, 3), r, Float.round(p.distance)]
   end
 
   def ships_relative(ships, origin) do
@@ -31,7 +30,7 @@ defmodule Elixir.Translate do
   end
 
   defp ship_relative(%{tag: tag, pos: pos}, origin) do
-    p = pos |> Polar.subtract(origin) |> round_dp()
-    [tag, p.theta, p.distance]
+    p = pos |> Polar.subtract(origin)
+    [tag, Float.round(p.theta, 3), Float.round(p.distance)]
   end
 end
