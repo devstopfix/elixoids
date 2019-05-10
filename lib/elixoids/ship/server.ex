@@ -18,7 +18,6 @@ defmodule Elixoids.Ship.Server do
   import Elixoids.News
   import Elixoids.World.Clock
   import Elixoids.World.Angle
-  import Elixoids.Game.Identifiers
 
   use Elixoids.Game.Heartbeat
 
@@ -37,17 +36,17 @@ defmodule Elixoids.Ship.Server do
   @max_shields 3
 
   def start_link(game_id, tag, opts \\ %{}) do
+    ship_id = {game_id, tag}
+
     ship =
       random_ship()
       |> Map.merge(opts)
       |> Map.merge(%{
-        :id => next_id(),
+        :id => ship_id,
         :tag => tag,
         :game_id => game_id,
         :shields => @max_shields
       })
-
-    ship_id = {game_id, tag}
 
     case GenServer.start_link(__MODULE__, ship, name: via(ship_id)) do
       {:ok, pid} -> {:ok, pid, ship_id}
@@ -64,8 +63,8 @@ defmodule Elixoids.Ship.Server do
 
   def player_disconnect(ship_id), do: GenServer.cast(via(ship_id), :player_disconnect)
 
-  def bullet_hit_ship(ship_pid, shooter_tag) when is_pid(ship_pid),
-    do: GenServer.cast(ship_pid, {:bullet_hit_ship, shooter_tag})
+  def bullet_hit_ship(ship_id, shooter_tag),
+    do: GenServer.cast(via(ship_id), {:bullet_hit_ship, shooter_tag})
 
   @doc """
   Player pulls trigger, which may fire a bullet
@@ -101,9 +100,9 @@ defmodule Elixoids.Ship.Server do
 
   def handle_cast(
         {:bullet_hit_ship, shooter_tag},
-        ship = %{pos: pos, radius: radius, game_id: game_id, tag: tag}
+        ship = %{pos: pos, radius: radius, game_id: game_id, tag: tag, id: ship_id}
       ) do
-    hyperspace(self())
+    hyperspace(ship_id)
     Elixoids.Game.Server.explosion(game_id, pos, radius)
     publish_news(game_id, [shooter_tag, "kills", tag])
 
@@ -124,7 +123,7 @@ defmodule Elixoids.Ship.Server do
       ) do
     if past?(ship.laser_charged_at) do
       pos = Point.move(ship_centre, theta, @nose_radius_m)
-      {:ok, _ } = GameServer.bullet_fired(game_id, ship.tag, pos, theta)
+      {:ok, _} = GameServer.bullet_fired(game_id, ship.tag, pos, theta)
       publish_news(game_id, [ship.tag, "fires"])
       e = pos.x |> Space.frac_x() |> SoundEvent.fire()
       News.publish_audio(game_id, e)

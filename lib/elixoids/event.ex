@@ -10,23 +10,23 @@ defmodule Elixoids.Event do
   @asteroid "ASTEROID"
 
   def asteroid_hit_ship(game_id, %{pid: asteroid_pid, radius: radius}, %{
-        pid: ship_pid,
+        id: ship_id,
         tag: tag,
         pos: pos
       }) do
-    Ship.hyperspace(ship_pid)
+    Ship.hyperspace(ship_id)
     Elixoids.Game.Server.explosion(game_id, pos, radius)
     Asteroid.destroyed(asteroid_pid)
     publish_news(game_id, [@asteroid, "hit", tag])
   end
 
   def bullet_hit_ship(game_id, %{pid: bullet_pid, shooter: shooter_tag}, %{
-        pid: ship_pid,
+        id: ship_id,
         tag: victim_tag
       }) do
     Process.exit(bullet_pid, :shutdown)
     publish_news(game_id, [shooter_tag, "shot", victim_tag])
-    Ship.bullet_hit_ship(ship_pid, shooter_tag)
+    Ship.bullet_hit_ship(ship_id, shooter_tag)
   end
 
   def bullet_hit_asteroid(
