@@ -23,7 +23,7 @@ defmodule Elixoids.Ship.Location do
           radius: radius
         }) do
       %{x: x, y: y} = round_dp(pos)
-      [tag, x, y, radius, theta, ""]
+      [tag, x, y, radius, theta]
     end
   end
 end
