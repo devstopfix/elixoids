@@ -12,7 +12,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   @behaviour :cowboy_handler
 
-  @opts %{idle_timeout: 60 * 1000}
+  @opts %{idle_timeout: 60 * 1000, compress: true}
 
   def init(req = %{bindings: %{game: game, tag: tag}}, _state) do
     {:cowboy_websocket, req, %{url_tag: tag, game_id: game}, @opts}

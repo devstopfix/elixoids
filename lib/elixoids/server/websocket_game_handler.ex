@@ -11,7 +11,7 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   @fps 30
   @ms_between_frames div(1000, @fps)
   @pause_ms 1000
-  @opts %{idle_timeout: 60 * 60 * 1000, compress: false}
+  @opts %{idle_timeout: 60 * 60 * 1000, compress: true}
   @explosions_per_frame 7
 
   @behaviour :cowboy_handler
