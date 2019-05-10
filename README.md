@@ -114,7 +114,7 @@ While developing the UI you can start a [test card](docs/testcard-classic.jpg) g
 
     mix run --no-halt games/testcard.exs
 
-Then connect to `ws://localhost:8065/1/game`. The original 2016 UI is available at `/1/gamejs`.
+Then connect to `ws://localhost:8065/1/game`. The original 2016 UI is available at `/1/game16`.
 
 ## Deploy
 
