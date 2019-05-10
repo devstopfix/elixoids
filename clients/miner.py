@@ -10,6 +10,7 @@
 #     python3 clients/miner.py --host localhost:8065
 #
 
+from functools import partial
 from math import floor, pi
 from random import choices, normalvariate
 from string import ascii_uppercase
@@ -125,10 +126,8 @@ def name():
     return 'M' + ''.join(''.join(choices(ascii_uppercase, k=2)))
 
 
-miner = ConstantBearingMiner(name())
 
-
-def on_message(ws, message):
+def on_message(miner, ws, message):
     try:
         state = json.loads(message)
         rocks = miner.rocks(state)
@@ -179,10 +178,12 @@ def run(ws):
 if __name__ == "__main__":
     args = options()
     player_name = args.name or miner.name
+    miner = ConstantBearingMiner(player_name)
+
     ws_url = news_url(args.host, args.game, player_name)
     ws = websocket.WebSocketApp(ws_url,
                                 header={"Accept": "application/json"},
-                                on_message=on_message,
+                                on_message=partial(on_message, miner),
                                 on_error=on_error,
                                 on_close=on_close)
     run(ws)
