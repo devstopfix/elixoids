@@ -12,7 +12,7 @@ defmodule Elixoids.Game.Zero do
 
   def init(:ok) do
     children = [
-      {Elixoids.Game.Server, game_id: @zero, asteroids: 4},
+      {Elixoids.Game.Server, game_id: @zero, asteroids: 8},
       {Elixoids.Collision.Server, @zero}
     ]
 

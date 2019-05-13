@@ -21,8 +21,6 @@ defmodule Elixoids.Game.Server do
 
   use Elixoids.Game.Heartbeat
 
-  @max_asteroids 32
-
   def start_link(args = [game_id: game_id, asteroids: _]) do
     {:ok, _pid} = GenServer.start_link(__MODULE__, args, name: via(game_id))
   end
@@ -77,6 +75,8 @@ defmodule Elixoids.Game.Server do
   end
 
   ## Initial state
+
+  def generate_asteroids(0, _), do: []
 
   def generate_asteroids(n, game_id) do
     Enum.map(1..n, fn _ -> {:ok, _pid} = Asteroid.start_link(game_id) end)
@@ -156,41 +156,25 @@ defmodule Elixoids.Game.Server do
   def handle_tick(_pid, _delta_t_ms, game = %{game_id: game_id}) do
     snap = snapshot(game)
     CollisionServer.collision_tests(game_id, snap)
-    next_game_state = check_next_wave(game)
-    {:ok, next_game_state}
+    {:ok, game}
   end
 
-  @doc """
-  Remove processes that exit from the game state
-  """
-  def handle_info(msg = {:EXIT, _, _}, state) do
-    case msg do
-      {:EXIT, pid, :shutdown} ->
-        {:noreply, remove_pid_from_game_state(pid, state)}
-
-      {:EXIT, pid, :normal} ->
-        {:noreply, remove_pid_from_game_state(pid, state)}
-
-      {:EXIT, pid, msg} ->
-        [:EXIT, msg, state] |> inspect |> warn()
-        {:noreply, remove_pid_from_game_state(pid, state)}
-    end
+  def handle_info({:EXIT, pid, :normal}, state) do
+    {:noreply, remove_pid_from_game_state(pid, state, [:bullets, :ships])}
   end
 
-  # Ceiling on maximum asteroids in a wave
-  def handle_info({:next_wave, inc_asteroid_count}, game)
-      when inc_asteroid_count > @max_asteroids,
-      do: {:noreply, game}
+  def handle_info({:EXIT, pid, {:shutdown, :destroyed}}, state) do
+    next_state = remove_pid_from_game_state(pid, state, [:asteroids]) |> check_next_wave()
+    {:noreply, next_state}
+  end
 
-  def handle_info(
-        {:next_wave, inc_asteroid_count},
-        game = %{min_asteroid_count: min_asteroid_count}
-      )
-      when inc_asteroid_count <= min_asteroid_count,
-      do: {:noreply, game}
+  def handle_info({:EXIT, pid, :shutdown}, state) do
+    {:noreply, remove_pid_from_game_state(pid, state, [:bullets, :ships])}
+  end
 
-  def handle_info({:next_wave, inc_asteroid_count}, game) do
-    {:noreply, %{game | min_asteroid_count: inc_asteroid_count}}
+  def handle_info(msg = {:EXIT, pid, _}, state) do
+    [:EXIT, msg, state] |> inspect |> warn()
+    {:noreply, remove_pid_from_game_state(pid, state)}
   end
 
   def handle_call({:bullet_fired, shooter_tag, pos, theta}, _from, game) do
@@ -248,13 +232,10 @@ defmodule Elixoids.Game.Server do
     {:ok, _pid} = Asteroid.start_link(game_id, a)
   end
 
-  def check_next_wave(game = %{min_asteroid_count: min_asteroid_count, game_id: game_id}) do
+  def check_next_wave(game = %{game_id: game_id}) do
     if few_asteroids?(game) do
       News.publish_news(game_id, ["ASTEROID", "spotted"])
       new_asteroid_in_game(Asteroid.random_asteroid(), game_id)
-
-      if !Enum.empty?(game.state.asteroids) && min_asteroid_count < @max_asteroids,
-        do: Process.send_after(self(), {:next_wave, min_asteroid_count + 1}, 8000)
     end
 
     game
@@ -266,8 +247,8 @@ defmodule Elixoids.Game.Server do
 
   # Game state
 
-  defp remove_pid_from_game_state(pid, game) do
-    Enum.reduce([:asteroids, :bullets, :ships], game, fn thng, game ->
+  defp remove_pid_from_game_state(pid, game, keys \\ [:asteroids, :bullets, :ships]) do
+    Enum.reduce(keys, game, fn thng, game ->
       case pop_in(game, [:state, thng, pid]) do
         {nil, _} -> game
         {_, new_game} -> new_game

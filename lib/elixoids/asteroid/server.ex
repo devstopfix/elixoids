@@ -56,7 +56,7 @@ defmodule Elixoids.Asteroid.Server do
       GameServer.spawn_asteroids(game_id, rocks)
     end
 
-    {:stop, :normal, asteroid}
+    {:stop, {:shutdown, :destroyed}, asteroid}
   end
 
   def random_asteroid do
