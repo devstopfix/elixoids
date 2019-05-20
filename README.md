@@ -1,12 +1,10 @@
 # Elixoids
 
-[Asteroids][1] game engine written in [Elixir][2].
+[Asteroids 1979 arcade game][1] engine written in [Elixir][2]. Watch the [Elixoids movie][6] on [Vimeo](https://vimeo.com) recorded at a Coding Night. Participants were given one hour to write an AI bot that could pilot a ship and play the game! See the original [Arcade Asteroids video](https://www.youtube.com/watch?v=WYSupJ5r2zo).
 
 [![Elixoids](docs/elixoids-8fps.gif)][6] [![Elixoids](docs/elixoids.vimeo.JPG)][6]
 
 The original UI was rendered by [JavaScript asteroids-ui][3] and has had a recent [Elm conversion][7]. Audio provided by [SonicAsteroids][4].
-
-Watch the [Elixoids movie][6] on [Vimeo](https://vimeo.com) recorded at a Coding Night. Participants were given one hour to write an AI bot that could pilot a ship and play the game! See the original [Arcade Asteroids video](https://www.youtube.com/watch?v=WYSupJ5r2zo).
 
 Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
 
