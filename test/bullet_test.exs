@@ -9,7 +9,7 @@ defmodule Elixoids.BulletTest do
 
   @max_bullet_flight_time 2999
 
-  @tag :slow
+  @tag :bullet
   test "Bullet lives 2.6 seconds" do
     Process.flag(:trap_exit, true)
     tag = "FIR"
