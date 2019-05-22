@@ -12,16 +12,6 @@ defmodule Elixoids.FuzzTest do
   import Jason
 
   @tag fuzz: true, iterations: 100
-  property :news_ws_ignores_input do
-    {:ok, _game, game_id} = GameSupervisor.start_game(asteroids: 1)
-    News.subscribe(game_id)
-
-    for_all msg in ws_input() do
-      assert {:ok, []} == WebsocketNewsHandler.websocket_handle(msg, [])
-    end
-  end
-
-  @tag fuzz: true, iterations: 100
   property :sound_ws_ignores_input do
     {:ok, _game, game_id} = GameSupervisor.start_game(asteroids: 1)
     News.subscribe(game_id)
