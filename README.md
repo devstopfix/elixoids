@@ -55,7 +55,7 @@ Clients subscribe to an event stream from the game via Websockets. The resources
 | Path               | Accept                   | Content                   |
 | ------------------ | ------------------------ | ------------------------- |
 | `/0/graphics`      | application/json         | Graphics stream           |
-| `/0/news`          | text/plain               | News stream               |
+| `/0/news`          | text/event-stream        | News stream               |
 | `/0/ship/PLY`      | application/json         | Game state for player PLY |
 | `/0/sound`         | application/json         | Sound stream              |
 | `/0/sound`         | application/octet-stream | Binary sound stream       |
@@ -68,15 +68,18 @@ Sound events can be received at `ws://example.com/0/sound` and here is the [soun
 
 ### News Client
 
-There is a sample Python news client at [cat_news.py](clients/cat_news.py). The news stream at `ws://example.com/0/news` is a stream of text lines of the form:
+The news stream at `http://example.com/0/news` is a stream of text lines of the form:
 
     [PLY|ASTEROID] VERB [PLY|ASTEROID]
 
 Example dialogue:
 
 ```
+$ curl -H 'Accept: text/event-stream' http://localhost:8065/0/news
+
 PLY fires
 PLY shot ASTEROID
+PLY fires
 PLY kills OTH
 ASTEROID hit PLY
 ASTEROID spotted

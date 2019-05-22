@@ -20,12 +20,14 @@ defmodule Elixoids.Api do
     ])
   end
 
-  def start_link(opts = [{:port, _}]) do
+  @idle_timeout 1 * 60 * 60 * 1000
+
+  def start_link(opts) do
     {:ok, _} =
       :cowboy.start_clear(
         :elixoids_http,
         opts,
-        %{env: %{dispatch: dispatch()}}
+        %{env: %{dispatch: dispatch()}, idle_timeout: @idle_timeout}
       )
   end
 

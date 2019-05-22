@@ -10,7 +10,7 @@ defmodule Elixoids.Application do
       {Registry, name: Registry.Elixoids.Games, keys: :unique},
       {Registry, name: Registry.Elixoids.News, keys: :duplicate},
       {Registry, name: Registry.Elixoids.Ships, keys: :unique},
-      {Elixoids.Api, [{:port, @port}]},
+      {Elixoids.Api, [port: @port]},
       Elixoids.Collision.Supervisor,
       Elixoids.Game.Supervisor,
       Elixoids.Game.Zero
