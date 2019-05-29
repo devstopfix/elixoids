@@ -6,7 +6,7 @@ Each game sound produces an event:
 
 | Field | Type           | Content                          |
 | ----- | -------------- | -------------------------------- |
-| snd   | x|f            | eXplosion or shot Fired          |
+| snd   | x,f            | eXplosion or shot Fired          |
 | pan   | float -1..1    | Stero pan                        |
 | size  | int            | Size of entity that caused sound |
 
