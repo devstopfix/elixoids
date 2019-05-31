@@ -17,7 +17,7 @@ defmodule Elixoids.Bullet.Server do
   use Elixoids.Game.Heartbeat
 
   @bullet_range_m 2000.0
-  @bullet_speed_m_per_s 750.0
+  @bullet_speed_m_per_s 1250.0
 
   @fly_time_ms s_to_ms(@bullet_range_m / @bullet_speed_m_per_s)
 
