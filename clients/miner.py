@@ -11,7 +11,7 @@
 #
 
 from functools import partial
-from math import floor, pi
+from math import floor, pi, atan
 from random import choices, normalvariate
 from string import ascii_uppercase
 from time import sleep
@@ -34,6 +34,10 @@ def normalize(r):
 
 def perturb(r, sigma=0.1):
     return normalize(r + normalvariate(0, sigma))
+
+
+def angular_radius(distance, radius):
+    return atan(radius / distance)
 
 # Time
 
@@ -61,7 +65,7 @@ class Miner:
         return [(k, v0, v1) for k, v0 in s0.items() for k1, v1 in s1.items() if k == k1]
 
     def rocks(self, state):
-        return {rk: [theta, dist] for [rk, theta, radius, dist] in state['rocks']}
+        return {rk: [theta, dist, radius] for [rk, theta, radius, dist] in state['rocks']}
 
     def handle(self, state, ship_theta):
         self.elapsed()
@@ -80,15 +84,15 @@ class Miner:
 
 class ConstantBearingMiner(Miner):
 
-    ANGULAR_SIZE = 0.05
+    ANGULAR_SIZE = 0.01
     target_id = 0
 
     # Find the difference between thetas over successive game states
     # The dampen factor can be adjusted to stop switching targets too often
     def delta_theta(self, a, dampen=1.5):
         [_, s0, s1] = a
-        [t0, _] = s0
-        [t1, _] = s1
+        [t0, _, _] = s0
+        [t1, _, _] = s1
         return abs(t1 - t0) / dampen
 
     def sort_smallest_change_in_bearing(self, delta_state):
@@ -98,22 +102,25 @@ class ConstantBearingMiner(Miner):
         targets = self.sort_smallest_change_in_bearing(delta_state)
         return targets[0]
 
-    def pointing_at(self, ship_theta, target_theta):
-        return abs(normalize(ship_theta) - normalize(target_theta)) < self.ANGULAR_SIZE
+    def pointing_at(self, ship_theta, target):
+        [target_theta, target_distance, target_radius] = target
+        if target_distance > 0:
+            angular_r = angular_radius(target_distance, target_radius)
+            return abs(normalize(ship_theta) - normalize(target_theta)) < angular_r
+        else:
+            return False
 
     def lead_target(self, target):
         [_, s0, s1] = target
-        [t0, _] = s0
-        [t1, _] = s1
+        [t0, _, _] = s0
+        [t1, _, _] = s1
         return normalize(t1 + (t1 - t0))
 
     def strategy(self, delta_state, ship_theta):
         target = self.choose_target(delta_state)
-        if (target[0] != self.target_id):
-            self.target_id = target[0]
         target_theta = self.lead_target(target)
         perturbed_theta = perturb(target_theta, self.ANGULAR_SIZE)
-        if self.pointing_at(ship_theta, target_theta):
+        if self.pointing_at(ship_theta, target[-1]):
             return {'theta': perturbed_theta, 'fire': True}
         else:
             return {'theta': perturbed_theta}
