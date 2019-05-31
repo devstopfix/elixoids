@@ -120,7 +120,7 @@ class ConstantBearingMiner(Miner):
         target = self.choose_target(delta_state)
         target_theta = self.lead_target(target)
         perturbed_theta = perturb(target_theta, self.ANGULAR_SIZE)
-        if self.pointing_at(ship_theta, target[-1]):
+        if any(map(lambda target: self.pointing_at(ship_theta, target[-1]), delta_state)):
             return {'theta': perturbed_theta, 'fire': True}
         else:
             return {'theta': perturbed_theta}
