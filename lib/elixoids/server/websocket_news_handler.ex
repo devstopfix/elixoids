@@ -8,7 +8,7 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
   def init(req0 = %{bindings: %{game: game}}, _opts) do
     with {game_id, ""} <- Integer.parse(game),
          {:ok, _pid} <- Elixoids.News.subscribe(game_id),
-         req = :cowboy_req.stream_reply(200, %{"content-type" => "text/event-stream"}, req0) do
+         req <- :cowboy_req.stream_reply(200, %{"content-type" => "text/event-stream"}, req0) do
       {:cowboy_loop, req, game}
     else
       :error -> {:stop, req0, []}

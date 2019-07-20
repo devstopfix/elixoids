@@ -8,8 +8,7 @@ The original UI was rendered by [JavaScript asteroids-ui][3] and has had a recen
 
 Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
 
-
-# Build
+## Build
 
 To run the game [on Ubuntu](docs/ubuntu.md), or on OSX:
 
@@ -18,7 +17,7 @@ To run the game [on Ubuntu](docs/ubuntu.md), or on OSX:
     cd elixoids
     mix deps.get
 
-# Run
+## Run
 
 This repo contains the game engine, a webserver, and a recent version of the [asteroids-ui][3].
 
@@ -60,11 +59,9 @@ Clients subscribe to an event stream from the game via Websockets. The resources
 | `/0/sound`         | application/json         | Sound stream              |
 | `/0/sound`         | application/octet-stream | Binary sound stream       |
 
-
 ### Sound Client Protocol
 
 Sound events can be received at `ws://example.com/0/sound` and here is the [sound format](docs/sound_protocol.md). There is a Unicode visualizer using Protocol Buffers in [listen.py](clients/listen.py).
-
 
 ### News Client
 
@@ -74,7 +71,7 @@ The news stream at `http://example.com/0/news` is a stream of text lines of the 
 
 Example dialogue:
 
-```
+```bash
 $ curl -H 'Accept: text/event-stream' http://localhost:8065/0/news
 
 PLY fires
@@ -124,7 +121,6 @@ See the [Ubuntu deployment guide](docs/ubuntu.md) to run the game engine on a se
 ## Licence
 
 This software is published under the [MIT License](LICENSE) and Copyright ©2019 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5]. Button CSS by [ozer][8].
-
 
 [1]: https://en.wikipedia.org/wiki/Asteroids_(video_game)
 [2]: http://elixir-lang.org/
