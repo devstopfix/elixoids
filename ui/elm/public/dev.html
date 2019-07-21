@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Asteroids Arcade (ELM)</title>
+  <style>
+    body,
+    div:first-child {
+      margin: 0;
+      height: 100;
+    }
+
+    #cabinet {
+      margin: auto;
+      background: #0f1213;
+    }
+
+    elm-canvas,
+    canvas {
+      margin: auto;
+      display: block;
+    }
+
+    body {
+      background-color: #060708;
+    }
+
+    button {
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 2em;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="cabinet">
+      <main></main>
+      <button id="fullscreen" >&#x21F1; Fullscreen &#x21F2;</button>
+  </div>
+  <script src="./lib/elm-canvas.2.2.js"></script>
+  <script src="./lib/resources.js"></script>
+  <script src="./lib/fullscreen.js"></script>
+  <script src="./elixoids.dev.js"></script>
+  <script>
+    function run(url, id) {
+      var ws = new WebSocket(url);
+
+      app.ports.addGame.send({
+        id: id,
+        height: 788,
+        width: 1400,
+      });
+
+      ws.onmessage = function (message) {
+          var frame = {
+            id: id,
+            frame: message.data
+          };
+          app.ports.graphicsIn.send(frame);
+      };
+    }
+  </script>
+  <script>
+    var localURL = new URL("ws://localhost:8065/0/graphics");
+    var localTestCardURL = new URL("ws://localhost:8065/1/graphics");
+    var serverURL = new URL("ws://g0.elixoids.devstopfix.net/0/graphics");
+    var app = Elm.Main.init({ node: document.querySelector("main") });
+
+    window.addEventListener('load', function() {
+      var nextGameId = 0;
+      run(localURL, nextGameId += 1);
+
+      fullscreenFirstCanvas(document.getElementById("fullscreen"));
+    })
+  </script>
+</body>
+
+</html>

@@ -4,7 +4,7 @@
 
 [![Elixoids](docs/elixoids-8fps.gif)][6] [![Elixoids](docs/elixoids.vimeo.JPG)][6]
 
-The original UI was rendered by [JavaScript asteroids-ui][3] and has had a recent [Elm conversion][7]. Audio provided by [SonicAsteroids][4].
+The original UI was rendered by [JavaScript asteroids-ui][3] and has had a recent [Elm conversion](ui/elm/README.md). Audio provided by [SonicAsteroids][4].
 
 Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
 
@@ -19,7 +19,7 @@ To run the game [on Ubuntu](docs/ubuntu.md), or on OSX:
 
 ## Run
 
-This repo contains the game engine, a webserver, and a recent version of the [asteroids-ui][3].
+This repo contains the game engine, a webserver, and a recent version of the [asteroids-ui](ui/elm/README.md).
 
 To start a game:
 
@@ -106,7 +106,7 @@ NB The websocket connection can be *troublesome* on OSX. It will often fail to c
 
 ### Graphics Client
 
-Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] and [asteroids-elm][7] for reference implementation.
+Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] and [GraphicsDecoder.elm](ui/elm/src/GraphicsDecoder.elm) for reference implementation.
 
 While developing the UI you can start a [test card](docs/testcard-classic.jpg) game that allows you to prove your rendering:
 
@@ -120,7 +120,7 @@ See the [Ubuntu deployment guide](docs/ubuntu.md) to run the game engine on a se
 
 ## Licence
 
-This software is published under the [MIT License](LICENSE) and Copyright ©2019 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5]. Button CSS by [ozer][8].
+This software is published under the [MIT License](LICENSE) and Copyright ©2019 [devstopfix](https://www.devstopfix.com). UI is ©2016 [lachok](https://github.com/lachok). Audio code is ©2016 [jrothwell][5]. Button CSS by [ozer][7].
 
 [1]: https://en.wikipedia.org/wiki/Asteroids_(video_game)
 [2]: http://elixir-lang.org/
@@ -128,5 +128,4 @@ This software is published under the [MIT License](LICENSE) and Copyright ©2019
 [4]: https://github.com/jrothwell/sonic-asteroids
 [5]: https://github.com/jrothwell
 [6]: https://vimeo.com/330017229
-[7]: https://github.com/devstopfix/asteroids-graphics/tree/elm
-[8]: https://codepen.io/ozer/pen/KwvKoR
+[7]: https://codepen.io/ozer/pen/KwvKoR

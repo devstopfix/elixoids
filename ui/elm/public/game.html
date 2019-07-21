@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Asteroids Arcade (ELM)</title>
+    <!--link rel="icon" type="image/png" href="/icon.png" -->
+    <style>
+      body,
+      div:first-child {
+        margin: 0;
+        height: 100;
+      }
+
+      div, canvas {
+        margin-left: auto;
+        margin-right: auto;
+      }
+      canvas {
+        border: darkred 1px solid;
+      }
+
+      body {
+          background-color: #0f1213;
+      }
+    </style>
+  </head>
+  <body>
+    <main></main>
+    <script src="./elixoids.js"></script>
+    <script>
+      var localURL = new URL("ws://localhost:8065/0/graphics");
+      var localTestCardURL = new URL("ws://localhost:8065/1/graphics");
+      var serverURL = new URL("ws://g0.elixoids.devstopfix.net/0/graphics");
+      var app = Elm.Main.init({ node: document.querySelector("main") });
+      var nextGameId = 0;
+
+      if (app && app.ports) {
+        const id = nextGameId+=1;
+        var ws = new WebSocket(localTestCardURL);
+        app.ports.addGame.send(id);
+        ws.onmessage = function(message)
+        {
+            app.ports.graphicsIn.send(message.data);
+        };
+      }
+    </script>
+  </body>
+</html>
