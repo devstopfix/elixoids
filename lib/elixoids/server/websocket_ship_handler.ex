@@ -7,12 +7,12 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   alias Elixoids.Ship.Server, as: Ship
   import Elixir.Translate
 
-  @ms_between_frames div(1000, 4)
-  @pause_ms 250
-
   @behaviour :cowboy_handler
 
+  @max_rocks 20
+  @ms_between_frames div(1000, 4)
   @opts %{idle_timeout: 60 * 1000, compress: true}
+  @pause_ms 250
 
   def init(req = %{bindings: %{game: game, tag: tag}}, _state) do
     {:cowboy_websocket, req, %{url_tag: tag, game_id: game}, @opts}
@@ -102,7 +102,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   defp convert(%{origin: origin, rocks: rocks, ships: ships, theta: theta}) do
     %{
       rocks: asteroids_relative(rocks, origin),
-      ships: ships_relative(ships, origin),
+      ships: ships_relative(ships, origin) |> Enum.take(@max_rocks),
       theta: theta
     }
   end
