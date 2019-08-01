@@ -5,7 +5,6 @@ defmodule Elixoids.FuzzTest do
   alias Elixoids.Game.Server, as: Game
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.Server.WebsocketGameHandler
-  alias Elixoids.Server.WebsocketNewsHandler
   alias Elixoids.Server.WebsocketShipHandler
   alias Elixoids.Server.WebsocketSoundHandler
   alias Elixoids.News

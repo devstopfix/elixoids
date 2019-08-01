@@ -38,8 +38,8 @@ defmodule Elixoids.Game.Heartbeat do
             next_heartbeat()
             {:noreply, %{new_state | clock_ms: Elixoids.World.Clock.now_ms()}}
 
-          {:stop, :normal, new_state} ->
-            {:stop, :normal, new_state}
+          {:stop, reason, new_state} ->
+            {:stop, reason, new_state}
         end
       end
 

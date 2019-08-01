@@ -160,7 +160,7 @@ defmodule Elixoids.Game.Server do
   end
 
   def handle_info({:EXIT, pid, :normal}, state) do
-    {:noreply, remove_pid_from_game_state(pid, state, [:bullets, :ships])}
+    {:noreply, remove_pid_from_game_state(pid, state, [:ships])}
   end
 
   def handle_info({:EXIT, pid, {:shutdown, :destroyed}}, state) do
@@ -168,8 +168,12 @@ defmodule Elixoids.Game.Server do
     {:noreply, next_state}
   end
 
+  def handle_info({:EXIT, pid, {:shutdown, :detonate}}, state) do
+    {:noreply, remove_pid_from_game_state(pid, state, [:bullets])}
+  end
+
   def handle_info({:EXIT, pid, :shutdown}, state) do
-    {:noreply, remove_pid_from_game_state(pid, state, [:bullets, :ships])}
+    {:noreply, remove_pid_from_game_state(pid, state, [:ships])}
   end
 
   def handle_info(msg = {:EXIT, pid, _}, state) do

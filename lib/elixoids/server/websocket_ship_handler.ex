@@ -1,6 +1,9 @@
 defmodule Elixoids.Server.WebsocketShipHandler do
   @moduledoc """
-  Websocket Handler. Queries the ship state at 8 fps and publishes it over the websocket.
+  Websocket Handler for a player.
+
+  Queries the ship state at 5 fps and publishes it over the websocket.
+  FPS rate matches the laser recharge rate.
   """
 
   alias Elixoids.Game.Server, as: Game
@@ -10,7 +13,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   @behaviour :cowboy_handler
 
   @max_rocks 20
-  @ms_between_frames div(1000, 4)
+  @ms_between_frames div(1000, 5)
   @opts %{idle_timeout: 60 * 1000, compress: true}
   @pause_ms 250
 

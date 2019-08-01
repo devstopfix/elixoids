@@ -31,8 +31,9 @@ defmodule Elixoids.Ship.Server do
   @ship_rotation_rad_per_sec :math.pi() * 2 / 3.0
 
   # Minimum time between shots
-  @laser_recharge_ms 400
+  @laser_recharge_ms 200
   @laser_recharge_penalty_ms @laser_recharge_ms * 2
+  @max_in_flight_bullets 4
   @max_shields 3
 
   def start_link(game_id, tag, opts \\ %{}) do
@@ -45,7 +46,8 @@ defmodule Elixoids.Ship.Server do
         :id => ship_id,
         :tag => tag,
         :game_id => game_id,
-        :shields => @max_shields
+        :shields => @max_shields,
+        :bullets_in_flight => 0
       })
 
     case GenServer.start_link(__MODULE__, ship, name: via(ship_id)) do
@@ -78,6 +80,7 @@ defmodule Elixoids.Ship.Server do
 
   def init(ship) do
     start_heartbeat()
+    Process.flag(:trap_exit, true)
     {:ok, ship}
   end
 
@@ -117,17 +120,26 @@ defmodule Elixoids.Ship.Server do
     end
   end
 
+  def handle_cast(:player_pulls_trigger, %{bullets_in_flight: bullets_in_flight} = state)
+      when bullets_in_flight >= @max_in_flight_bullets do
+    {:noreply, state}
+  end
+
   def handle_cast(
         :player_pulls_trigger,
-        ship = %{game_id: game_id, pos: ship_centre, theta: theta}
+        %{game_id: game_id, tag: tag} = ship
       ) do
     if past?(ship.laser_charged_at) do
-      pos = Point.move(ship_centre, theta, @nose_radius_m)
-      {:ok, _} = GameServer.bullet_fired(game_id, ship.tag, pos, theta)
-      publish_news(game_id, [ship.tag, "fires"])
-      e = pos.x |> Space.frac_x() |> SoundEvent.fire()
-      News.publish_audio(game_id, e)
-      {:noreply, recharge_laser(ship)}
+      state =
+        ship
+        |> fire()
+        |> audio()
+        |> recharge_laser()
+        |> inc_bullets()
+
+      publish_news(game_id, [tag, "fires"])
+
+      {:noreply, state}
     else
       {:noreply, ship}
     end
@@ -138,6 +150,23 @@ defmodule Elixoids.Ship.Server do
   def handle_call(:game_state_req, from, ship = %{game_id: game_id}) do
     :ok = GameServer.state_of_ship(game_id, self(), from)
     {:noreply, ship}
+  end
+
+  def handle_info({:EXIT, _, {:shutdown, :detonate}}, state) do
+    {:noreply, dec_bullets(state)}
+  end
+
+  defp fire(%{game_id: game_id, pos: ship_centre, tag: tag, theta: theta} = ship) do
+    pos = Point.move(ship_centre, theta, @nose_radius_m)
+    {:ok, pid} = GameServer.bullet_fired(game_id, tag, pos, theta)
+    Process.link(pid)
+    ship
+  end
+
+  defp audio(%{game_id: game_id, pos: %{x: x}} = ship) do
+    e = x |> Space.frac_x() |> SoundEvent.fire()
+    News.publish_audio(game_id, e)
+    ship
   end
 
   # Data
@@ -206,6 +235,14 @@ defmodule Elixoids.Ship.Server do
   end
 
   defp recharge_shields(ship), do: %{ship | shields: @max_shields}
+
+  defp inc_bullets(ship) do
+    Map.update!(ship, :bullets_in_flight, &(&1 + 1))
+  end
+
+  defp dec_bullets(ship) do
+    Map.update!(ship, :bullets_in_flight, &max(&1 - 1, 0))
+  end
 
   def handle_tick(_pid, delta_t_ms, ship = %{game_id: game_id}) do
     new_ship = ship |> rotate_ship(delta_t_ms)
