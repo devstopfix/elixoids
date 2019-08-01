@@ -12,7 +12,8 @@ defmodule Elixoids.Mixfile do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
-      dialyzer: [flags: [:error_handling, :underspecs]]
+      dialyzer: [flags: [:error_handling, :underspecs]],
+      elixirc_options: [warnings_as_errors: true]
     ]
   end
 
