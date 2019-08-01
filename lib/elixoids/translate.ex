@@ -14,23 +14,23 @@ defmodule Elixir.Translate do
   def asteroids_relative(rocks, origin) do
     rocks
     |> Enum.map(fn a -> asteroid_relative(a, origin) end)
-    |> Enum.filter(fn s -> Bullet.in_range?(List.last(s)) end)
+    |> Enum.filter(fn [_, _, _, d] -> Bullet.in_range?(d) end)
   end
 
   defp asteroid_relative(asteroid, origin) do
     %{id: id, pos: pos, radius: r} = asteroid
-    p = pos |> Polar.subtract(origin)
-    [id, Float.round(p.theta, 3), r, Float.round(p.distance)]
+    %{theta: theta, distance: distance} = pos |> Polar.subtract(origin)
+    [id, Float.round(theta, 3), r, Float.round(distance)]
   end
 
   def ships_relative(ships, origin) do
     ships
     |> Enum.map(fn s -> ship_relative(s, origin) end)
-    |> Enum.filter(fn s -> Bullet.in_range?(List.last(s)) end)
+    |> Enum.filter(fn [_, _, d] -> Bullet.in_range?(d) end)
   end
 
   defp ship_relative(%{tag: tag, pos: pos}, origin) do
-    p = pos |> Polar.subtract(origin)
-    [tag, Float.round(p.theta, 3), Float.round(p.distance)]
+    %{theta: theta, distance: distance} = pos |> Polar.subtract(origin)
+    [tag, Float.round(theta, 3), Float.round(distance)]
   end
 end
