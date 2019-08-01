@@ -14,8 +14,11 @@ Open the browser:
 
 ```bash
 elm make src/Main.elm --optimize --output public/elm.js
+
 closure-compiler --js public/elm.js public/elm-canvas.2.2.js --compilation_level SIMPLE_OPTIMIZATIONS --language_out ECMASCRIPT_2015 --js_output_file public/elixoids.js
 ```
+
+Compressed with the [Closure Compiler](https://developers.google.com/closure/compiler/).
 
 ## Credits
 

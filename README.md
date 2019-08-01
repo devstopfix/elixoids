@@ -106,13 +106,13 @@ NB The websocket connection can be *troublesome* on OSX. It will often fail to c
 
 ### Graphics Client
 
-Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [asteroids-ui][3] and [GraphicsDecoder.elm](ui/elm/src/GraphicsDecoder.elm) for reference implementation.
+Graphics stream can be received at `ws://example.com/0/graphics` - to be documented - see [GraphicsDecoder.elm](ui/elm/src/GraphicsDecoder.elm) and [asteroids-ui][3] for reference implementations.
 
 While developing the UI you can start a [test card](docs/testcard-classic.jpg) game that allows you to prove your rendering:
 
     mix run --no-halt games/testcard.exs
 
-Then connect to `ws://localhost:8065/1/game`. The original 2016 UI is available at `/1/game16`.
+Then connect to `ws://localhost:8065/1/game`.
 
 ## Deploy
 
