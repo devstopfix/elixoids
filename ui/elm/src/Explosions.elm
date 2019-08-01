@@ -1,6 +1,8 @@
 module Explosions exposing (Explosion, newExplosion, renderExplosion, updateExplosions)
 
 import Canvas exposing (..)
+import Canvas.Settings exposing (fill, stroke)
+import Canvas.Settings.Advanced exposing (Transform, rotate, transform, translate)
 import Color exposing (Color)
 import Point2d exposing (Point2d, coordinates)
 

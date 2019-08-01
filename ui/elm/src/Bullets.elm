@@ -1,6 +1,9 @@
 module Bullets exposing (Bullet, mergeBullets, newBullet, renderBullet)
 
 import Canvas exposing (..)
+import Canvas.Settings exposing (fill, stroke)
+import Canvas.Settings.Advanced exposing (Transform, rotate, transform, translate)
+import Canvas.Settings.Line exposing (lineWidth)
 import Color exposing (Color)
 import Dict exposing (..)
 import Point2d exposing (Point2d, coordinates)

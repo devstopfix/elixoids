@@ -3,6 +3,8 @@ module Game exposing (Game, mergeGame, newGame, viewGame)
 import Asteroids exposing (..)
 import Bullets exposing (..)
 import Canvas exposing (..)
+import Canvas.Settings exposing (fill, stroke)
+import Canvas.Settings.Advanced exposing (Transform, applyMatrix, rotate, transform, translate)
 import Circle2d exposing (Circle2d, withRadius)
 import Color exposing (Color)
 import Dict exposing (Dict)
@@ -142,7 +144,6 @@ updateAsteroids asteroids game_asteroids =
     mergeAsteroids (toAsteroidMap asteroids) game_asteroids
 
 
-
 mergeAsteroids : Dict Int AsteroidLocation -> Dict Int Asteroid -> Dict Int Asteroid
 mergeAsteroids graphics_asteroids game_asteroids =
     Dict.merge
@@ -156,7 +157,6 @@ mergeAsteroids graphics_asteroids game_asteroids =
 
 updateBullets bullets game_bullets =
     mergeBullets (toBulletMap bullets) game_bullets
-
 
 
 updateShips ships game_ships =
@@ -179,7 +179,6 @@ toAsteroidMap =
     Dict.fromList << List.map (\a -> ( a.id, a ))
 
 
-
 toBulletMap : List BulletLocation -> Dict Id BulletLocation
 toBulletMap =
     Dict.fromList << List.map (\a -> ( a.id, a ))
@@ -188,4 +187,3 @@ toBulletMap =
 toShipMap : List ShipLocation -> Dict String ShipLocation
 toShipMap =
     Dict.fromList << List.map (\a -> ( a.id, a ))
-

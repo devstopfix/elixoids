@@ -1,6 +1,10 @@
 module Ships exposing (Ship, newShip, renderShip, renderTag)
 
 import Canvas exposing (..)
+import Canvas.Settings exposing (fill, stroke)
+import Canvas.Settings.Advanced exposing (Transform, rotate, transform, translate)
+import Canvas.Settings.Line exposing (lineWidth)
+import Canvas.Settings.Text exposing (TextAlign(..), align, font)
 import Circle2d exposing (Circle2d, centerPoint, radius)
 import Color exposing (Color)
 import Point2d exposing (coordinates, origin)
@@ -94,6 +98,7 @@ tagFont =
 
 trimTag =
     String.left 3 << String.trim
+
 
 tagColor =
     Color.rgb 0.6 0.6 0.6

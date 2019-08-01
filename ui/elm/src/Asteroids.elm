@@ -1,6 +1,10 @@
 module Asteroids exposing (Asteroid, newAsteroid, renderAsteroid, rotateAsteroids)
 
 import Canvas exposing (..)
+import Canvas.Settings exposing (fill, stroke)
+import Canvas.Settings.Advanced exposing (Transform, rotate, transform, translate)
+import Canvas.Settings.Line exposing (lineWidth)
+import Canvas.Settings.Text exposing (TextAlign(..))
 import Circle2d exposing (Circle2d, centerPoint, radius)
 import Color exposing (Color)
 import Dict exposing (Dict)
