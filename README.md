@@ -77,10 +77,15 @@ $ curl -H 'Accept: text/event-stream' http://localhost:8065/0/news
 PLY fires
 PLY shot ASTEROID
 PLY fires
+PLY shot OTH
 PLY kills OTH
 ASTEROID hit PLY
 ASTEROID spotted
 ```
+
+This can be used to generate a hi-score table:
+
+    elixir --no-halt clients/hiscore.exs http://localhost:8065/0/news
 
 ### Java Ship Client
 
