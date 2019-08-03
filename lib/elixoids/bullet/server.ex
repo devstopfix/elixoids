@@ -55,7 +55,7 @@ defmodule Elixoids.Bullet.Server do
   """
   def handle_tick(_pid, delta_t_ms, bullet = %{game_id: game_id}) do
     if past?(bullet.expire_at) do
-      {:stop, :normal, bullet}
+      {:stop, {:shutdown, :detonate}, bullet}
     else
       moved_bullet = bullet |> move(delta_t_ms)
       GameServer.update_bullet(game_id, state_tuple(moved_bullet))

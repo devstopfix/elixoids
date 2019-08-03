@@ -24,7 +24,7 @@ defmodule Elixoids.Event do
         id: ship_id,
         tag: victim_tag
       }) do
-    Process.exit(bullet_pid, :shutdown)
+    Process.exit(bullet_pid, {:shutdown, :detonate})
     publish_news(game_id, [shooter_tag, "shot", victim_tag])
     Ship.bullet_hit_ship(ship_id, shooter_tag)
   end
@@ -34,7 +34,7 @@ defmodule Elixoids.Event do
         %{pid: bullet_pid, shooter: shooter_tag, pos: pos},
         %{pid: asteroid_pid, radius: radius}
       ) do
-    Process.exit(bullet_pid, :shutdown)
+    Process.exit(bullet_pid, {:shutdown, :detonate})
     Asteroid.destroyed(asteroid_pid)
     Elixoids.Game.Server.explosion(game_id, pos, radius)
     publish_news(game_id, [shooter_tag, "shot", @asteroid])
