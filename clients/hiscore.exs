@@ -166,6 +166,12 @@ defmodule Hiscore do
       |> vendettas(Map.keys(state.accuracy))
       |> print_data()
 
+      IO.puts("\n")
+
+      state.kills
+      |> player_vs_player(Map.keys(state.accuracy))
+      |> print_data()
+
     end
 
     def print_data(data), do: data |> Hiscore.Table.format_table() |> IO.puts()
@@ -241,6 +247,30 @@ defmodule Hiscore do
               nil -> ""
               score -> score
             end
+          else
+            ">◦"
+          end
+        end
+        [p1 | cols]
+      end
+      Enum.concat([header], rows)
+    end
+
+    defp player_vs_player(kills, tags) do
+      sorted_tags = Enum.sort(tags)
+      header = ["" | Enum.map(sorted_tags, &(">" <> &1))]
+      rows = for p1 <- tags do
+        cols = for p2 <- tags do
+          if p1 != p2 do
+            wins = case get_in(kills, [p1, p2]) do
+              nil -> 0
+              score -> score
+            end
+            loses = case get_in(kills, [p2, p1]) do
+              nil -> 0
+              score -> score
+            end
+            if wins - loses != 0, do: wins - loses, else: ""
           else
             ">◦"
           end
