@@ -26,12 +26,12 @@ defmodule Hiscore do
     end
 
     @impl true
-    def handle_info([player, "shot", "ASTEROID"], state) do
+    def handle_info([player, "shot", "ASTEROID", radius], state) do
       new_state =
         state
         |> update_in([:miner, player], &player_shot_asteroid/1)
         |> update_in([:accuracy, player], &player_hit_target/1)
-        |> update_in([:score, player], &player_score(&1, :asteroid))
+        |> update_in([:score, player], &player_score(&1, :asteroid, radius))
 
       Hiscore.Printer.print(new_state)
 
@@ -67,10 +67,12 @@ defmodule Hiscore do
       {:noreply, state}
     end
 
+    # Player fired a shot
     defp player_fired(nil), do: {1, 0, 0.0}
     defp player_fired({f, h, _p}) when h <= f, do: {f + 1, h, pct(h / (f + 1))}
     defp player_fired({f, h, _p}), do: {f + 1, h, 1.0}
 
+    # Shot hit target (note the hiscore feed might be started after the shot was fired!)
     defp player_hit_target(nil), do: {1, 1, 0.0}
     defp player_hit_target({f, h, _p}) when h < f, do: {f, h + 1, pct((h + 1) / f)}
     defp player_hit_target({f, h, _p}), do: {f, h + 1, 1.0}
@@ -84,11 +86,35 @@ defmodule Hiscore do
     defp player_kills(nil, other), do: Map.put(%{}, other, 1)
     defp player_kills(stats, other), do: Map.update(stats, other, 1, &(&1 + 1))
 
+    # Shooting a ship gives 4 points as it takes 4 shots
     defp player_score(nil, :kill), do: player_score(0, :kill)
-    defp player_score(s, :kill), do: s + 1
+    defp player_score(s, :kill), do: s + 4
 
-    defp player_score(nil, :asteroid), do: player_score(0, :asteroid)
-    defp player_score(s, :asteroid), do: s + 3
+    # Shooting asteroids gives a score depending on it's radius
+    defp player_score(nil, :asteroid, radius), do: player_score(0, :asteroid, radius)
+
+    defp player_score(s, :asteroid, radius) do
+      case Integer.parse(radius) do
+        {radius_m, ""} -> s + radius_score(radius_m)
+        _ -> s
+      end
+    end
+
+    # Logarithmic score for hitting asteroid.
+    # Smallest fastest moving rocks get the highest score (10m = 13 points)
+    # Large slow rocks get smallest score (>=160m = 1 point)
+    defp radius_score(radius_m) when radius_m <= 8, do: 1
+
+    defp radius_score(radius_m) do
+      case round(:math.log2(radius_m / 10)) do
+        0 -> 13
+        1 -> 8
+        2 -> 5
+        3 -> 3
+        4 -> 2
+        _ -> 1
+      end
+    end
 
     defp pct(f), do: Float.round(f, 3)
   end
@@ -98,30 +124,34 @@ defmodule Hiscore do
 
     def print(state) do
       IO.puts("\n\n\n\nHI-SCORE:\n--------\n")
+
       state.score
       |> score()
       |> print_data()
 
       IO.puts("\n\nACCURACY (shots that hit target):\n")
+
       state.accuracy
       |> accuracy()
       |> print_data()
 
       IO.puts("\n\nMINERS (most asteroids hit vs crashes):\n")
+
       state.miner
       |> miners(state.crashes)
       |> print_data()
 
       IO.puts("\n\nHUNTERS (most opponents killed):\n")
+
       state.kills
       |> hunters()
       |> print_data()
 
       IO.puts("\n\nHUNTED (most killed):\n")
+
       state.kills
       |> hunted(state.crashes)
       |> print_data()
-
     end
 
     def print_data(data), do: data |> Hiscore.Table.format_table() |> IO.puts()
@@ -139,11 +169,12 @@ defmodule Hiscore do
 
     # Merge players shot into players hit with asteroids
     defp hunted(data, crashes_data) do
-
       results =
         data
         |> Map.values()
-        |> Enum.reduce(crashes_data, fn kills, results -> Map.merge(results, kills, fn _, a, b -> a + b end) end)
+        |> Enum.reduce(crashes_data, fn kills, results ->
+          Map.merge(results, kills, fn _, a, b -> a + b end)
+        end)
         |> Enum.map(&Tuple.to_list/1)
         |> Enum.sort(fn [t1, _s1], [t2, _s2] -> t1 > t2 end)
         |> Enum.sort(fn [_t1, s1], [_t2, s2] -> s1 > s2 end)
@@ -189,8 +220,7 @@ defmodule Hiscore do
     defp drop_middle(results, rows \\ 2) do
       top = results |> Enum.take(rows)
 
-      bottom =
-        results |> Enum.drop(rows) |> Enum.reverse() |> Enum.take(rows) |> Enum.reverse()
+      bottom = results |> Enum.drop(rows) |> Enum.reverse() |> Enum.take(rows) |> Enum.reverse()
 
       top
       |> Enum.concat([[]])

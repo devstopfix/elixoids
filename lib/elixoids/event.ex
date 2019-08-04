@@ -37,6 +37,7 @@ defmodule Elixoids.Event do
     Process.exit(bullet_pid, {:shutdown, :detonate})
     Asteroid.destroyed(asteroid_pid)
     Elixoids.Game.Server.explosion(game_id, pos, radius)
-    publish_news(game_id, [shooter_tag, "shot", @asteroid])
+    radius_s = radius |> round() |> Integer.to_string()
+    publish_news(game_id, [shooter_tag, "shot", @asteroid, radius_s])
   end
 end
