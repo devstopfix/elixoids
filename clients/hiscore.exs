@@ -107,9 +107,9 @@ defmodule Hiscore do
       |> accuracy()
       |> print_data()
 
-      IO.puts("\n\nMINERS (most asteroids hit):\n")
+      IO.puts("\n\nMINERS (most asteroids hit vs crashes):\n")
       state.miner
-      |> miners()
+      |> miners(state.crashes)
       |> print_data()
 
       IO.puts("\n\nHUNTERS (most opponents killed):\n")
@@ -119,7 +119,7 @@ defmodule Hiscore do
 
       IO.puts("\n\nHUNTED (most killed):\n")
       state.kills
-      |> hunted()
+      |> hunted(state.crashes)
       |> print_data()
 
     end
@@ -137,12 +137,13 @@ defmodule Hiscore do
       |> Enum.concat(drop_middle(results))
     end
 
-    defp hunted(data) do
+    # Merge players shot into players hit with asteroids
+    defp hunted(data, crashes_data) do
 
       results =
         data
         |> Map.values()
-        |> Enum.reduce(%{}, fn kills, results -> Map.merge(results, kills, fn _, a, b -> a + b end) end)
+        |> Enum.reduce(crashes_data, fn kills, results -> Map.merge(results, kills, fn _, a, b -> a + b end) end)
         |> Enum.map(&Tuple.to_list/1)
         |> Enum.sort(fn [t1, _s1], [t2, _s2] -> t1 > t2 end)
         |> Enum.sort(fn [_t1, s1], [_t2, s2] -> s1 > s2 end)
@@ -162,14 +163,15 @@ defmodule Hiscore do
       |> Enum.concat(drop_middle(results))
     end
 
-    defp miners(data) do
+    defp miners(data, crashes) do
       results =
         data
         |> Enum.map(&Tuple.to_list/1)
-        |> Enum.sort(fn [t1, _s1], [t2, _s2] -> t1 > t2 end)
-        |> Enum.sort(fn [_t1, s1], [_t2, s2] -> s1 > s2 end)
+        |> Enum.map(fn [tag, score] -> [tag, score, Map.get(crashes, tag, "")] end)
+        |> Enum.sort(fn [t1, _s1, _], [t2, _s2, _] -> t1 > t2 end)
+        |> Enum.sort(fn [_t1, s1, _], [_t2, s2, _] -> s1 > s2 end)
 
-      [["PLAYR", "ROCKS"], ["―", "―"]]
+      [["PLAYR", "ROCKS", "CRASH"], ["―", "―", "―"]]
       |> Enum.concat(drop_middle(results))
     end
 
