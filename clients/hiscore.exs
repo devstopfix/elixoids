@@ -11,7 +11,10 @@ defmodule Hiscore do
     use GenServer
 
     @impl true
-    def init(_), do: {:ok, %{accuracy: %{}, crashes: %{}, kills: %{}, miner: %{}, score: %{}}}
+    def init(_) do
+      Process.send_after(self(), :print, 4_000)
+      {:ok, %{accuracy: %{}, crashes: %{}, kills: %{}, miner: %{}, score: %{}}}
+    end
 
     @impl true
     def handle_info(["ASTEROID", "hit", player], state) do
@@ -32,8 +35,6 @@ defmodule Hiscore do
         |> update_in([:miner, player], &player_shot_asteroid/1)
         |> update_in([:accuracy, player], &player_hit_target/1)
         |> update_in([:score, player], &player_score(&1, :asteroid, radius))
-
-      Hiscore.Printer.print(new_state)
 
       {:noreply, new_state}
     end
@@ -60,6 +61,12 @@ defmodule Hiscore do
 
     @impl true
     def handle_info(["ASTEROID", "spotted"], state), do: {:noreply, state}
+
+    def handle_info(:print, state) do
+      Process.send_after(self(), :print, 2_000)
+      Hiscore.Printer.print(state)
+      {:noreply, state}
+    end
 
     @impl true
     def handle_info(msg, state) do
