@@ -159,6 +159,13 @@ defmodule Hiscore do
       state.kills
       |> hunted(state.crashes)
       |> print_data()
+
+      IO.puts("\n\nVENDETTAs (player vs player):\n")
+
+      state.kills
+      |> vendettas(Map.keys(state.accuracy))
+      |> print_data()
+
     end
 
     def print_data(data), do: data |> Hiscore.Table.format_table() |> IO.puts()
@@ -170,7 +177,7 @@ defmodule Hiscore do
         |> Enum.sort(fn [t1, _, _, _], [t2, _, _, _] -> t1 > t2 end)
         |> Enum.sort(fn [_, a1, _, _], [_, a2, _, _] -> a1 > a2 end)
 
-      [["PLAYR", "%", "SHOTS", "HITS"], ["―", "―", "―", "―"]]
+      [["PLAYR", "%", "SHOTS", ">HITS"], ["―", "―", "―", "―"]]
       |> Enum.concat(drop_middle(results))
     end
 
@@ -224,6 +231,25 @@ defmodule Hiscore do
       |> Enum.concat(drop_middle(results))
     end
 
+    defp vendettas(kills, tags) do
+      sorted_tags = Enum.sort(tags)
+      header = ["" | Enum.map(sorted_tags, &(">" <> &1))]
+      rows = for p1 <- tags do
+        cols = for p2 <- tags do
+          if p1 != p2 do
+            case get_in(kills, [p1, p2]) do
+              nil -> ""
+              score -> score
+            end
+          else
+            ">◦"
+          end
+        end
+        [p1 | cols]
+      end
+      Enum.concat([header], rows)
+    end
+
     defp drop_middle(results, rows \\ 2) do
       top = results |> Enum.take(rows)
 
@@ -247,6 +273,7 @@ defmodule Hiscore do
 
     defimpl Column, for: BitString do
       def to_column("―"), do: String.pad_trailing("", Table.column_width(), "―")
+      def to_column(">" <> v), do: String.pad_leading(v, Table.column_width(), " ")
       def to_column(v), do: String.pad_trailing(v, Table.column_width(), " ")
     end
 
