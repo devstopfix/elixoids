@@ -12,7 +12,7 @@ defmodule Hiscore do
 
     @impl true
     def init(_) do
-      Process.send_after(self(), :print, 4_000)
+      Process.send_after(self(), :print, 2_000)
       {:ok, %{accuracy: %{}, crashes: %{}, kills: %{}, miner: %{}, score: %{}}}
     end
 
@@ -130,51 +130,74 @@ defmodule Hiscore do
     @moduledoc "Prints the scores to STDOUT."
 
     def print(state) do
-      IO.puts("\n\n\n\nHI-SCORE:\n--------\n")
+      IO.puts("\n\n\n\nHI-SCORE and ACCURACY\n")
 
-      state.score
-      |> score()
-      |> print_data()
+      s = score(state.score)
+      a = accuracy(state.accuracy)
+      print_tables([s, a])
 
-      IO.puts("\n\nACCURACY (shots that hit target):\n")
+      IO.puts("\n\nHUNTED vs HUNTERS vs MINERS:\n")
 
-      state.accuracy
-      |> accuracy()
-      |> print_data()
-
-      IO.puts("\n\nMINERS (most asteroids hit vs crashes):\n")
-
-      state.miner
-      |> miners(state.crashes)
-      |> print_data()
-
-      IO.puts("\n\nHUNTERS (most opponents killed):\n")
-
-      state.kills
-      |> hunters()
-      |> print_data()
-
-      IO.puts("\n\nHUNTED (most killed):\n")
-
-      state.kills
-      |> hunted(state.crashes)
-      |> print_data()
+      h1 = hunters(state.kills)
+      h2 = hunted(state.kills, state.crashes)
+      m = miners(state.miner, state.crashes)
+      print_tables([h1, h2, m])
 
       IO.puts("\n\nVENDETTAs (player vs player):\n")
 
       state.kills
       |> vendettas(Map.keys(state.accuracy))
-      |> print_data()
+      |> print_table()
 
       IO.puts("\n")
 
       state.kills
       |> player_vs_player(Map.keys(state.accuracy))
-      |> print_data()
-
+      |> print_table()
     end
 
-    def print_data(data), do: data |> Hiscore.Table.format_table() |> IO.puts()
+    @table_width 20
+
+    def print_table(data) do
+      data
+      |> Hiscore.Table.format_table()
+      |> Enum.join("\n")
+      |> IO.puts()
+    end
+
+    def print_tables(tables) do
+      tables
+      |> zip()
+      |> Enum.map(&pad_and_join_columns/1)
+      |> Enum.join("\n")
+      |> IO.puts()
+    end
+
+    @spec pad_and_join_columns(list()) :: String.t()
+    defp pad_and_join_columns(row) do
+      row
+      |> Enum.map(&pad_column/1)
+      |> Enum.join("")
+    end
+
+    defp pad_column(nil), do: String.pad_trailing("", @table_width)
+    defp pad_column(col), do: String.pad_trailing(col, @table_width)
+
+    defp zip(tables) do
+      tables
+      |> Enum.map(&Hiscore.Table.format_table/1)
+      |> zip([])
+    end
+
+    defp zip(tables, results) do
+      columns = Enum.map(tables, &List.first/1)
+
+      if Enum.all?(columns, &is_nil/1) do
+        results
+      else
+        zip(Enum.map(tables, &Enum.drop(&1, 1)), Enum.concat(results, [columns]))
+      end
+    end
 
     defp accuracy(data) do
       results =
@@ -199,7 +222,7 @@ defmodule Hiscore do
         |> Enum.sort(fn [t1, _s1], [t2, _s2] -> t1 > t2 end)
         |> Enum.sort(fn [_t1, s1], [_t2, s2] -> s1 > s2 end)
 
-      [["PLAYR", "DEATH"], ["―", "―"]]
+      [["PLAYR", "KILLD"], ["―", "―"]]
       |> Enum.concat(drop_middle(results))
     end
 
@@ -240,46 +263,61 @@ defmodule Hiscore do
     defp vendettas(kills, tags) do
       sorted_tags = Enum.sort(tags)
       header = ["" | Enum.map(sorted_tags, &(">" <> &1))]
-      rows = for p1 <- tags do
-        cols = for p2 <- tags do
-          if p1 != p2 do
-            case get_in(kills, [p1, p2]) do
-              nil -> ""
-              score -> score
+
+      rows =
+        for p1 <- tags do
+          cols =
+            for p2 <- tags do
+              if p1 != p2 do
+                case get_in(kills, [p1, p2]) do
+                  nil -> ""
+                  score -> score
+                end
+              else
+                ">◦"
+              end
             end
-          else
-            ">◦"
-          end
+
+          [p1 | cols]
         end
-        [p1 | cols]
-      end
+
       Enum.concat([header], rows)
     end
 
     defp player_vs_player(kills, tags) do
       sorted_tags = Enum.sort(tags)
       header = ["" | Enum.map(sorted_tags, &(">" <> &1))]
-      rows = for p1 <- tags do
-        cols = for p2 <- tags do
-          if p1 != p2 do
-            wins = case get_in(kills, [p1, p2]) do
-              nil -> 0
-              score -> score
+
+      rows =
+        for p1 <- tags do
+          cols =
+            for p2 <- tags do
+              if p1 != p2 do
+                wins =
+                  case get_in(kills, [p1, p2]) do
+                    nil -> 0
+                    score -> score
+                  end
+
+                loses =
+                  case get_in(kills, [p2, p1]) do
+                    nil -> 0
+                    score -> score
+                  end
+
+                if wins - loses != 0, do: wins - loses, else: ""
+              else
+                ">◦"
+              end
             end
-            loses = case get_in(kills, [p2, p1]) do
-              nil -> 0
-              score -> score
-            end
-            if wins - loses != 0, do: wins - loses, else: ""
-          else
-            ">◦"
-          end
+
+          [p1 | cols]
         end
-        [p1 | cols]
-      end
+
       Enum.concat([header], rows)
     end
 
+    @spec drop_middle(list(), integer()) :: list()
     defp drop_middle(results, rows \\ 2) do
       top = results |> Enum.take(rows)
 
@@ -300,6 +338,10 @@ defmodule Hiscore do
       @doc "Format for column"
       def to_column(v)
     end
+
+    # defimpl Column, for: nil do
+    #   def to_column(_), do: String.pad_trailing("", Table.column_width(), " ")
+    # end
 
     defimpl Column, for: BitString do
       def to_column("―"), do: String.pad_trailing("", Table.column_width(), "―")
@@ -329,7 +371,6 @@ defmodule Hiscore do
     def format_table(rows) do
       rows
       |> Enum.map(&format_row/1)
-      |> Enum.join("\n")
     end
 
     defp format_row([]), do: "⋮"
