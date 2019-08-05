@@ -15,9 +15,9 @@ defmodule Elixoids.Server.WebsocketNewsHandler do
     end
   end
 
-  # Forward news event to client
+  # Forward news event to client (as UTF-8)
   def info({:news, news}, req, state) when is_binary(news) do
-    :ok = :cowboy_req.stream_events(%{data: to_charlist(news)}, :nofin, req)
+    :ok = :cowboy_req.stream_events(%{data: news}, :nofin, req)
     {:ok, req, state}
   end
 

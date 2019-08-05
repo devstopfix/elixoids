@@ -17,15 +17,26 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   @opts %{idle_timeout: 60 * 1000, compress: true}
   @pause_ms 250
 
-  def init(req = %{bindings: %{game: game, tag: tag}}, _state) do
-    {:cowboy_websocket, req, %{url_tag: tag, game_id: game}, @opts}
+  def init(req0 = %{bindings: %{game: game, tag: tag}}, _state) do
+    case valid_player_tag?(tag) do
+      {:ok, valid_tag} ->
+        {:cowboy_websocket, req0, %{url_tag: valid_tag, game_id: game}, @opts}
+
+      false ->
+        {:ok,
+         :cowboy_req.reply(
+           400,
+           %{"Content" => "text/plain; charset=UTF-8"},
+           "INVALID 3-CHAR PLAYER NAME.\nTry /0/ship/PLY\n\n",
+           req0
+         ), []}
+    end
   end
 
   def websocket_init(state = %{url_tag: tag, game_id: game}) do
     :erlang.start_timer(@pause_ms, self(), [])
 
     with {game_id, ""} <- Integer.parse(game),
-         valid_player_tag?(tag),
          {:ok, _pid, ship_id} <- Game.spawn_player(game_id, tag) do
       {:ok, %{tag: tag, ship_id: ship_id}}
     else
@@ -110,5 +121,11 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     }
   end
 
-  defp valid_player_tag?(tag), do: Regex.match?(~r/^[A-Z]{3}$/, tag)
+  @spec valid_player_tag?(String.t()) :: {:ok, String.t()} | false
+  def valid_player_tag?(tag) do
+    case Regex.scan(~r/^(\p{L}{3})/u, String.upcase(tag)) do
+      [[tag, _]] -> {:ok, tag}
+      _ -> false
+    end
+  end
 end

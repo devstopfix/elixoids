@@ -7,7 +7,7 @@
 #
 #     pip3 install websocket-client
 #
-#     python3 clients/miner.py --host localhost:8065
+#     python3 clients/miner.py --host localhost:8065 --game 0 --name ÅSA
 #
 
 from functools import partial
@@ -19,6 +19,7 @@ import argparse
 import datetime
 import json
 import sys
+import urllib.parse
 import websocket
 try:
     import thread
@@ -158,7 +159,7 @@ def on_close(ws):
 
 
 def news_url(host, game, player_name="MIN"):
-    return "ws://{}/{}/ship/{}".format(host, game, player_name)
+    return "ws://{}/{}/ship/{}".format(host, game, urllib.parse.quote(player_name))
 
 # Runner
 
