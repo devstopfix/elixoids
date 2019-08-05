@@ -54,8 +54,8 @@ defmodule Elixoids.TagTest do
     assert {:ok, "ŁYÊ"} = WebsocketShipHandler.valid_player_tag?("ŁYÊ")
   end
 
-  test "Cyrillic дал" do
-    assert {:ok, "дал"} = WebsocketShipHandler.valid_player_tag?("дал")
+  test "Cyrillic ДАЛ" do
+    assert {:ok, "ДАЛ"} = WebsocketShipHandler.valid_player_tag?("ДАЛ")
   end
 
   test "Dalian 大连市" do
