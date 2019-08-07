@@ -6,7 +6,7 @@
   "credo": {:hex, :credo, "1.1.1", "1ca6d2adfbb007d55c821fd514b089d933b31b0b6a07252e621daa890b94bea6", [:mix], [{:bunt, "~> 0.2.0", [hex: :bunt, optional: false]}, {:jason, "~> 1.0", [hex: :jason, optional: false]}]},
   "dialyxir": {:hex, :dialyxir, "1.0.0-rc.6", "78e97d9c0ff1b5521dd68041193891aebebce52fc3b93463c0a6806874557d7d", [:mix], [{:erlex, "~> 0.2.1", [hex: :erlex, optional: false]}]},
   "erlex": {:hex, :erlex, "0.2.1", "cee02918660807cbba9a7229cae9b42d1c6143b768c781fa6cee1eaf03ad860b", [:mix], []},
-  "excheck": {:hex, :excheck, "0.5.3", "7326a29cc5fdb6900e66dac205a6a70cc994e2fe037d39136817d7dab13cdabf", [:mix], []},
+  "excheck": {:git, "https://github.com/devstopfix/excheck.git", "3c0096a48e1f6198f42f182139678203da19a76a", [tag: "0.7.4"]},
   "file_system": {:hex, :file_system, "0.2.6", "fd4dc3af89b9ab1dc8ccbcc214a0e60c41f34be251d9307920748a14bf41f1d3", [:mix], []},
   "fs": {:hex, :fs, "0.9.2", "ed17036c26c3f70ac49781ed9220a50c36775c6ca2cf8182d123b6566e49ec59", [:rebar], []},
   "gnuplot": {:hex, :gnuplot, "1.19.95", "57711146992a3faef9c6e87884ccba4cb12f42357e36a325eb410736a01d28c1", [:mix], []},

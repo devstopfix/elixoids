@@ -10,6 +10,41 @@ defmodule Elixoids.FuzzTest do
   alias Elixoids.News
   import Jason
 
+  @tag fuzz: true, iterations: 1000
+  property :cowboy_routing do
+    {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 1)
+    num = oneof([oneof([game_id, 0]), pos_integer()]) |> bind(&Integer.to_string/1)
+
+    paths =
+      oneof([
+        api_paths(),
+        gen_other_key()
+      ])
+
+    gen_path =
+      oneof([
+        vector(1, num),
+        vector(1, paths),
+        bind([num, paths], & &1),
+        bind([num, oneof(["ship"]), gen_other_key()], & &1),
+        list(oneof([num, paths]))
+      ])
+      |> bind(fn xs -> xs |> Enum.take(8) |> Enum.join("/") end)
+
+    for_all {path, method} in {gen_path, gen_method()} do
+      url = 'http://localhost:8065/' ++ path
+
+      case :httpc.request(method, {url, []}, [{:timeout, 1_000}], []) do
+        {:ok, {{_, status_code, _}, _, _}} ->
+          assert Enum.member?([200, 303, 404, 405, 426], status_code), path
+          assert Process.alive?(game)
+
+        {:error, :timeout} ->
+          flunk(path)
+      end
+    end
+  end
+
   @tag fuzz: true, iterations: 100
   property :sound_ws_ignores_input do
     {:ok, _game, game_id} = GameSupervisor.start_game(asteroids: 1)
