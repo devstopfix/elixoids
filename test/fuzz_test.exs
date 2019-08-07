@@ -34,7 +34,7 @@ defmodule Elixoids.FuzzTest do
     for_all {path, method} in {gen_path, gen_method()} do
       url = 'http://localhost:8065/' ++ path
 
-      case :httpc.request(method, {url, []}, [{:timeout, 1_000}], []) do
+      case :httpc.request(method, {url, []}, [{:timeout, 1_000}, {:autoredirect, false}], []) do
         {:ok, {{_, status_code, _}, _, _}} ->
           assert Enum.member?([200, 303, 404, 405, 426], status_code), path
           assert Process.alive?(game)
