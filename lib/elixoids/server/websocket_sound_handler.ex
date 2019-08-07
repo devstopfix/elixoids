@@ -8,7 +8,11 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
   @behaviour :cowboy_handler
 
   def init(
-        req = %{headers: %{"accept" => "application/octet-stream"}, bindings: %{game: game}},
+        req = %{
+          headers: %{"accept" => "application/octet-stream"},
+          bindings: %{game: game},
+          method: "GET"
+        },
         _opts
       ) do
     state = %{encode: &encode_protocol/2, game: game}

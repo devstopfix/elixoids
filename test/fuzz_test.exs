@@ -177,4 +177,9 @@ defmodule Elixoids.FuzzTest do
       |> oneof()
 
   defp short_list, do: vector(1, oneof([bool(), int(), float()]))
+
+  # We cannot hit the /x/news endpoint as it is long polling!
+  defp api_paths, do: oneof(["game", "graphics", "newz", "ship", "sound", "index.html"])
+
+  defp gen_method, do: oneof([:get, :head, :delete])
 end
