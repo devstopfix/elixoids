@@ -7,7 +7,7 @@ SONIC=~/Applications/SonicAsteroids.app/Contents/MacOS/SonicAsteroids
 
 # If we are running a game, stop it
 if [ -f "$PID" ]; then
-  kill -9 `cat $PID` >> /dev/null
+  kill -9 `cat $PID` 2>/dev/null
 fi
 
 # Start the game and save it's PID
