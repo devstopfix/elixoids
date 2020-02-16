@@ -10,9 +10,9 @@ defmodule Elixoids.Asteroid.Rock do
   @quarter_pi_radians :math.pi() / 4.0
 
   @doc """
-  Cleave the rock into n pieces
+  Cleave the rock into 2 pieces
   """
-  def cleave(rock, _n), do: Enum.map(angle_offsets(), &new(&1, rock))
+  def cleave(rock), do: Enum.map(angle_offsets(), &new(&1, rock))
 
   defp halve(a), do: %{a | radius: a.radius / 2.0}
 

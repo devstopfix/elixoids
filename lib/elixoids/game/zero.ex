@@ -3,6 +3,8 @@ defmodule Elixoids.Game.Zero do
 
   use Supervisor
 
+  import Elixoids.Const
+
   @zero 0
 
   @spec start_link(any()) :: :ignore | {:error, any()} | {:ok, pid()}
@@ -12,7 +14,7 @@ defmodule Elixoids.Game.Zero do
 
   def init(:ok) do
     children = [
-      {Elixoids.Game.Server, game_id: @zero, asteroids: 8},
+      {Elixoids.Game.Server, game_id: @zero, asteroids: initial_asteroids},
       {Elixoids.Collision.Server, @zero}
     ]
 

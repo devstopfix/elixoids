@@ -8,7 +8,7 @@ defmodule Elixoids.RockTest do
   test "Cleave asteroid in half" do
     rock = %Rock{pos: %Point{}, velocity: Velocity.east(10.0), radius: 100.0}
 
-    assert [rock1, rock2] = Rock.cleave(rock, 2)
+    assert [rock1, rock2] = Rock.cleave(rock)
 
     assert 50.0 == rock1.radius
     assert 50.0 == rock2.radius

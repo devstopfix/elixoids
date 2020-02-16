@@ -44,7 +44,7 @@ defmodule Elixoids.Asteroid.Server do
 
   def handle_cast(:destroyed, asteroid = %{rock: rock, game_id: game_id}) do
     if rock.radius >= splittable_radius_m() do
-      rocks = Rock.cleave(rock, 2)
+      rocks = Rock.cleave(rock)
       GameServer.spawn_asteroids(game_id, rocks)
     end
 
