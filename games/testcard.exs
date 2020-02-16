@@ -18,10 +18,10 @@ defmodule Elixoids.Games.Testcard do
     [asteroids: 0]
     |> start_game()
     |> corners()
-    |> this_way_up
+    |> this_way_up()
     |> middle()
-    |> compass
-    |> large_ship
+    |> compass()
+    |> large_ship()
     |> asteroid_sizes()
   end
 
@@ -119,8 +119,9 @@ defmodule Elixoids.Games.Testcard do
   end
 
   defp ship(game_id, pos, tag, theta, radius \\ 20.0) do
-    {:ok, pid, ship_id} = Ship.start_link(game_id, tag, %{pos: pos, radius: radius})
-    Game.link(game_id, pid)
+    {:ok, _pid, ship_id} = Ship.start_link(game_id, tag, %{pos: pos, radius: radius})
+    # TODO why do ships vanish from test card?
+    # Game.link(game_id, pid)
     Ship.new_heading(ship_id, theta)
   end
 
@@ -134,5 +135,7 @@ defmodule Elixoids.Games.Testcard do
   end
 end
 
-{:ok, _, g} = Elixoids.Games.Testcard.start_link()
-:io.fwrite("localhost:~B/~B/game~n", [Application.get_env(:elixoids, :cowboy_port), g])
+{:ok, hostname} = :inet.gethostname()
+port = Application.get_env(:elixoids, :cowboy_port)
+{:ok, _, game_id} = Elixoids.Games.Testcard.start_link()
+:io.fwrite("~s://~s:~B/~B/game~n", ['http', hostname, port, game_id])

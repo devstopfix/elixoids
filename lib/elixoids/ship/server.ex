@@ -233,8 +233,8 @@ defmodule Elixoids.Ship.Server do
 
   def handle_tick(_pid, delta_t_ms, ship = %{game_id: game_id}) do
     new_ship = ship |> rotate_ship(delta_t_ms)
-
-    GameServer.update_ship(game_id, state_tuple(new_ship))
+    ship_state = state_tuple(new_ship)
+    GameServer.update_ship(game_id, ship_state)
     {:ok, new_ship}
   end
 end
