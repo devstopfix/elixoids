@@ -14,7 +14,7 @@ defmodule Elixoids.Asteroid.Rock do
   """
   def cleave(rock, _n), do: Enum.map(angle_offsets(), &new(&1, rock))
 
-  defp halve(a, d \\ 2.0), do: %{a | radius: a.radius / d}
+  defp halve(a), do: %{a | radius: a.radius / 2.0}
 
   defp angle_offsets, do: [@quarter_pi_radians, -@quarter_pi_radians]
 

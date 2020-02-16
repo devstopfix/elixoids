@@ -1,6 +1,8 @@
 defmodule Elixoids.Api do
   @moduledoc "HTTP server to serve game HTML and WS channels available"
 
+  import Elixoids.Const, only: [ws_idle_timeout: 0]
+
   defp dispatch do
     :cowboy_router.compile([
       {
@@ -19,14 +21,12 @@ defmodule Elixoids.Api do
     ])
   end
 
-  @idle_timeout 1 * 60 * 60 * 1000
-
   def start_link(opts) do
     {:ok, _} =
       :cowboy.start_clear(
         :elixoids_http,
         opts,
-        %{env: %{dispatch: dispatch()}, idle_timeout: @idle_timeout}
+        %{env: %{dispatch: dispatch()}, idle_timeout: ws_idle_timeout()}
       )
   end
 

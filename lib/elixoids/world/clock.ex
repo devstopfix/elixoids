@@ -15,9 +15,4 @@ defmodule Elixoids.World.Clock do
   Return true if t is in the past, otherwise false
   """
   def past?(t), do: t < now_ms()
-
-  @doc """
-  Seconds to milliseconds.
-  """
-  def s_to_ms(s), do: trunc(s * 1000.0)
 end

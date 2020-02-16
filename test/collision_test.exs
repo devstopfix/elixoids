@@ -10,11 +10,12 @@ defmodule Elixoids.CollisionTest do
   alias Elixoids.Collision.Server, as: Collision
   alias Elixoids.World.Point
 
+  import Elixoids.Const
   import Elixoids.Test.Generators
 
   require Elixoids.Collision.Server
 
-  @ship_radius_m 20.0
+  @ship_radius_m ship_radius_m()
 
   property :check_point_generator do
     for_all p in gen_point() do

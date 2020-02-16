@@ -11,17 +11,9 @@ defmodule Elixoids.Asteroid.Server do
   alias Elixoids.Game.Server, as: GameServer
   alias Elixoids.Space
   alias Elixoids.World.Velocity
+  import Elixoids.Const
   import Elixoids.Game.Identifiers
   use Elixoids.Game.Heartbeat
-
-  # Radius of random asteroid
-  @asteroid_radius_m 120.0
-
-  # Smallest asteroid that can survive being hit
-  @splittable_radius_m 20.0
-
-  # Initial speed of asteroid
-  @asteroid_speed_m_per_s 20.0
 
   def start_link(game_id, rock \\ %{}) when is_integer(game_id) do
     a = %{
@@ -51,7 +43,7 @@ defmodule Elixoids.Asteroid.Server do
   end
 
   def handle_cast(:destroyed, asteroid = %{rock: rock, game_id: game_id}) do
-    if rock.radius >= @splittable_radius_m do
+    if rock.radius >= splittable_radius_m() do
       rocks = Rock.cleave(rock, 2)
       GameServer.spawn_asteroids(game_id, rocks)
     end
@@ -63,11 +55,11 @@ defmodule Elixoids.Asteroid.Server do
     %Rock{
       :pos => Elixoids.Space.random_point_on_border(),
       :velocity => asteroid_velocity(),
-      :radius => @asteroid_radius_m
+      :radius => asteroid_radius_m()
     }
   end
 
-  defp asteroid_velocity, do: Velocity.random_velocity(@asteroid_speed_m_per_s)
+  defp asteroid_velocity, do: asteroid_speed_m_per_s() |> Velocity.random_velocity()
 
   defp move(a = %{rock: %{velocity: v}}, delta_t_ms) do
     update_in(a, [:rock, Access.key(:pos)], fn pos ->

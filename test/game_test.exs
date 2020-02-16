@@ -4,12 +4,15 @@ defmodule Elixoids.Game.ServerTest do
   alias Elixoids.Game.Server, as: Game
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
+  import Elixoids.Const, only: [asteroid_radius_m: 0, world_width_m: 0]
 
   test "We can retrieve game state of Asteroids" do
     {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 2)
+    # TODO this can be achieved with a pub/sub?
     :timer.sleep(200)
     game_state = Game.state(game_id)
-    assert %{radius: 120.0} = List.first(game_state[:a])
+    r = asteroid_radius_m()
+    assert %{radius: ^r} = List.first(game_state[:a])
     Process.exit(game, :normal)
   end
 
@@ -36,7 +39,7 @@ defmodule Elixoids.Game.ServerTest do
     {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 1)
     :timer.sleep(10)
     game_state = Game.state(game_id)
-    assert 4000.0 == List.first(game_state.dim)
+    assert world_width_m() == List.first(game_state.dim)
     assert 2250.0 == List.last(game_state.dim)
     Process.exit(game, :normal)
   end

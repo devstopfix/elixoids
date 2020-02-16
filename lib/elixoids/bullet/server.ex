@@ -12,14 +12,10 @@ defmodule Elixoids.Bullet.Server do
   alias Elixoids.Game.Server, as: GameServer
   alias Elixoids.Space
   alias Elixoids.World.Velocity
+  import Elixoids.Const
   import Elixoids.World.Clock
   import Elixoids.Game.Identifiers
   use Elixoids.Game.Heartbeat
-
-  @bullet_range_m 2000.0
-  @bullet_speed_m_per_s 1250.0
-
-  @fly_time_ms s_to_ms(@bullet_range_m / @bullet_speed_m_per_s)
 
   @doc """
   Fire with:
@@ -80,12 +76,12 @@ defmodule Elixoids.Bullet.Server do
   Calculate the time to live (in ms) of a bullet
   from the distance it can cover and it's velocity.
   """
-  def calculate_ttl, do: now_ms() + @fly_time_ms
+  def calculate_ttl, do: now_ms() + fly_time_ms()
 
   @doc """
   Is distance d in metres within the range of a bullet?
   """
-  def in_range?(d), do: d < @bullet_range_m
+  def in_range?(d), do: d < bullet_range_m()
 
-  defp bullet_velocity(theta), do: %Velocity{:theta => theta, :speed => @bullet_speed_m_per_s}
+  defp bullet_velocity(theta), do: %Velocity{:theta => theta, :speed => bullet_speed_m_per_s()}
 end

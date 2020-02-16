@@ -5,12 +5,12 @@ defmodule Elixoids.Space do
   """
 
   alias Elixoids.World.Point
+  import Elixoids.Const
 
   # The ratio of the play area
-  @ratio 16.0 / 9.0
+  @ratio world_ratio()
 
-  # 4km
-  @width 4000.0
+  @width world_width_m()
   @height @width / @ratio
   @half_width @width / 2.0
 

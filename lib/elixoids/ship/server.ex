@@ -15,26 +15,17 @@ defmodule Elixoids.Ship.Server do
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
   alias Elixoids.World.Point
+  import Elixoids.Const
   import Elixoids.News
   import Elixoids.World.Clock
   import Elixoids.World.Angle
 
   use Elixoids.Game.Heartbeat
 
-  # Ship radius (m)
-  @ship_radius_m 20.0
-
-  # The spawn point of a bullet
-  @nose_radius_m @ship_radius_m * 1.05
-
   # Rotation rate (radians/sec). Three seconds to turn a complete circle.
   @ship_rotation_rad_per_sec :math.pi() * 2 / 3.0
 
-  # Minimum time between shots
-  @laser_recharge_ms 200
-  @laser_recharge_penalty_ms @laser_recharge_ms * 2
-  @max_in_flight_bullets 4
-  @max_shields 3
+  @max_in_flight_bullets max_in_flight_bullets()
 
   def start_link(game_id, tag, opts \\ %{}) do
     ship_id = {game_id, tag}
@@ -46,7 +37,7 @@ defmodule Elixoids.Ship.Server do
         :id => ship_id,
         :tag => tag,
         :game_id => game_id,
-        :shields => @max_shields,
+        :shields => max_shields(),
         :bullets_in_flight => 0
       })
 
@@ -157,7 +148,7 @@ defmodule Elixoids.Ship.Server do
   end
 
   defp fire(%{game_id: game_id, pos: ship_centre, tag: tag, theta: theta} = ship) do
-    pos = Point.move(ship_centre, theta, @nose_radius_m)
+    pos = Point.move(ship_centre, theta, nose_radius_m())
     {:ok, pid} = GameServer.bullet_fired(game_id, tag, pos, theta)
     Process.link(pid)
     ship
@@ -186,7 +177,7 @@ defmodule Elixoids.Ship.Server do
     %{
       :laser_charged_at => now_ms() - 1,
       :pos => random_ship_point(),
-      :radius => @ship_radius_m,
+      :radius => ship_radius_m(),
       :theta => 0.0,
       :target_theta => 0.0
     }
@@ -227,22 +218,18 @@ defmodule Elixoids.Ship.Server do
   Update game state with time at which they can fire again
   """
   def recharge_laser(ship) do
-    %{ship | :laser_charged_at => now_ms() + @laser_recharge_ms}
+    %{ship | :laser_charged_at => now_ms() + laser_recharge_ms()}
   end
 
   def discharge_laser(ship) do
-    %{ship | :laser_charged_at => now_ms() + @laser_recharge_penalty_ms}
+    %{ship | :laser_charged_at => now_ms() + laser_recharge_penalty_ms()}
   end
 
-  defp recharge_shields(ship), do: %{ship | shields: @max_shields}
+  defp recharge_shields(ship), do: %{ship | shields: max_shields()}
 
-  defp inc_bullets(ship) do
-    Map.update!(ship, :bullets_in_flight, &(&1 + 1))
-  end
+  defp inc_bullets(ship), do: Map.update!(ship, :bullets_in_flight, &(&1 + 1))
 
-  defp dec_bullets(ship) do
-    Map.update!(ship, :bullets_in_flight, &max(&1 - 1, 0))
-  end
+  defp dec_bullets(ship), do: Map.update!(ship, :bullets_in_flight, &max(&1 - 1, 0))
 
   def handle_tick(_pid, delta_t_ms, ship = %{game_id: game_id}) do
     new_ship = ship |> rotate_ship(delta_t_ms)
