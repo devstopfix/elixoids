@@ -1,6 +1,5 @@
 defmodule World.AngleTest do
   use ExUnit.Case, async: true
-  # use ExCheck
 
   import Elixoids.World.Angle
 

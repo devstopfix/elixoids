@@ -6,8 +6,8 @@ defmodule Elixoids.Mixfile do
       app: :elixoids,
       description: "Asteroids Arcade Game Server",
       name: "Elixoids",
-      version: "3.19.215",
-      elixir: "~> 1.6",
+      version: "3.20.47",
+      elixir: "~> 1.7",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -41,8 +41,6 @@ defmodule Elixoids.Mixfile do
   defp deps do
     [
       {:cowboy, "~> 2.6"},
-      {:chaos_monkey,
-       git: "https://github.com/dLuna/chaos_monkey", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.1", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:gnuplot, "~> 1.19", only: :test},
