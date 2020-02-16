@@ -45,7 +45,7 @@ defmodule Elixoids.Mixfile do
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:gnuplot, "~> 1.19", only: :test},
       {:jason, "~> 1.1"},
-      {:protobuf, "~> 0.6.1"},
+      {:protobuf, "~> 0.7"},
       {:excheck, git: "https://github.com/devstopfix/excheck.git", tag: "0.7.6", only: :test},
       {:triq, "~> 1.3", only: [:dev, :test]}
     ]

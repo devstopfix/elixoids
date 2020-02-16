@@ -1,7 +1,7 @@
 defmodule Elixoids.SoundsTest do
   use ExUnit.Case, async: true
 
-  alias Elixoids.Api.Sound, as: SoundProtocol
+  alias Elixoids.Api.Audio, as: AudioProtocol
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
   alias Elixoids.Ship.Server, as: Ship
@@ -30,11 +30,11 @@ defmodule Elixoids.SoundsTest do
 
   test "We can encode short sound events as Protobuf" do
     assert <<21, 205, 204, 204, 61>> ==
-             SoundProtocol.encode(%{snd: "f", pan: 0.1, size: 0})
+             AudioProtocol.encode(%{snd: "f", pan: 0.1, size: 0})
   end
 
   test "We can encode sound events as Protobuf" do
     assert <<8, 1, 21, 102, 102, 102, 63, 24, 120>> ==
-             SoundProtocol.encode(%{snd: "x", pan: 0.9, size: 120})
+             AudioProtocol.encode(%{snd: "x", pan: 0.9, size: 120})
   end
 end

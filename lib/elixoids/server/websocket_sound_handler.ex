@@ -1,7 +1,7 @@
 defmodule Elixoids.Server.WebsocketSoundHandler do
   @moduledoc "Forwards game sounds to the subscriber."
 
-  alias Elixoids.Api.Sound, as: SoundProtocol
+  alias Elixoids.Api.Audio, as: AudioProtocol
 
   @opts %{idle_timeout: 60 * 60 * 1000}
 
@@ -48,5 +48,5 @@ defmodule Elixoids.Server.WebsocketSoundHandler do
     end
   end
 
-  defp encode_protocol(sound, state), do: {:reply, {:binary, SoundProtocol.encode(sound)}, state}
+  defp encode_protocol(sound, state), do: {:reply, {:binary, AudioProtocol.encode(sound)}, state}
 end
