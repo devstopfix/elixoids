@@ -21,7 +21,7 @@ To run the game [on Ubuntu](docs/ubuntu.md), or on OSX:
 
 This repo contains the game engine, a webserver, and a recent version of the [asteroids-ui](ui/elm/README.md).
 
-To start a game:
+To start a game use the [play script](bin/play.sh) or:
 
     mix run --no-halt
 
