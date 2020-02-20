@@ -20,27 +20,16 @@ defmodule Elixoids.Game.Heartbeat do
 
   """
 
-  @callback handle_tick(pid(), integer(), term()) :: {:ok, term()} | {:stop, :normal, term()}
-
   defmacro __using__(_opts) do
     quote do
-      @behaviour Elixoids.Game.Heartbeat
+      @behaviour Elixoids.Game.Tick
 
       @fps 60
       @ms_between_ticks div(1000, @fps)
       def start_heartbeat, do: Process.send(self(), :tick, [])
 
-      def handle_info(:tick, state = %{clock_ms: clock_ms}) do
-        delta_t_ms = Elixoids.World.Clock.since(clock_ms)
-
-        case handle_tick(self(), delta_t_ms, state) do
-          {:ok, new_state} ->
-            next_heartbeat()
-            {:noreply, %{new_state | clock_ms: Elixoids.World.Clock.now_ms()}}
-
-          {:stop, reason, new_state} ->
-            {:stop, reason, new_state}
-        end
+      def handle_info(:tick, state = %{clock_ms: _}) do
+        Elixoids.Game.Heartbeat.handle_info_tick(__MODULE__, state)
       end
 
       def handle_info(:tick, state) do
@@ -48,7 +37,20 @@ defmodule Elixoids.Game.Heartbeat do
         {:noreply, Map.put(state, :clock_ms, Elixoids.World.Clock.now_ms())}
       end
 
-      defp next_heartbeat, do: Process.send_after(self(), :tick, @ms_between_ticks)
+      def next_heartbeat, do: Process.send_after(self(), :tick, @ms_between_ticks)
+    end
+  end
+
+  def handle_info_tick(module, state = %{clock_ms: clock_ms}) do
+    delta_t_ms = Elixoids.World.Clock.since(clock_ms)
+
+    case module.handle_tick(self(), delta_t_ms, state) do
+      {:ok, new_state} ->
+        module.next_heartbeat()
+        {:noreply, %{new_state | clock_ms: Elixoids.World.Clock.now_ms()}}
+
+      {:stop, reason, new_state} ->
+        {:stop, reason, new_state}
     end
   end
 end

@@ -31,17 +31,20 @@ defmodule Elixoids.Asteroid.Server do
 
   # GenServer callbacks
 
+  @impl true
   def init(a) do
     start_heartbeat()
     {:ok, a}
   end
 
+  @impl Elixoids.Game.Tick
   def handle_tick(_pid, delta_t_ms, asteroid = %{game_id: game_id}) do
     moved_asteroid = asteroid |> move(delta_t_ms)
     GameServer.update_asteroid(game_id, state_tuple(moved_asteroid))
     {:ok, moved_asteroid}
   end
 
+  @impl true
   def handle_cast(:destroyed, asteroid = %{rock: rock, game_id: game_id}) do
     if rock.radius >= splittable_radius_m() do
       rocks = Rock.cleave(rock)

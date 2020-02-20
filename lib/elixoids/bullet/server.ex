@@ -41,6 +41,7 @@ defmodule Elixoids.Bullet.Server do
 
   # GenServer callbacks
 
+  @impl true
   def init(state) do
     start_heartbeat()
     {:ok, state}
@@ -49,6 +50,7 @@ defmodule Elixoids.Bullet.Server do
   @doc """
   Update the position of the bullet and broadcast to the game
   """
+  @impl Elixoids.Game.Tick
   def handle_tick(_pid, delta_t_ms, bullet = %{game_id: game_id}) do
     if past?(bullet.expire_at) do
       {:stop, {:shutdown, :detonate}, bullet}

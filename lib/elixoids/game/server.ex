@@ -84,6 +84,7 @@ defmodule Elixoids.Game.Server do
 
   ## Server Callbacks
 
+  @impl true
   def init(game_id: game_id, asteroids: asteroid_count) do
     game_state = initial_game_state(asteroid_count, game_id)
     Process.flag(:trap_exit, true)
@@ -108,6 +109,7 @@ defmodule Elixoids.Game.Server do
       Elixoids.Game.Server.show(game)
 
   """
+  @impl true
   def handle_cast(:show, game) do
     game
     |> Kernel.inspect(pretty: true)
@@ -153,6 +155,7 @@ defmodule Elixoids.Game.Server do
   @doc """
   Update the game state and check for collisions.
   """
+  @impl Elixoids.Game.Tick
   def handle_tick(_pid, _delta_t_ms, game = %{game_id: game_id}) do
     snap = snapshot(game)
     CollisionServer.collision_tests(game_id, snap)
@@ -181,6 +184,7 @@ defmodule Elixoids.Game.Server do
     {:noreply, remove_pid_from_game_state(pid, state)}
   end
 
+  @impl true
   def handle_call({:bullet_fired, shooter_tag, pos, theta}, _from, game) do
     {:ok, bullet_pid} = Bullet.start_link(game.game_id, shooter_tag, pos, theta)
     {:reply, {:ok, bullet_pid}, game}

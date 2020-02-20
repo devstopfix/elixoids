@@ -69,6 +69,7 @@ defmodule Elixoids.Ship.Server do
 
   # GenServer callbacks
 
+  @impl true
   def init(ship) do
     start_heartbeat()
     Process.flag(:trap_exit, true)
@@ -78,6 +79,8 @@ defmodule Elixoids.Ship.Server do
   @doc """
   Hyperspace the ship to a new position.
   """
+  @impl true
+
   def handle_cast(:hyperspace, ship) do
     new_ship =
       %{ship | pos: random_ship_point(), theta: random_angle()}
@@ -138,6 +141,7 @@ defmodule Elixoids.Ship.Server do
 
   def handle_cast(:player_disconnect, ship), do: {:stop, :normal, ship}
 
+  @impl true
   def handle_call(:game_state_req, from, ship = %{game_id: game_id}) do
     :ok = GameServer.state_of_ship(game_id, self(), from)
     {:noreply, ship}
@@ -231,6 +235,7 @@ defmodule Elixoids.Ship.Server do
 
   defp dec_bullets(ship), do: Map.update!(ship, :bullets_in_flight, &max(&1 - 1, 0))
 
+  @impl Elixoids.Game.Tick
   def handle_tick(_pid, delta_t_ms, ship = %{game_id: game_id}) do
     new_ship = ship |> rotate_ship(delta_t_ms)
     ship_state = state_tuple(new_ship)
