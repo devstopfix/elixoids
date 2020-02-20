@@ -34,8 +34,9 @@ defmodule Elixoids.Const do
   # Minimum time between shots
   def laser_recharge_ms, do: 200
   def laser_recharge_penalty_ms, do: laser_recharge_ms() * 2
-  def max_in_flight_bullets, do: 4
-  def max_shields, do: 3
+
+  def max_inflight_bullets, do: Application.get_env(@app, :max_inflight_bullets)
+  def max_shields, do: Application.get_env(@app, :max_shields)
 
   # The spawn point of a bullet
   def nose_radius_m, do: ship_radius_m() * 1.05

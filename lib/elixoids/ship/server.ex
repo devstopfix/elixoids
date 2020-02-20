@@ -25,7 +25,7 @@ defmodule Elixoids.Ship.Server do
   # Rotation rate (radians/sec). Three seconds to turn a complete circle.
   @ship_rotation_rad_per_sec :math.pi() * 2 / 3.0
 
-  @max_in_flight_bullets max_in_flight_bullets()
+  @max_inflight_bullets max_inflight_bullets()
 
   def start_link(game_id, tag, opts \\ %{}) do
     ship_id = {game_id, tag}
@@ -115,7 +115,7 @@ defmodule Elixoids.Ship.Server do
   end
 
   def handle_cast(:player_pulls_trigger, %{bullets_in_flight: bullets_in_flight} = state)
-      when bullets_in_flight >= @max_in_flight_bullets do
+      when bullets_in_flight >= @max_inflight_bullets do
     {:noreply, state}
   end
 
