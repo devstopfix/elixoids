@@ -13,8 +13,8 @@ defmodule Elixoids.Server.WebsocketShipHandler do
   @behaviour :cowboy_handler
 
   @max_rocks 20
-  @ms_between_frames div(1000, 5)
-  @opts %{idle_timeout: 60 * 1000, compress: true}
+  @ms_between_frames div(1_000, Application.get_env(:elixoids, :player_fps, 5))
+  @opts %{idle_timeout: 60 * 1_000, compress: true}
   @pause_ms 250
 
   def init(req0 = %{bindings: %{game: game, tag: tag}}, _state) do

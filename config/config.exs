@@ -1,6 +1,8 @@
 import Config
 
 config :elixoids,
+  fps: 60,
+  player_fps: 4,
   cowboy_port: 8065,
   asteroid_radius_m: 120.0,
   bullet_range_m: 2000.0,

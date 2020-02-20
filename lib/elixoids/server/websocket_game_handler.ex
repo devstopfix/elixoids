@@ -8,10 +8,9 @@ defmodule Elixoids.Server.WebsocketGameHandler do
   alias Elixoids.Api.State
   alias Elixoids.Game.Server, as: Game
 
-  @fps 60
-  @ms_between_frames div(1000, @fps)
-  @pause_ms 1000
-  @opts %{idle_timeout: 60 * 60 * 1000, compress: true}
+  @ms_between_frames div(1_000, Application.get_env(:elixoids, :fps, 60))
+  @pause_ms 1_000
+  @opts %{idle_timeout: 60 * 60 * 1_000, compress: true}
   @explosions_per_frame 7
 
   @behaviour :cowboy_handler

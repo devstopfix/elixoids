@@ -24,8 +24,8 @@ defmodule Elixoids.Game.Heartbeat do
     quote do
       @behaviour Elixoids.Game.Tick
 
-      @fps 60
-      @ms_between_ticks div(1000, @fps)
+      @ms_between_ticks div(1000, Application.get_env(:elixoids, :fps, 60))
+
       def start_heartbeat, do: Process.send(self(), :tick, [])
 
       def handle_info(:tick, state = %{clock_ms: _}) do
