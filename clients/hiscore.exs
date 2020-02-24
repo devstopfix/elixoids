@@ -50,11 +50,13 @@ defmodule Hiscore do
 
     @impl true
     def handle_info([player, "kills", other], state) do
+      event = if other == "SČR", do: :kill_saucer, else: :kill
+
       new_state =
         state
         |> update_in([:accuracy, player], &player_hit_target/1)
         |> update_in([:kills, player], fn stats -> player_kills(stats, other) end)
-        |> update_in([:score, player], &player_score(&1, :kill))
+        |> update_in([:score, player], &player_score(&1, event))
 
       {:noreply, new_state}
     end
@@ -95,7 +97,9 @@ defmodule Hiscore do
 
     # Shooting a ship gives 4 points as it takes 4 shots
     defp player_score(nil, :kill), do: player_score(0, :kill)
+    defp player_score(nil, :kill_saucer), do: player_score(0, :kill_saucer)
     defp player_score(s, :kill), do: s + 4
+    defp player_score(s, :kill_saucer), do: s + 10
 
     # Shooting asteroids gives a score depending on it's radius
     defp player_score(nil, :asteroid, radius), do: player_score(0, :asteroid, radius)

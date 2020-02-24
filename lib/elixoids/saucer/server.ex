@@ -1,32 +1,50 @@
 defmodule Elixoids.Saucer.Server do
   @moduledoc """
   Flying saucer NPC!
+
+  This server is not restarted if the Saucer is destroyed.
   """
 
-  use GenServer
+  use GenServer, restart: :transient
   use Elixoids.Game.Heartbeat
 
   alias Elixoids.Game.Server, as: GameServer
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.World.Velocity
 
-  import Elixoids.Const, only: [saucer_speed_m_per_s: 0, saucer_direction_change_interval: 0]
-  import Elixoids.Space, only: [random_point_on_vertical_edge: 0, wrap: 1]
+  import Elixoids.Const,
+    only: [saucer_speed_m_per_s: 0, saucer_direction_change_interval: 0, large_saucer_radius: 0]
 
-  @angles [:math.pi() * 3 / 4.0, :math.pi(), :math.pi() * 5 / 4.0]
+  import Elixoids.Space, only: [random_point_on_vertical_edge: 0, wrap: 1]
+  import Elixoids.World.Angle, only: [normalize_radians: 1]
+
+  @pi34 :math.pi() * 3 / 4.0
+  @pi54 :math.pi() * 5 / 4.0
+  @angles [@pi34, @pi34, :math.pi(), @pi54, @pi54]
   @saucer_direction_change_interval saucer_direction_change_interval()
   @tag "SČR"
 
   def start_link(game_id) do
+    id = {game_id, @tag}
+
     saucer =
       random_saucer()
-      |> Map.merge(%{game_id: game_id, tag: @tag, id: {game_id, @tag}})
+      |> Map.merge(%{
+        game_id: game_id,
+        tag: @tag,
+        thetas: Enum.map(@angles, &normalize_radians/1),
+        id: id
+      })
 
-    GenServer.start_link(__MODULE__, saucer)
+    GenServer.start_link(__MODULE__, saucer, name: via(id))
   end
+
+  defp via(ship_id),
+    do: {:via, Registry, {Registry.Elixoids.Ships, ship_id}}
 
   @impl true
   def init(saucer) do
+    GameServer.link(saucer.game_id, self())
     Process.flag(:trap_exit, true)
     start_heartbeat()
     Process.send_after(self(), :change_direction, @saucer_direction_change_interval)
@@ -35,9 +53,24 @@ defmodule Elixoids.Saucer.Server do
 
   def handle_info(:change_direction, saucer) do
     Process.send_after(self(), :change_direction, @saucer_direction_change_interval)
-    theta = Enum.random(@angles)
+    theta = Enum.random(saucer.thetas)
     velocity = %{saucer.velocity | theta: theta}
     {:noreply, %{saucer | velocity: velocity}}
+  end
+
+  @impl true
+  def handle_cast(:hyperspace, saucer) do
+    explode(saucer)
+    {:stop, {:shutdown, :crashed}, saucer}
+  end
+
+  def handle_cast({:bullet_hit_ship, _ship_tag}, saucer) do
+    explode(saucer)
+    {:stop, {:shutdown, :crashed}, saucer}
+  end
+
+  defp explode(saucer) do
+    GameServer.explosion(saucer.game_id, saucer.pos, saucer.radius * 1.5)
   end
 
   @impl Elixoids.Game.Tick
@@ -71,7 +104,7 @@ defmodule Elixoids.Saucer.Server do
   defp random_saucer,
     do: %{
       pos: random_point_on_vertical_edge(),
-      radius: 20.0 * (20 / 13.0),
+      radius: large_saucer_radius(),
       theta: 0.0,
       velocity: Velocity.west(saucer_speed_m_per_s())
     }

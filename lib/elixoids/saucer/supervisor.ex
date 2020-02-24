@@ -17,6 +17,10 @@ defmodule Elixoids.Saucer.Supervisor do
 
   def start_saucer(game_id) when is_integer(game_id) do
     child_spec = {Saucer, game_id}
-    {:ok, _pid} = DynamicSupervisor.start_child(__MODULE__, child_spec)
+
+    case DynamicSupervisor.start_child(__MODULE__, child_spec) do
+      {:ok, pid} -> {:ok, pid}
+      {:error, {:already_started, pid}} -> {:ok, pid}
+    end
   end
 end

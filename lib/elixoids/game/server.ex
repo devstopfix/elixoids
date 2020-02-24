@@ -15,8 +15,10 @@ defmodule Elixoids.Game.Server do
   alias Elixoids.Collision.Server, as: CollisionServer
   alias Elixoids.Game.Snapshot
   alias Elixoids.News
+  alias Elixoids.Saucer.Supervisor, as: Saucer
   alias Elixoids.Ship.Server, as: Ship
   alias Elixoids.Ship.Targets
+  import Elixoids.Const, only: [saucer_interval_ms: 0]
   import Logger
 
   use Elixoids.Game.Heartbeat
@@ -89,6 +91,7 @@ defmodule Elixoids.Game.Server do
     game_state = initial_game_state(asteroid_count, game_id)
     Process.flag(:trap_exit, true)
     start_heartbeat()
+    maybe_spawn_saucer()
     {:ok, game_state}
   end
 
@@ -179,9 +182,20 @@ defmodule Elixoids.Game.Server do
     {:noreply, remove_pid_from_game_state(pid, state, [:ships])}
   end
 
+  # Saucer exits
+  def handle_info({:EXIT, pid, {:shutdown, :crashed}}, state) do
+    {:noreply, remove_pid_from_game_state(pid, state, [:ships])}
+  end
+
   def handle_info(msg = {:EXIT, pid, _}, state) do
     [:EXIT, msg, state] |> inspect |> warn()
     {:noreply, remove_pid_from_game_state(pid, state)}
+  end
+
+  def handle_info(:spawn_saucer, game) do
+    Process.send_after(self(), :spawn_saucer, saucer_interval_ms())
+    {:ok, _pid} = Saucer.start_saucer(game.game_id)
+    {:noreply, game}
   end
 
   @impl true
@@ -271,5 +285,10 @@ defmodule Elixoids.Game.Server do
       bullets: Map.values(game_state.state.bullets),
       ships: Map.values(game_state.state.ships)
     }
+  end
+
+  defp maybe_spawn_saucer do
+    time = saucer_interval_ms()
+    if time > 0, do: Process.send_after(self(), :spawn_saucer, time)
   end
 end
