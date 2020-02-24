@@ -42,4 +42,9 @@ defmodule Elixoids.Const do
   def nose_radius_m, do: ship_radius_m() * 1.05
 
   def ws_idle_timeout, do: 1 * 60 * 60 * 1000
+
+  def saucer_speed_m_per_s, do: Application.get_env(@app, :saucer_speed_m_per_s)
+
+  def saucer_direction_change_interval,
+    do: Application.get_env(@app, :saucer_direction_change_interval)
 end

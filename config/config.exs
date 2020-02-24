@@ -9,7 +9,9 @@ config :elixoids,
   ship_radius_m: 20.0,
   initial_asteroids: 8,
   max_inflight_bullets: 4,
-  max_shields: 3
+  max_shields: 3,
+  saucer_speed_m_per_s: 160.0,
+  saucer_direction_change_interval: 1_000
 
 # config :logger,
 #   handle_otp_reports: true,

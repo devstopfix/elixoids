@@ -13,7 +13,8 @@ defmodule Elixoids.Application do
       {Elixoids.Api, [port: @port]},
       Elixoids.Collision.Supervisor,
       Elixoids.Game.Supervisor,
-      Elixoids.Game.Zero
+      Elixoids.Game.Zero,
+      Elixoids.Saucer.Supervisor
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)

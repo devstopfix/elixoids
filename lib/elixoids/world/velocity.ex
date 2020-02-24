@@ -20,6 +20,8 @@ defmodule Elixoids.World.Velocity do
 
   def east(speed \\ 0.0), do: %__MODULE__{theta: 0.0, speed: speed}
 
+  def west(speed), do: %__MODULE__{theta: :math.pi(), speed: speed}
+
   def random_velocity(speed), do: %__MODULE__{theta: random_angle(), speed: speed}
 
   def double_speed(%{speed: speed} = v), do: %{v | speed: speed * 2.0}
