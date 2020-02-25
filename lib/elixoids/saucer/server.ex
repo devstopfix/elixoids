@@ -17,14 +17,16 @@ defmodule Elixoids.Saucer.Server do
     only: [
       saucer_speed_m_per_s: 0,
       saucer_direction_change_interval: 0,
-      large_saucer_radius: 0,
+      saucer_radius_large: 0,
       saucer_shooting_interval: 0
     ]
 
   import Elixoids.News, only: [publish_news_fires: 2]
 
   import Elixoids.Space, only: [random_point_on_vertical_edge: 0, wrap: 1]
-  import Elixoids.World.Angle, only: [normalize_radians: 1, random_angle: 0]
+  import Elixoids.Translate
+
+  import Elixoids.World.Angle, only: [normalize_radians: 1]
 
   @pi34 :math.pi() * 3 / 4.0
   @pi54 :math.pi() * 5 / 4.0
@@ -67,10 +69,24 @@ defmodule Elixoids.Saucer.Server do
     {:noreply, %{saucer | velocity: velocity}}
   end
 
-  def handle_info(:fire, %{game_id: game_id, tag: tag} = saucer) do
+  def handle_info(:fire, %{game_id: game_id, tag: _tag} = saucer) do
+    ref = make_ref()
+    from = {self(), ref}
+    :ok = GameServer.state_of_ship(game_id, self(), from)
     send_fire_after()
-    fire!(saucer)
-    publish_news_fires(game_id, tag)
+    {:noreply, saucer}
+  end
+
+  def handle_info({_ref, %Elixoids.Ship.Targets{} = targets}, saucer) do
+    if theta = select_target(targets) do
+      bullet_theta = :rand.normal(theta, 0.05)
+      publish_news_fires(saucer.game_id, saucer.tag)
+      bullet_pos = turret(bullet_theta, saucer)
+      {:ok, _pid} = GameServer.bullet_fired(saucer.game_id, saucer.tag, bullet_pos, bullet_theta)
+      # Do we need to know when bullet ends?
+      # Process.link(pid)
+    end
+
     {:noreply, saucer}
   end
 
@@ -125,7 +141,7 @@ defmodule Elixoids.Saucer.Server do
   defp random_saucer,
     do: %{
       pos: random_point_on_vertical_edge(),
-      radius: large_saucer_radius(),
+      radius: saucer_radius_large(),
       theta: 0.0,
       velocity: Velocity.west(saucer_speed_m_per_s())
     }
@@ -135,16 +151,30 @@ defmodule Elixoids.Saucer.Server do
 
   defp send_fire_after, do: Process.send_after(self(), :fire, saucer_shooting_interval())
 
-  defp fire!(saucer) do
-    publish_news_fires(saucer.game_id, saucer.tag)
-    bullet_theta = random_angle()
-    bullet_pos = turret(bullet_theta, saucer)
-    {:ok, _pid} = GameServer.bullet_fired(saucer.game_id, saucer.tag, bullet_pos, bullet_theta)
-    # Do we need to know when bullet ends?
-    # Process.link(pid)
-  end
-
   defp turret(theta, %{pos: ship_centre, radius: radius}) do
     Point.move(ship_centre, theta, radius * 1.1)
+  end
+
+  def select_target(%{origin: origin, rocks: rocks, ships: ships}) do
+    asteroids =
+      rocks
+      |> Enum.filter(fn %{radius: r} -> r >= 120.0 end)
+      |> asteroids_relative(origin)
+      |> Enum.map(fn [_, t, r, d] -> [t: t, d: d, r: r] end)
+
+    ships =
+      ships
+      |> ships_relative(origin)
+      |> Enum.map(fn [_, t, d] -> [t: t, d: d, r: 20.0] end)
+
+    candidates =
+      (asteroids ++ ships)
+      |> Enum.filter(fn [t: _, d: d, r: _] -> d <= 1000.0 end)
+      |> Enum.sort(fn [t: _, d: d1, r: _], [t: _, d: d2, r: _] -> d2 <= d1 end)
+
+    case List.first(candidates) do
+      nil -> nil
+      [t: t, d: _, r: _] -> t
+    end
   end
 end

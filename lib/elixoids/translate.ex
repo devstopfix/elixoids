@@ -1,4 +1,4 @@
-defmodule Elixir.Translate do
+defmodule Elixoids.Translate do
   @moduledoc """
   Translate the game state to the position of a ship.
   """

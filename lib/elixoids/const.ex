@@ -49,7 +49,7 @@ defmodule Elixoids.Const do
   def saucer_direction_change_interval,
     do: Application.get_env(@app, :saucer_direction_change_interval)
 
-  def large_saucer_radius, do: 20.0 * (2 * 20 / 13.0)
+  def saucer_radius_large, do: Application.get_env(@app, :saucer_radius_large)
 
   def saucer_interval_ms, do: Application.get_env(@app, :saucer_interval_ms)
 

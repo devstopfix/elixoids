@@ -8,7 +8,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   alias Elixoids.Game.Server, as: Game
   alias Elixoids.Ship.Server, as: Ship
-  import Elixir.Translate
+  import Elixoids.Translate
 
   @behaviour :cowboy_handler
 
