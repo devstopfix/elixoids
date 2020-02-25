@@ -20,6 +20,10 @@ defmodule Elixoids.News do
   def publish_news(game_id, news) when is_list(news),
     do: publish(game_id, {:news, Enum.join(news, " ")})
 
+  def publish_news_fires(game_id, tag) do
+    publish_news(game_id, [tag, "fires"])
+  end
+
   defp publish(game_id, news) when is_integer(game_id) do
     :ok =
       Registry.dispatch(Registry.Elixoids.News, key(game_id), fn pids ->

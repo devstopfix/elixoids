@@ -29,7 +29,8 @@ defmodule Elixoids.Const do
   def fly_time_ms, do: trunc(bullet_range_m() / bullet_speed_m_per_s() * @ms_in_s)
 
   # Ship radius (m)
-  def ship_radius_m, do: Application.get_env(@app, :ship_radius_m)
+  @ship_radius_m Application.get_env(@app, :ship_radius_m)
+  def ship_radius_m, do: @ship_radius_m
 
   # Minimum time between shots
   def laser_recharge_ms, do: 200
@@ -51,4 +52,7 @@ defmodule Elixoids.Const do
   def large_saucer_radius, do: 20.0 * (2 * 20 / 13.0)
 
   def saucer_interval_ms, do: Application.get_env(@app, :saucer_interval_ms)
+
+  @saucer_shooting_interval Application.get_env(@app, :saucer_shooting_interval)
+  def saucer_shooting_interval, do: @saucer_shooting_interval
 end

@@ -131,7 +131,7 @@ defmodule Elixoids.Ship.Server do
         |> recharge_laser()
         |> inc_bullets()
 
-      publish_news(game_id, [tag, "fires"])
+      publish_news_fires(game_id, tag)
 
       {:noreply, state}
     else
@@ -151,11 +151,15 @@ defmodule Elixoids.Ship.Server do
     {:noreply, dec_bullets(state)}
   end
 
-  defp fire(%{game_id: game_id, pos: ship_centre, tag: tag, theta: theta} = ship) do
-    pos = Point.move(ship_centre, theta, nose_radius_m())
+  defp fire(%{game_id: game_id, tag: tag, theta: theta} = ship) do
+    pos = turret(ship)
     {:ok, pid} = GameServer.bullet_fired(game_id, tag, pos, theta)
     Process.link(pid)
     ship
+  end
+
+  defp turret(%{pos: ship_centre, theta: theta}) do
+    Point.move(ship_centre, theta, nose_radius_m())
   end
 
   defp audio(%{game_id: game_id, pos: %{x: x}} = ship) do

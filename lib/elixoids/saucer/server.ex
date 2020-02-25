@@ -10,13 +10,21 @@ defmodule Elixoids.Saucer.Server do
 
   alias Elixoids.Game.Server, as: GameServer
   alias Elixoids.Ship.Location, as: ShipLoc
+  alias Elixoids.World.Point
   alias Elixoids.World.Velocity
 
   import Elixoids.Const,
-    only: [saucer_speed_m_per_s: 0, saucer_direction_change_interval: 0, large_saucer_radius: 0]
+    only: [
+      saucer_speed_m_per_s: 0,
+      saucer_direction_change_interval: 0,
+      large_saucer_radius: 0,
+      saucer_shooting_interval: 0
+    ]
+
+  import Elixoids.News, only: [publish_news_fires: 2]
 
   import Elixoids.Space, only: [random_point_on_vertical_edge: 0, wrap: 1]
-  import Elixoids.World.Angle, only: [normalize_radians: 1]
+  import Elixoids.World.Angle, only: [normalize_radians: 1, random_angle: 0]
 
   @pi34 :math.pi() * 3 / 4.0
   @pi54 :math.pi() * 5 / 4.0
@@ -47,15 +55,28 @@ defmodule Elixoids.Saucer.Server do
     GameServer.link(saucer.game_id, self())
     Process.flag(:trap_exit, true)
     start_heartbeat()
-    Process.send_after(self(), :change_direction, @saucer_direction_change_interval)
+    send_change_direction_after()
+    send_fire_after()
     {:ok, saucer}
   end
 
   def handle_info(:change_direction, saucer) do
-    Process.send_after(self(), :change_direction, @saucer_direction_change_interval)
+    send_change_direction_after()
     theta = Enum.random(saucer.thetas)
     velocity = %{saucer.velocity | theta: theta}
     {:noreply, %{saucer | velocity: velocity}}
+  end
+
+  def handle_info(:fire, %{game_id: game_id, tag: tag} = saucer) do
+    send_fire_after()
+    fire!(saucer)
+    publish_news_fires(game_id, tag)
+    {:noreply, saucer}
+  end
+
+  # My bullet expired
+  def handle_info({:EXIT, _, {:shutdown, :detonate}}, state) do
+    {:noreply, state}
   end
 
   @impl true
@@ -108,4 +129,22 @@ defmodule Elixoids.Saucer.Server do
       theta: 0.0,
       velocity: Velocity.west(saucer_speed_m_per_s())
     }
+
+  defp send_change_direction_after,
+    do: Process.send_after(self(), :change_direction, @saucer_direction_change_interval)
+
+  defp send_fire_after, do: Process.send_after(self(), :fire, saucer_shooting_interval())
+
+  defp fire!(saucer) do
+    publish_news_fires(saucer.game_id, saucer.tag)
+    bullet_theta = random_angle()
+    bullet_pos = turret(bullet_theta, saucer)
+    {:ok, _pid} = GameServer.bullet_fired(saucer.game_id, saucer.tag, bullet_pos, bullet_theta)
+    # Do we need to know when bullet ends?
+    # Process.link(pid)
+  end
+
+  defp turret(theta, %{pos: ship_centre, radius: radius}) do
+    Point.move(ship_centre, theta, radius * 1.1)
+  end
 end
