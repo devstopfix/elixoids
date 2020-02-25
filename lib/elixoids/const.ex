@@ -13,7 +13,8 @@ defmodule Elixoids.Const do
   def initial_asteroids, do: Application.get_env(@app, :initial_asteroids)
 
   # Largest initial asteroid
-  def asteroid_radius_m, do: Application.get_env(@app, :asteroid_radius_m)
+  @asteroid_radius_m Application.get_env(@app, :asteroid_radius_m)
+  def asteroid_radius_m, do: @asteroid_radius_m
 
   # Initial speed of asteroid
   def asteroid_speed_m_per_s, do: 20.0
@@ -55,4 +56,7 @@ defmodule Elixoids.Const do
 
   @saucer_shooting_interval Application.get_env(@app, :saucer_shooting_interval)
   def saucer_shooting_interval, do: @saucer_shooting_interval
+
+  @saucer_radar_range Application.get_env(@app, :saucer_radar_range)
+  def saucer_radar_range, do: @saucer_radar_range
 end

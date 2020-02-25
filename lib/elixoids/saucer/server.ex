@@ -3,6 +3,12 @@ defmodule Elixoids.Saucer.Server do
   Flying saucer NPC!
 
   This server is not restarted if the Saucer is destroyed.
+
+  The accuracy is a random normal value applied to the true bearing from saucer to target.
+
+  * 0.0 -> 1.000
+  * 0.05 -> 0.700
+  * 0.1 -> 0.400
   """
 
   use GenServer, restart: :transient
@@ -15,8 +21,10 @@ defmodule Elixoids.Saucer.Server do
 
   import Elixoids.Const,
     only: [
+      asteroid_radius_m: 0,
       saucer_speed_m_per_s: 0,
       saucer_direction_change_interval: 0,
+      saucer_radar_range: 0,
       saucer_radius_large: 0,
       saucer_shooting_interval: 0
     ]
@@ -43,7 +51,8 @@ defmodule Elixoids.Saucer.Server do
         game_id: game_id,
         tag: @tag,
         thetas: Enum.map(@angles, &normalize_radians/1),
-        id: id
+        id: id,
+        accuracy: 0.05
       })
 
     GenServer.start_link(__MODULE__, saucer, name: via(id))
@@ -77,9 +86,9 @@ defmodule Elixoids.Saucer.Server do
     {:noreply, saucer}
   end
 
-  def handle_info({_ref, %Elixoids.Ship.Targets{} = targets}, saucer) do
+  def handle_info({_ref, %Elixoids.Ship.Targets{} = targets}, %{accuracy: accuracy} = saucer) do
     if theta = select_target(targets) do
-      bullet_theta = :rand.normal(theta, 0.05)
+      bullet_theta = normalize_radians(theta + (:rand.normal() * accuracy))
       publish_news_fires(saucer.game_id, saucer.tag)
       bullet_pos = turret(bullet_theta, saucer)
       {:ok, _pid} = GameServer.bullet_fired(saucer.game_id, saucer.tag, bullet_pos, bullet_theta)
@@ -158,7 +167,7 @@ defmodule Elixoids.Saucer.Server do
   def select_target(%{origin: origin, rocks: rocks, ships: ships}) do
     asteroids =
       rocks
-      |> Enum.filter(fn %{radius: r} -> r >= 120.0 end)
+      |> filter_large()
       |> asteroids_relative(origin)
       |> Enum.map(fn [_, t, r, d] -> [t: t, d: d, r: r] end)
 
@@ -169,12 +178,27 @@ defmodule Elixoids.Saucer.Server do
 
     candidates =
       (asteroids ++ ships)
-      |> Enum.filter(fn [t: _, d: d, r: _] -> d <= 1000.0 end)
-      |> Enum.sort(fn [t: _, d: d1, r: _], [t: _, d: d2, r: _] -> d2 <= d1 end)
+      |> filter_radar()
+      |> sort_nearest()
 
     case List.first(candidates) do
       nil -> nil
       [t: t, d: _, r: _] -> t
     end
   end
+
+  def filter_large(asteroids) do
+    min_r = asteroid_radius_m()
+    Enum.filter(asteroids, fn %{radius: r} -> r >= min_r end)
+  end
+
+  defp sort_nearest(targets) do
+     Enum.sort(targets, fn [t: _, d: d1, r: _], [t: _, d: d2, r: _] -> d1 <= d2 end)
+  end
+
+  defp filter_radar(targets) do
+    max_r = saucer_radar_range()
+    Enum.filter(targets, fn [t: _, d: d, r: _] -> d <= max_r end)
+  end
+
 end
