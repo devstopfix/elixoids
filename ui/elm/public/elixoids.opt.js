@@ -7565,39 +7565,44 @@ var joakin$elm_canvas$Canvas$Settings$Text$font = function (_n0) {
 };
 var author$project$Ships$renderTag = F2(
 	function (tf, ship) {
-		var tagTheta = author$project$Ships$offset90deg(ship.aH);
-		var tagDY = author$project$Ships$tagOffset(
-			ianmackenzie$elm_geometry$Circle2d$radius(ship.bo));
-		var tag = author$project$Ships$trimTag(ship.bO);
-		var color = ship.by;
-		var _n0 = ianmackenzie$elm_geometry$Point2d$coordinates(
-			ianmackenzie$elm_geometry$Circle2d$centerPoint(ship.bo));
-		var x = _n0.a;
-		var y = _n0.b;
-		var transformations = _List_fromArray(
-			[
-				tf,
-				A2(joakin$elm_canvas$Canvas$Settings$Advanced$translate, x, y),
-				joakin$elm_canvas$Canvas$Settings$Advanced$rotate(tagTheta),
-				A2(joakin$elm_canvas$Canvas$Settings$Advanced$translate, -x, -y),
-				A2(joakin$elm_canvas$Canvas$Settings$Advanced$translate, 0, tagDY)
-			]);
-		return _List_fromArray(
-			[
-				A3(
-				joakin$elm_canvas$Canvas$text,
-				_List_fromArray(
-					[
-						joakin$elm_canvas$Canvas$Settings$stroke(author$project$Ships$tagColor),
-						joakin$elm_canvas$Canvas$Settings$fill(author$project$Ships$tagColor),
-						joakin$elm_canvas$Canvas$Settings$Advanced$transform(transformations),
-						joakin$elm_canvas$Canvas$Settings$Text$font(
-						{ct: author$project$Ships$tagFont, cR: 36}),
-						joakin$elm_canvas$Canvas$Settings$Text$align(2)
-					]),
-				_Utils_Tuple2(x, y),
-				tag)
-			]);
+		var _n0 = ship.bO;
+		if (_n0 === 'SČR') {
+			return _List_Nil;
+		} else {
+			var tagTheta = author$project$Ships$offset90deg(ship.aH);
+			var tagDY = author$project$Ships$tagOffset(
+				ianmackenzie$elm_geometry$Circle2d$radius(ship.bo));
+			var tag = author$project$Ships$trimTag(ship.bO);
+			var color = ship.by;
+			var _n1 = ianmackenzie$elm_geometry$Point2d$coordinates(
+				ianmackenzie$elm_geometry$Circle2d$centerPoint(ship.bo));
+			var x = _n1.a;
+			var y = _n1.b;
+			var transformations = _List_fromArray(
+				[
+					tf,
+					A2(joakin$elm_canvas$Canvas$Settings$Advanced$translate, x, y),
+					joakin$elm_canvas$Canvas$Settings$Advanced$rotate(tagTheta),
+					A2(joakin$elm_canvas$Canvas$Settings$Advanced$translate, -x, -y),
+					A2(joakin$elm_canvas$Canvas$Settings$Advanced$translate, 0, tagDY)
+				]);
+			return _List_fromArray(
+				[
+					A3(
+					joakin$elm_canvas$Canvas$text,
+					_List_fromArray(
+						[
+							joakin$elm_canvas$Canvas$Settings$stroke(author$project$Ships$tagColor),
+							joakin$elm_canvas$Canvas$Settings$fill(author$project$Ships$tagColor),
+							joakin$elm_canvas$Canvas$Settings$Advanced$transform(transformations),
+							joakin$elm_canvas$Canvas$Settings$Text$font(
+							{ct: author$project$Ships$tagFont, cR: 36}),
+							joakin$elm_canvas$Canvas$Settings$Text$align(2)
+						]),
+					_Utils_Tuple2(x, y),
+					tag)
+				]);
+		}
 	});
 var author$project$Game$renderTags = function (tf) {
 	return ccapndave$elm_flat_map$List$FlatMap$flatMap(

@@ -77,26 +77,31 @@ renderShip tf ship =
 
 renderTag : Transform -> Ship -> List Renderable
 renderTag tf ship =
-    let
-        ( x, y ) =
-            coordinates (centerPoint ship.position)
+    case ship.id of
+        "SČR" ->
+            []
 
-        tag =
-            trimTag ship.id
+        _ ->
+            let
+                ( x, y ) =
+                    coordinates (centerPoint ship.position)
 
-        color =
-            ship.tagColor
+                tag =
+                    trimTag ship.id
 
-        tagTheta =
-            offset90deg ship.theta
+                color =
+                    ship.tagColor
 
-        tagDY =
-            tagOffset (radius ship.position)
+                tagTheta =
+                    offset90deg ship.theta
 
-        transformations =
-            [ tf, translate x y, rotate tagTheta, translate -x -y, translate 0 tagDY ]
-    in
-    [ text [ stroke tagColor, fill tagColor, transform transformations, font { size = 36, family = tagFont }, align Center ] ( x, y ) tag ]
+                tagDY =
+                    tagOffset (radius ship.position)
+
+                transformations =
+                    [ tf, translate x y, rotate tagTheta, translate -x -y, translate 0 tagDY ]
+            in
+            [ text [ stroke tagColor, fill tagColor, transform transformations, font { size = 36, family = tagFont }, align Center ] ( x, y ) tag ]
 
 
 offset90deg =
