@@ -59,4 +59,6 @@ defmodule Elixoids.Const do
 
   @saucer_radar_range Application.get_env(@app, :saucer_radar_range)
   def saucer_radar_range, do: @saucer_radar_range
+
+  def saucer_tag, do: "SČR"
 end

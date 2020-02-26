@@ -26,7 +26,8 @@ defmodule Elixoids.Saucer.Server do
       saucer_direction_change_interval: 0,
       saucer_radar_range: 0,
       saucer_radius_large: 0,
-      saucer_shooting_interval: 0
+      saucer_shooting_interval: 0,
+      saucer_tag: 0
     ]
 
   import Elixoids.News, only: [publish_news_fires: 2]
@@ -40,7 +41,7 @@ defmodule Elixoids.Saucer.Server do
   @pi54 :math.pi() * 5 / 4.0
   @angles [@pi34, @pi34, :math.pi(), @pi54, @pi54]
   @saucer_direction_change_interval saucer_direction_change_interval()
-  @tag "SČR"
+  @tag saucer_tag()
 
   def start_link(game_id) do
     id = {game_id, @tag}
@@ -88,7 +89,7 @@ defmodule Elixoids.Saucer.Server do
 
   def handle_info({_ref, %Elixoids.Ship.Targets{} = targets}, %{accuracy: accuracy} = saucer) do
     if theta = select_target(targets) do
-      bullet_theta = normalize_radians(theta + (:rand.normal() * accuracy))
+      bullet_theta = normalize_radians(theta + :rand.normal() * accuracy)
       publish_news_fires(saucer.game_id, saucer.tag)
       bullet_pos = turret(bullet_theta, saucer)
       {:ok, _pid} = GameServer.bullet_fired(saucer.game_id, saucer.tag, bullet_pos, bullet_theta)
@@ -193,12 +194,11 @@ defmodule Elixoids.Saucer.Server do
   end
 
   defp sort_nearest(targets) do
-     Enum.sort(targets, fn [t: _, d: d1, r: _], [t: _, d: d2, r: _] -> d1 <= d2 end)
+    Enum.sort(targets, fn [t: _, d: d1, r: _], [t: _, d: d2, r: _] -> d1 <= d2 end)
   end
 
   defp filter_radar(targets) do
     max_r = saucer_radar_range()
     Enum.filter(targets, fn [t: _, d: d, r: _] -> d <= max_r end)
   end
-
 end

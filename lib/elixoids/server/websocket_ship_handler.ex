@@ -8,6 +8,7 @@ defmodule Elixoids.Server.WebsocketShipHandler do
 
   alias Elixoids.Game.Server, as: Game
   alias Elixoids.Ship.Server, as: Ship
+  import Elixoids.Const, only: [saucer_tag: 0]
   import Elixoids.Translate
 
   @behaviour :cowboy_handler
@@ -121,7 +122,11 @@ defmodule Elixoids.Server.WebsocketShipHandler do
     }
   end
 
+  @saucer_tag saucer_tag()
+
   @spec valid_player_tag?(String.t()) :: {:ok, String.t()} | false
+  def valid_player_tag?(@saucer_tag), do: false
+
   def valid_player_tag?(tag) do
     case Regex.scan(~r/^(\p{L}{3})/u, String.upcase(tag)) do
       [[tag, _]] -> {:ok, tag}
