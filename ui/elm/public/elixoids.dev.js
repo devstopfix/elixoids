@@ -6141,6 +6141,24 @@ var author$project$Ships$centreAboutMass = function (ship) {
 			ship);
 	}
 };
+var author$project$Ships$saucerShip = author$project$Ships$centreAboutMass(
+	ianmackenzie$elm_geometry$Polygon2d$singleLoop(
+		author$project$Points$readPoints(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(0.22, 0.61),
+					_Utils_Tuple2(0.39, 0.17),
+					_Utils_Tuple2(1.0, -0.17),
+					_Utils_Tuple2(0.39, -0.5),
+					_Utils_Tuple2(-0.39, -0.5),
+					_Utils_Tuple2(-1.0, -0.17),
+					_Utils_Tuple2(-0.39, 0.17),
+					_Utils_Tuple2(-0.22, 0.61)
+				]))));
+var author$project$Ships$saucerWithRadius = function (r) {
+	return author$project$Polygon$polygonToShape(
+		A3(ianmackenzie$elm_geometry$Polygon2d$scaleAbout, ianmackenzie$elm_geometry$Point2d$origin, r, author$project$Ships$saucerShip));
+};
 var author$project$Ships$arcadeShipEast = author$project$Ships$centreAboutMass(
 	A3(
 		ianmackenzie$elm_geometry$Polygon2d$scaleAbout,
@@ -6161,13 +6179,23 @@ var author$project$Ships$shipWithRadius = function (r) {
 	return author$project$Polygon$polygonToShape(
 		A3(ianmackenzie$elm_geometry$Polygon2d$scaleAbout, ianmackenzie$elm_geometry$Point2d$origin, r, author$project$Ships$arcadeShipEast));
 };
+var author$project$Ships$shipOrSaucer = F2(
+	function (id, radius) {
+		if (id === 'SČR') {
+			return author$project$Ships$saucerWithRadius(radius);
+		} else {
+			return author$project$Ships$shipWithRadius(radius);
+		}
+	});
 var author$project$Ships$newShip = F3(
 	function (id, position, theta) {
 		return {
 			color: A3(avh4$elm_color$Color$rgb255, 251, 255, 251),
 			id: id,
 			position: position,
-			shape: author$project$Ships$shipWithRadius(
+			shape: A2(
+				author$project$Ships$shipOrSaucer,
+				id,
 				ianmackenzie$elm_geometry$Circle2d$radius(position)),
 			tagColor: A4(avh4$elm_color$Color$rgba, 1, 1, 1, 0.8),
 			theta: theta

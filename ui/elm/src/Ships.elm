@@ -41,9 +41,19 @@ newShip id position theta =
     , color = Color.rgb255 251 255 251
     , tagColor = Color.rgba 1 1 1 0.8
     , position = position
-    , shape = shipWithRadius (radius position)
+    , shape = shipOrSaucer id (radius position)
     , theta = theta
     }
+
+
+shipOrSaucer : Id -> Float -> Shape
+shipOrSaucer id radius =
+    case id of
+        "SČR" ->
+            saucerWithRadius radius
+
+        _ ->
+            shipWithRadius radius
 
 
 renderShip : Transform -> Ship -> Renderable
@@ -114,6 +124,18 @@ arcadeShipEast =
         |> readPoints
         |> singleLoop
         |> scaleAbout origin (1.0 / 24.0)
+        |> centreAboutMass
+
+
+saucerWithRadius : Float -> Shape
+saucerWithRadius r =
+    saucerShip |> scaleAbout origin r |> polygonToShape
+
+
+saucerShip =
+    [ ( 0.22, 0.61 ), ( 0.39, 0.17 ), ( 1.0, -0.17 ), ( 0.39, -0.5 ), ( -0.39, -0.5 ), ( -1.0, -0.17 ), ( -0.39, 0.17 ), ( -0.22, 0.61 ) ]
+        |> readPoints
+        |> singleLoop
         |> centreAboutMass
 
 
