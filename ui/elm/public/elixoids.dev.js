@@ -6156,8 +6156,9 @@ var author$project$Ships$saucerShip = author$project$Ships$centreAboutMass(
 					_Utils_Tuple2(-0.22, 0.61)
 				]))));
 var author$project$Ships$saucerWithRadius = function (r) {
-	return author$project$Polygon$polygonToShape(
+	var shape = author$project$Polygon$polygonToShape(
 		A3(ianmackenzie$elm_geometry$Polygon2d$scaleAbout, ianmackenzie$elm_geometry$Point2d$origin, r, author$project$Ships$saucerShip));
+	return _Utils_Tuple2(shape, 4.0);
 };
 var author$project$Ships$arcadeShipEast = author$project$Ships$centreAboutMass(
 	A3(
@@ -6176,8 +6177,9 @@ var author$project$Ships$arcadeShipEast = author$project$Ships$centreAboutMass(
 						_Utils_Tuple2(24, 0)
 					])))));
 var author$project$Ships$shipWithRadius = function (r) {
-	return author$project$Polygon$polygonToShape(
+	var shape = author$project$Polygon$polygonToShape(
 		A3(ianmackenzie$elm_geometry$Polygon2d$scaleAbout, ianmackenzie$elm_geometry$Point2d$origin, r, author$project$Ships$arcadeShipEast));
+	return _Utils_Tuple2(shape, 2.0);
 };
 var author$project$Ships$shipOrSaucer = F2(
 	function (id, radius) {
@@ -6189,14 +6191,18 @@ var author$project$Ships$shipOrSaucer = F2(
 	});
 var author$project$Ships$newShip = F3(
 	function (id, position, theta) {
+		var _n0 = A2(
+			author$project$Ships$shipOrSaucer,
+			id,
+			ianmackenzie$elm_geometry$Circle2d$radius(position));
+		var shape = _n0.a;
+		var lineWidth = _n0.b;
 		return {
 			color: A3(avh4$elm_color$Color$rgb255, 251, 255, 251),
 			id: id,
+			lineWidth: lineWidth,
 			position: position,
-			shape: A2(
-				author$project$Ships$shipOrSaucer,
-				id,
-				ianmackenzie$elm_geometry$Circle2d$radius(position)),
+			shape: shape,
 			tagColor: A4(avh4$elm_color$Color$rgba, 1, 1, 1, 0.8),
 			theta: theta
 		};
@@ -7482,7 +7488,7 @@ var author$project$Ships$renderShip = F2(
 				[
 					joakin$elm_canvas$Canvas$Settings$stroke(ship.color),
 					joakin$elm_canvas$Canvas$Settings$Advanced$transform(transformations),
-					joakin$elm_canvas$Canvas$Settings$Line$lineWidth(2.0)
+					joakin$elm_canvas$Canvas$Settings$Line$lineWidth(ship.lineWidth)
 				]),
 			_List_fromArray(
 				[ship.shape]));

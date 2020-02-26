@@ -27,7 +27,7 @@ type alias Theta =
 
 
 type alias Ship =
-    { id : Id, position : Circle2d, theta : Theta, color : Color, tagColor : Color, shape : Shape }
+    { id : Id, position : Circle2d, theta : Theta, color : Color, tagColor : Color, shape : Shape, lineWidth : Float }
 
 
 shipRadius : Radius
@@ -37,16 +37,21 @@ shipRadius =
 
 newShip : Id -> Circle2d -> Theta -> Ship
 newShip id position theta =
+    let
+        ( shape, lineWidth ) =
+            shipOrSaucer id (radius position)
+    in
     { id = id
     , color = Color.rgb255 251 255 251
-    , tagColor = Color.rgba 1 1 1 0.8
+    , lineWidth = lineWidth
     , position = position
-    , shape = shipOrSaucer id (radius position)
+    , shape = shape
+    , tagColor = Color.rgba 1 1 1 0.8
     , theta = theta
     }
 
 
-shipOrSaucer : Id -> Float -> Shape
+shipOrSaucer : Id -> Float -> ( Shape, Float )
 shipOrSaucer id radius =
     case id of
         "SČR" ->
@@ -66,7 +71,7 @@ renderShip tf ship =
             [ tf, translate x y, rotate ship.theta ]
     in
     shapes
-        [ stroke ship.color, transform transformations, lineWidth 2.0 ]
+        [ stroke ship.color, transform transformations, lineWidth ship.lineWidth ]
         [ ship.shape ]
 
 
@@ -114,9 +119,13 @@ tagColor =
     Color.rgb 0.6 0.6 0.6
 
 
-shipWithRadius : Float -> Shape
+shipWithRadius : Float -> ( Shape, Float )
 shipWithRadius r =
-    arcadeShipEast |> scaleAbout origin r |> polygonToShape
+    let
+        shape =
+            arcadeShipEast |> scaleAbout origin r |> polygonToShape
+    in
+    ( shape, 2.0 )
 
 
 arcadeShipEast =
@@ -127,9 +136,13 @@ arcadeShipEast =
         |> centreAboutMass
 
 
-saucerWithRadius : Float -> Shape
+saucerWithRadius : Float -> ( Shape, Float )
 saucerWithRadius r =
-    saucerShip |> scaleAbout origin r |> polygonToShape
+    let
+        shape =
+            saucerShip |> scaleAbout origin r |> polygonToShape
+    in
+    ( shape, 4.0 )
 
 
 saucerShip =
