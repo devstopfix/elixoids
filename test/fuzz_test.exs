@@ -14,6 +14,7 @@ defmodule Elixoids.FuzzTest do
   property :cowboy_routing do
     {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 1)
     num = oneof([oneof([game_id, 0]), pos_integer()]) |> bind(&Integer.to_string/1)
+    port = :ranch.get_port(:elixoids_http)
 
     paths =
       oneof([
@@ -32,7 +33,7 @@ defmodule Elixoids.FuzzTest do
       |> bind(fn xs -> xs |> Enum.take(8) |> Enum.join("/") end)
 
     for_all {path, method} in {gen_path, gen_method()} do
-      url = 'http://localhost:8065/' ++ path
+      url = to_charlist("http://localhost:#{port}/#{path}")
 
       case :httpc.request(method, {url, []}, [{:timeout, 1_000}, {:autoredirect, false}], []) do
         {:ok, {{_, status_code, _}, _, _}} ->
