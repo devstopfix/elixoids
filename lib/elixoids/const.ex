@@ -61,4 +61,10 @@ defmodule Elixoids.Const do
   def saucer_radar_range, do: @saucer_radar_range
 
   def saucer_tag, do: "SČR"
+
+  @ship_rotation_rate_rad_per_sec Application.get_env(@app, :ship_rotation_rate_rad_per_sec)
+  def ship_rotation_rate_rad_per_sec, do: @ship_rotation_rate_rad_per_sec
+
+  @saucer_rotation_rate_rad_per_sec Application.get_env(@app, :saucer_rotation_rate_rad_per_sec)
+  def saucer_rotation_rate_rad_per_sec, do: @saucer_rotation_rate_rad_per_sec
 end

@@ -17,13 +17,11 @@ defmodule Elixoids.Ship.Server do
   alias Elixoids.World.Point
   import Elixoids.Const
   import Elixoids.News
+  import Elixoids.Ship.Rotate
   import Elixoids.World.Clock
   import Elixoids.World.Angle
 
   use Elixoids.Game.Heartbeat
-
-  # Rotation rate (radians/sec). Three seconds to turn a complete circle.
-  @ship_rotation_rad_per_sec :math.pi() * 2 / 3.0
 
   @max_inflight_bullets max_inflight_bullets()
 
@@ -38,7 +36,8 @@ defmodule Elixoids.Ship.Server do
         :tag => tag,
         :game_id => game_id,
         :shields => max_shields(),
-        :bullets_in_flight => 0
+        :bullets_in_flight => 0,
+        :rotation_rate => ship_rotation_rate_rad_per_sec()
       })
 
     case GenServer.start_link(__MODULE__, ship, name: via(ship_id)) do
@@ -192,35 +191,6 @@ defmodule Elixoids.Ship.Server do
   end
 
   def random_ship_point, do: Space.random_grid_point()
-
-  defp clip_delta_theta(delta_theta, delta_t_ms) do
-    max_theta = @ship_rotation_rad_per_sec * delta_t_ms / 1000.0
-
-    if delta_theta > max_theta do
-      max_theta
-    else
-      delta_theta
-    end
-  end
-
-  @doc """
-  Rotate the ship from it's current theta towards it's
-  intended delta_theta - but clip the rate of rotation
-  by the time elapsed since the last frame.
-  """
-  def rotate_ship(ship, delta_t_ms) do
-    delta_theta = clip_delta_theta(abs(ship.target_theta - ship.theta), delta_t_ms)
-
-    turn =
-      if turn_positive?(ship.target_theta, ship.theta) do
-        delta_theta
-      else
-        -delta_theta
-      end
-
-    theta = normalize_radians(ship.theta + turn)
-    %{ship | :theta => theta}
-  end
 
   @doc """
   Update game state with time at which they can fire again

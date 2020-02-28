@@ -16,4 +16,6 @@ config :elixoids,
   saucer_shooting_interval: 500,
   saucer_speed_m_per_s: 240.0,
   saucer_radar_range: 1200.0,
-  ship_radius_m: 20.0
+  saucer_rotation_rate_rad_per_sec: :math.pi() * 2,
+  ship_radius_m: 20.0,
+  ship_rotation_rate_rad_per_sec: :math.pi() * 2 / 3.0

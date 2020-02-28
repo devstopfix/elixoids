@@ -19,28 +19,16 @@ defmodule Elixoids.Saucer.Server do
   alias Elixoids.World.Point
   alias Elixoids.World.Velocity
 
-  import Elixoids.Const,
-    only: [
-      asteroid_radius_m: 0,
-      saucer_speed_m_per_s: 0,
-      saucer_direction_change_interval: 0,
-      saucer_radar_range: 0,
-      saucer_radius_large: 0,
-      saucer_shooting_interval: 0,
-      saucer_tag: 0
-    ]
-
+  import Elixoids.Const
   import Elixoids.News, only: [publish_news_fires: 2]
-
+  import Elixoids.Ship.Rotate
   import Elixoids.Space, only: [random_point_on_vertical_edge: 0, wrap: 1]
   import Elixoids.Translate
-
   import Elixoids.World.Angle, only: [normalize_radians: 1]
 
   @pi34 :math.pi() * 3 / 4.0
   @pi54 :math.pi() * 5 / 4.0
   @angles [@pi34, @pi34, :math.pi(), @pi54, @pi54]
-  @saucer_direction_change_interval saucer_direction_change_interval()
   @tag saucer_tag()
 
   def start_link(game_id) do
@@ -50,10 +38,12 @@ defmodule Elixoids.Saucer.Server do
       random_saucer()
       |> Map.merge(%{
         game_id: game_id,
+        rotation_rate: saucer_rotation_rate_rad_per_sec(),
         tag: @tag,
+        target_theta: 0.0,
         thetas: Enum.map(@angles, &normalize_radians/1),
         id: id,
-        accuracy: 0.05
+        accuracy: 0.025
       })
 
     GenServer.start_link(__MODULE__, saucer, name: via(id))
@@ -75,8 +65,7 @@ defmodule Elixoids.Saucer.Server do
   def handle_info(:change_direction, saucer) do
     send_change_direction_after()
     theta = Enum.random(saucer.thetas)
-    velocity = %{saucer.velocity | theta: theta}
-    {:noreply, %{saucer | velocity: velocity}}
+    {:noreply, %{saucer | target_theta: theta}}
   end
 
   def handle_info(:fire, %{game_id: game_id, tag: _tag} = saucer) do
@@ -121,17 +110,11 @@ defmodule Elixoids.Saucer.Server do
   end
 
   @impl Elixoids.Game.Tick
-  @spec handle_tick(any, any, %{
-          game_id: integer,
-          id: any,
-          pos: any,
-          radius: any,
-          tag: any,
-          theta: float
-        }) :: {:ok, %{game_id: integer, id: any, pos: any, radius: any, tag: any, theta: float}}
   def handle_tick(_pid, delta_t_ms, saucer = %{game_id: game_id}) do
     next_saucer =
-      update_in(saucer, [:pos], fn pos ->
+      saucer
+      |> rotate_ship(delta_t_ms)
+      |> update_in([:pos], fn pos ->
         pos |> Velocity.apply_velocity(saucer.velocity, delta_t_ms) |> wrap()
       end)
 
@@ -141,7 +124,7 @@ defmodule Elixoids.Saucer.Server do
       tag: saucer.tag,
       pos: next_saucer.pos,
       radius: saucer.radius,
-      theta: Float.round(saucer.theta, 3)
+      theta: 0.0
     }
 
     GameServer.update_ship(game_id, ship_loc)
@@ -152,14 +135,14 @@ defmodule Elixoids.Saucer.Server do
     do: %{
       pos: random_point_on_vertical_edge(),
       radius: saucer_radius_large(),
-      theta: 0.0,
       velocity: Velocity.west(saucer_speed_m_per_s())
     }
 
   defp send_change_direction_after,
-    do: Process.send_after(self(), :change_direction, @saucer_direction_change_interval)
+    do: Process.send_after(self(), :change_direction, saucer_direction_change_interval())
 
-  defp send_fire_after, do: Process.send_after(self(), :fire, saucer_shooting_interval())
+  defp send_fire_after,
+    do: Process.send_after(self(), :fire, saucer_shooting_interval())
 
   defp turret(theta, %{pos: ship_centre, radius: radius}) do
     Point.move(ship_centre, theta, radius * 1.1)
