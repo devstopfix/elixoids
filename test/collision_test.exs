@@ -53,7 +53,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 10000, large: true
+  @tag iterations: 10_000, large: true
   property :bullet_inside_ship_hit do
     for_all {ps, pb, ship_r} in point_inside_ship() do
       bullet = %BulletLoc{pos: pb}
@@ -63,7 +63,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 10000, large: true
+  @tag iterations: 10_000, large: true
   property :bullet_misses_ship do
     for_all {ps, pb, ship_r} in point_outside_ship() do
       bullet = %BulletLoc{pos: pb}
@@ -83,7 +83,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 5000, large: true
+  @tag iterations: 5_000, large: true
   property :bullet_inside_asteroid_hit do
     for_all {pa, pb, r} in point_inside_asteroid() do
       bullet = %BulletLoc{pos: pb}
@@ -93,7 +93,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 5000, large: true
+  @tag iterations: 5_000, large: true
   property :bullet_misses_asteroid do
     for_all {pa, pb, r} in point_outside_asteroid() do
       bullet = %BulletLoc{pos: pb}
@@ -102,7 +102,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 1000, large: true
+  @tag iterations: 1_000, large: true
   property :bullet_hits_asteroids_before_ships do
     for_all {{pa, pb, r}, ships} in {point_inside_asteroid(), list(gen_ship())} do
       bullet = %BulletLoc{pos: pb}
@@ -112,7 +112,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 10000, large: true
+  @tag iterations: 10_000, large: true
   property :asteroid_hits_ship do
     for_all [p1: ps, r1: rs, p2: pa, r2: ra] in ship_overlapping_asteroid() do
       asteroid = %AsteroidLoc{pos: pa, radius: ra}
@@ -123,7 +123,29 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 10000, large: true
+  @tag iterations: 1_000, large: true
+  property :ship_hits_ship do
+    for_all [p1: p1, r1: r1, p2: p2, r2: r2] in ship_overlapping_ship() do
+      s1 = %ShipLoc{pos: p1, radius: r1, tag: saucer_tag()}
+      s2 = %ShipLoc{pos: p2, radius: r2, tag: "OTH", pid: self()}
+
+      assert [{:ship_hit_ship, s1, s2}] ==
+               Collision.collision_check([], [], [s1, s2])
+    end
+  end
+
+  @tag iterations: 1_000, large: true
+  property :ship_misses_ship do
+    for_all [p1: p1, r1: r1, p2: p2, r2: r2] in ship_non_overlapping_ship() do
+      s1 = %ShipLoc{pos: p1, radius: r1, tag: saucer_tag()}
+      s2 = %ShipLoc{pos: p2, radius: r2, tag: "OTH", pid: self()}
+
+      assert [] ==
+               Collision.collision_check([], [], [s1, s2])
+    end
+  end
+
+  @tag iterations: 10_000, large: true
   property :asteroid_misses_ship do
     for_all [p1: ps, r1: rs, p2: pa, r2: ra] in ship_non_overlapping_asteroid() do
       asteroid = %AsteroidLoc{pos: pa, radius: ra}
@@ -133,7 +155,7 @@ defmodule Elixoids.CollisionTest do
   end
 
   # Asteroid is removed from collision detection with ships
-  @tag iterations: 1000, large: true
+  @tag iterations: 1_000, large: true
   property :bullet_hits_asteroid_before_asteroid_hit_ships do
     for_all {{pa, pb, r}, ships} in {point_inside_asteroid(), list(gen_ship())} do
       bullet = %BulletLoc{pos: pb}
@@ -228,8 +250,13 @@ defmodule Elixoids.CollisionTest do
 
   defp ship_overlapping_asteroid, do: circles(ship_radius(), asteroid_radius(), smaller_radius())
 
+  defp ship_overlapping_ship, do: circles(ship_radius(), ship_radius(), smaller_radius())
+
   defp ship_non_overlapping_asteroid,
     do: circles(ship_radius(), asteroid_radius(), larger_radius())
+
+  defp ship_non_overlapping_ship,
+    do: circles(ship_radius(), ship_radius(), larger_radius())
 
   defp gen_asteroid,
     do:
@@ -252,21 +279,21 @@ defmodule Elixoids.CollisionTest do
     assert false == Collision.asteroid_hits_ship?(asteroid, ship)
   end
 
-  test "Collision between touching asteroid and rock" do
+  test "Collision between touching asteroid and ship" do
     ship = %ShipLoc{pos: %{x: 1020.0, y: 0}, radius: 20, tag: "AAA"}
     asteroid = %{id: 2, pos: %{x: 920.0, y: 0}, radius: 80}
 
     assert Collision.asteroid_hits_ship?(asteroid, ship)
   end
 
-  test "Collision between overlapping asteroid and rock" do
+  test "Collision between overlapping asteroid and ship" do
     ship = %ShipLoc{pos: %{x: 1000.0, y: 0}, radius: 20, tag: "AAA"}
     asteroid = %{id: 2, pos: %{x: 1000.0, y: 0}, radius: 80}
 
     assert Collision.asteroid_hits_ship?(asteroid, ship)
   end
 
-  test "Detect between overlapping asteroid and rock" do
+  test "Detect overlapping asteroid and ship" do
     ship = %ShipLoc{pos: %{x: 1000.0, y: 0}, radius: 20, tag: "AAA"}
 
     asteroid1 = %{id: 73, pos: %{x: 1000.0, y: 0}, radius: 80}

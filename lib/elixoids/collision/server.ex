@@ -9,7 +9,10 @@ defmodule Elixoids.Collision.Server do
   use GenServer
 
   alias Elixoids.Game.Snapshot
+  import Elixoids.Const, only: [saucer_tag: 0]
   import Elixoids.Event
+
+  @saucer_tag saucer_tag()
 
   def start_link(game_id) when is_integer(game_id) do
     GenServer.start_link(__MODULE__, game_id, name: via(game_id))
@@ -36,6 +39,7 @@ defmodule Elixoids.Collision.Server do
     {:noreply, game_id}
   end
 
+  # TODO refector this to either be a dispatch function or a collector function
   def collision_check(asteroids, bullets, ships) do
     tally = [a: MapSet.new(asteroids), b: MapSet.new(bullets), s: MapSet.new(ships), hits: []]
 
@@ -44,6 +48,7 @@ defmodule Elixoids.Collision.Server do
       |> check_bullets_hit_asteroids
       |> check_bullets_hit_ships
       |> check_asteroids_hit_ships
+      |> check_saucer_hit_ships
 
     events
   end
@@ -72,6 +77,16 @@ defmodule Elixoids.Collision.Server do
     end)
   end
 
+  defp check_saucer_hit_ships(tally = [a: _, b: _, s: ss, hits: _]) do
+    if saucer = Enum.find(ss, fn %{tag: tag} -> tag == @saucer_tag end) do
+      players = Enum.reject(ss, fn %{tag: tag} -> tag == @saucer_tag end)
+      hits = for s <- players, ship_hits_ship?(s, saucer), do: {:ship_hit_ship, saucer, s}
+      Keyword.update(tally, :hits, [], &(&1 ++ hits))
+    else
+      tally
+    end
+  end
+
   defp dispatch(_game_id, []), do: true
 
   defp dispatch(game_id, [{:bullet_hit_ship, b, s} | events]) do
@@ -86,6 +101,11 @@ defmodule Elixoids.Collision.Server do
 
   defp dispatch(game_id, [{:asteroid_hit_ship, a, s} | events]) do
     asteroid_hit_ship(game_id, a, s)
+    dispatch(game_id, events)
+  end
+
+  defp dispatch(game_id, [{:ship_hit_ship, s1, s2} | events]) do
+    ship_hit_ship(game_id, s1, s2)
     dispatch(game_id, events)
   end
 
@@ -124,5 +144,11 @@ defmodule Elixoids.Collision.Server do
     %{pos: %{x: sx, y: sy}, radius: sr} = ship
 
     sq(ax - sx) + sq(ay - sy) <= sq(sr + ar)
+  end
+
+  def ship_hits_ship?(s1, s2) do
+    %{pos: %{x: s1x, y: s1y}, radius: s1r} = s1
+    %{pos: %{x: s2x, y: s2y}, radius: s2r} = s2
+    sq(s2x - s1x) + sq(s2y - s1y) < sq(s1r + s2r)
   end
 end
