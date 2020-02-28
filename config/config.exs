@@ -19,3 +19,5 @@ config :elixoids,
   saucer_rotation_rate_rad_per_sec: :math.pi() * 2,
   ship_radius_m: 20.0,
   ship_rotation_rate_rad_per_sec: :math.pi() * 2 / 3.0
+
+import_config "#{Mix.env()}.exs"
