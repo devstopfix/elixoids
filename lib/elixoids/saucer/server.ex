@@ -30,6 +30,7 @@ defmodule Elixoids.Saucer.Server do
   @pi34 :math.pi() * 3 / 4.0
   @pi54 :math.pi() * 5 / 4.0
   @angles [@pi34, @pi34, :math.pi(), @pi54, @pi54]
+  @initial_velocity Velocity.west(saucer_speed_m_per_s())
   @tag saucer_tag()
 
   def start_link(game_id) do
@@ -41,7 +42,7 @@ defmodule Elixoids.Saucer.Server do
         game_id: game_id,
         rotation_rate: saucer_rotation_rate_rad_per_sec(),
         tag: @tag,
-        target_theta: 0.0,
+        target_theta: @initial_velocity.theta,
         thetas: Enum.map(@angles, &normalize_radians/1),
         id: id,
         accuracy: 0.025
@@ -139,7 +140,7 @@ defmodule Elixoids.Saucer.Server do
     do: %{
       pos: random_point_on_vertical_edge(),
       radius: saucer_radius_large(),
-      velocity: Velocity.west(saucer_speed_m_per_s())
+      velocity: @initial_velocity
     }
 
   defp send_change_direction_after,
