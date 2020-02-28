@@ -139,8 +139,8 @@ defmodule Elixoids.Game.Server do
 
   def handle_cast({:explosion, %{x: x, y: y}, radius}, game) do
     pan = Elixoids.Space.frac_x(x)
-    Elixoids.News.publish_audio(game.game_id, SoundEvent.explosion(pan, radius))
-    Elixoids.News.publish_explosion(game.game_id, [x, y])
+    News.publish_audio(game.game_id, SoundEvent.explosion(pan, radius))
+    News.publish_explosion(game.game_id, [x, y])
     {:noreply, game}
   end
 

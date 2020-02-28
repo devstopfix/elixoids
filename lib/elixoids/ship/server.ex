@@ -9,14 +9,13 @@ defmodule Elixoids.Ship.Server do
 
   use GenServer
 
-  alias Elixoids.Api.SoundEvent
   alias Elixoids.Game.Server, as: GameServer
-  alias Elixoids.News
   alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Space
   alias Elixoids.World.Point
   import Elixoids.Const
   import Elixoids.News
+  import Elixoids.Ship.Shot
   import Elixoids.Ship.Rotate
   import Elixoids.World.Clock
   import Elixoids.World.Angle
@@ -99,7 +98,7 @@ defmodule Elixoids.Ship.Server do
         ship = %{pos: pos, radius: radius, game_id: game_id, tag: tag, id: ship_id}
       ) do
     hyperspace(ship_id)
-    Elixoids.Game.Server.explosion(game_id, pos, radius)
+    GameServer.explosion(game_id, pos, radius)
     publish_news(game_id, [shooter_tag, "kills", tag])
 
     {:noreply, ship}
@@ -126,7 +125,7 @@ defmodule Elixoids.Ship.Server do
       state =
         ship
         |> fire()
-        |> audio()
+        |> fire_sound()
         |> recharge_laser()
         |> inc_bullets()
 
@@ -159,12 +158,6 @@ defmodule Elixoids.Ship.Server do
 
   defp turret(%{pos: ship_centre, theta: theta}) do
     Point.move(ship_centre, theta, nose_radius_m())
-  end
-
-  defp audio(%{game_id: game_id, pos: %{x: x}} = ship) do
-    e = x |> Space.frac_x() |> SoundEvent.fire()
-    News.publish_audio(game_id, e)
-    ship
   end
 
   # Data

@@ -22,6 +22,7 @@ defmodule Elixoids.Saucer.Server do
   import Elixoids.Const
   import Elixoids.News, only: [publish_news_fires: 2]
   import Elixoids.Ship.Rotate
+  import Elixoids.Ship.Shot
   import Elixoids.Space, only: [random_point_on_vertical_edge: 0, wrap: 1]
   import Elixoids.Translate
   import Elixoids.World.Angle, only: [normalize_radians: 1]
@@ -62,12 +63,14 @@ defmodule Elixoids.Saucer.Server do
     {:ok, saucer}
   end
 
+  # Pick a new direction
   def handle_info(:change_direction, saucer) do
     send_change_direction_after()
     theta = Enum.random(saucer.thetas)
     {:noreply, %{saucer | target_theta: theta}}
   end
 
+  # Pick a target and fire!
   def handle_info(:fire, %{game_id: game_id, tag: _tag} = saucer) do
     ref = make_ref()
     from = {self(), ref}
@@ -79,11 +82,12 @@ defmodule Elixoids.Saucer.Server do
   def handle_info({_ref, %Elixoids.Ship.Targets{} = targets}, %{accuracy: accuracy} = saucer) do
     if theta = select_target(targets) do
       bullet_theta = normalize_radians(theta + :rand.normal() * accuracy)
-      publish_news_fires(saucer.game_id, saucer.tag)
       bullet_pos = turret(bullet_theta, saucer)
       {:ok, _pid} = GameServer.bullet_fired(saucer.game_id, saucer.tag, bullet_pos, bullet_theta)
-      # Do we need to know when bullet ends?
+      # Do we need to know when bullet ends? If so
       # Process.link(pid)
+      publish_news_fires(saucer.game_id, saucer.tag)
+      fire_sound(saucer)
     end
 
     {:noreply, saucer}
