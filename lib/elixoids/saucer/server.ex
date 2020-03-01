@@ -30,6 +30,7 @@ defmodule Elixoids.Saucer.Server do
   @pi34 :math.pi() * 3 / 4.0
   @pi54 :math.pi() * 5 / 4.0
   @angles [@pi34, @pi34, :math.pi(), @pi54, @pi54]
+  # TODO west or east
   @initial_velocity Velocity.west(saucer_speed_m_per_s())
   @tag saucer_tag()
 

@@ -79,15 +79,16 @@ defmodule Elixoids.Collision.Server do
 
   defp check_saucer_hit_ships(tally = [a: _, b: _, s: ss, hits: _]) do
     case ships_tagged_saucer(ss) do
-      {[], _} -> tally
+      {[], _} ->
+        tally
+
       {[saucer], ships} ->
         hits = for s <- ships, ship_hits_ship?(s, saucer), do: {:ship_hit_ship, saucer, s}
         Keyword.update(tally, :hits, [], &(&1 ++ hits))
     end
   end
 
-  defp ships_tagged_saucer(ss), do:
-    Enum.split_with(ss, fn %{tag: tag} -> tag == @saucer_tag end)
+  defp ships_tagged_saucer(ss), do: Enum.split_with(ss, fn %{tag: tag} -> tag == @saucer_tag end)
 
   defp dispatch(_game_id, []), do: true
 
