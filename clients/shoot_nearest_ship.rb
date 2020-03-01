@@ -45,7 +45,9 @@ def start_ship(ship_tag, retry_count)
         end
         # Turn towards closes ship, or patrol
         if opponents.empty?
-          ws.send({'theta'=>theta+0.1}.to_json)
+          second_hand = 360 - (Time.now.to_i % 360)
+          theta = second_hand * Math::PI / 180
+          ws.send({'theta'=>theta}.to_json)
         else
           target = sort_ships_by_distance(opponents).first
           tag, theta, dist = target
