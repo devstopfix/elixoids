@@ -33,83 +33,98 @@ defmodule Elixoids.Collision.Server do
   def handle_cast({:collision_tests, game}, game_id) do
     %Snapshot{asteroids: asteroids, bullets: bullets, ships: ships} = game
 
-    events = collision_check(asteroids, bullets, ships)
-    dispatch(game_id, events)
+    _events = collision_check(asteroids, bullets, ships, game_id)
 
     {:noreply, game_id}
   end
 
   # TODO refector this to either be a dispatch function or a collector function
-  def collision_check(asteroids, bullets, ships) do
+  def collision_check(asteroids, bullets, ships, game_id \\ -1) do
     tally = [a: MapSet.new(asteroids), b: MapSet.new(bullets), s: MapSet.new(ships), hits: []]
 
     [_, _, _, hits: events] =
       tally
-      |> check_bullets_hit_asteroids
-      |> check_bullets_hit_ships
-      |> check_asteroids_hit_ships
-      |> check_saucer_hit_ships
+      |> check_bullets_hit_asteroids(game_id)
+      |> check_bullets_hit_ships(game_id)
+      |> check_asteroids_hit_ships(game_id)
+      |> check_saucer_hit_ships(game_id)
 
     events
   end
 
-  defp check_bullets_hit_asteroids(tally = [a: as, b: bs, s: _, hits: _]) do
-    hits = for b <- bs, a <- as, bullet_hits_asteroid?(b, a), do: {:bullet_hit_asteroid, b, a}
+  defp check_bullets_hit_asteroids(tally = [a: as, b: bs, s: _, hits: _], game_id) do
+    hits =
+      for b <- bs,
+          a <- as,
+          bullet_hits_asteroid?(b, a),
+          do: dispatch({:bullet_hit_asteroid, b, a, game_id})
 
-    Enum.reduce(hits, tally, fn hit = {_, b, a}, [a: as, b: bs, s: ss, hits: hits] ->
+    Enum.reduce(hits, tally, fn hit = {_, b, a, _}, [a: as, b: bs, s: ss, hits: hits] ->
       [a: MapSet.delete(as, a), b: MapSet.delete(bs, b), s: ss, hits: [hit | hits]]
     end)
   end
 
-  defp check_bullets_hit_ships(tally = [a: _, b: bs, s: ss, hits: _]) do
-    hits = for b <- bs, s <- ss, bullet_hits_ship?(b, s), do: {:bullet_hit_ship, b, s}
+  defp check_bullets_hit_ships(tally = [a: _, b: bs, s: ss, hits: _], game_id) do
+    hits =
+      for b <- bs,
+          s <- ss,
+          bullet_hits_ship?(b, s),
+          do: dispatch({:bullet_hit_ship, b, s, game_id})
 
-    Enum.reduce(hits, tally, fn hit = {_, b, s}, [a: as, b: bs, s: ss, hits: hits] ->
+    Enum.reduce(hits, tally, fn hit = {_, b, s, _}, [a: as, b: bs, s: ss, hits: hits] ->
       [a: as, b: MapSet.delete(bs, b), s: MapSet.delete(ss, s), hits: [hit | hits]]
     end)
   end
 
-  defp check_asteroids_hit_ships(tally = [a: as, b: _, s: ss, hits: _]) do
-    hits = for a <- as, s <- ss, asteroid_hits_ship?(a, s), do: {:asteroid_hit_ship, a, s}
+  defp check_asteroids_hit_ships(tally = [a: as, b: _, s: ss, hits: _], game_id) do
+    hits =
+      for a <- as,
+          s <- ss,
+          asteroid_hits_ship?(a, s),
+          do: dispatch({:asteroid_hit_ship, a, s, game_id})
 
-    Enum.reduce(hits, tally, fn hit = {_, a, s}, [a: as, b: bs, s: ss, hits: hits] ->
+    Enum.reduce(hits, tally, fn hit = {_, a, s, _}, [a: as, b: bs, s: ss, hits: hits] ->
       [a: MapSet.delete(as, a), b: bs, s: MapSet.delete(ss, s), hits: [hit | hits]]
     end)
   end
 
-  defp check_saucer_hit_ships(tally = [a: _, b: _, s: ss, hits: _]) do
+  defp check_saucer_hit_ships(tally = [a: _, b: _, s: ss, hits: _], game_id) do
     case ships_tagged_saucer(ss) do
       {[], _} ->
         tally
 
       {[saucer], ships} ->
-        hits = for s <- ships, ship_hits_ship?(s, saucer), do: {:ship_hit_ship, saucer, s}
+        hits =
+          for s <- ships,
+              ship_hits_ship?(s, saucer),
+              do: dispatch({:ship_hit_ship, saucer, s, game_id})
+
         Keyword.update(tally, :hits, [], &(&1 ++ hits))
     end
   end
 
   defp ships_tagged_saucer(ss), do: Enum.split_with(ss, fn %{tag: tag} -> tag == @saucer_tag end)
 
-  defp dispatch(_game_id, []), do: true
+  defp dispatch({_, %{pid: nil}, _, _} = event), do: event
 
-  defp dispatch(game_id, [{:bullet_hit_ship, b, s} | events]) do
-    bullet_hit_ship(game_id, b, s)
-    dispatch(game_id, events)
+  defp dispatch({:bullet_hit_ship, _b, _s, _game_id} = event) do
+    spawn(fn -> bullet_hit_ship(event) end)
+    event
   end
 
-  defp dispatch(game_id, [{:bullet_hit_asteroid, b, a} | events]) do
-    bullet_hit_asteroid(game_id, b, a)
-    dispatch(game_id, events)
+  defp dispatch({:bullet_hit_asteroid, _b, _a, _game_id} = event) do
+    spawn(fn -> bullet_hit_asteroid(event) end)
+    event
   end
 
-  defp dispatch(game_id, [{:asteroid_hit_ship, a, s} | events]) do
-    asteroid_hit_ship(game_id, a, s)
-    dispatch(game_id, events)
+  defp dispatch({:asteroid_hit_ship, _a, _s, _game_id} = event) do
+    spawn(fn -> asteroid_hit_ship(event) end)
+    event
   end
 
-  defp dispatch(game_id, [{:ship_hit_ship, s1, s2} | events]) do
-    ship_hit_ship(game_id, s1, s2)
-    dispatch(game_id, events)
+  defp dispatch({:ship_hit_ship, _s1, _s2, _game_id} = event) do
+    spawn(fn -> ship_hit_ship(event) end)
+    event
   end
 
   @doc """
