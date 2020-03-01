@@ -35,4 +35,11 @@ defmodule Elixoids.Test.Generators do
   defp any_angle, do: float() |> bind(fn f -> :math.fmod(f, :math.pi()) end)
 
   def gen_theta, do: oneof([oneof([0.0]), major_angle(), any_angle()])
+
+  def gen_game_id,
+    do:
+      oneof([
+        oneof([0, 1]),
+        pos_integer()
+      ])
 end

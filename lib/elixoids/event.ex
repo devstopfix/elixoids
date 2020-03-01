@@ -10,30 +10,35 @@ defmodule Elixoids.Event do
 
   @asteroid "ASTEROID"
 
-  def asteroid_hit_ship(game_id, %{pid: asteroid_pid, radius: radius}, %{
-        id: ship_id,
-        tag: tag,
-        pos: pos
-      }) do
+  def asteroid_hit_ship(
+        {_, %{pid: asteroid_pid, radius: radius},
+         %{
+           id: ship_id,
+           tag: tag,
+           pos: pos
+         }, game_id}
+      ) do
     Ship.hyperspace(ship_id)
     Game.explosion(game_id, pos, radius)
     Asteroid.destroyed(asteroid_pid)
     publish_news(game_id, [@asteroid, "hit", tag])
   end
 
-  def bullet_hit_ship(game_id, %{pid: bullet_pid, shooter: shooter_tag}, %{
-        id: ship_id,
-        tag: victim_tag
-      }) do
+  def bullet_hit_ship(
+        {_, %{pid: bullet_pid, shooter: shooter_tag},
+         %{
+           id: ship_id,
+           tag: victim_tag
+         }, game_id}
+      ) do
     Process.exit(bullet_pid, {:shutdown, :detonate})
     publish_news(game_id, [shooter_tag, "shot", victim_tag])
     Ship.bullet_hit_ship(ship_id, shooter_tag)
   end
 
   def bullet_hit_asteroid(
-        game_id,
-        %{pid: bullet_pid, shooter: shooter_tag, pos: pos},
-        %{pid: asteroid_pid, radius: radius}
+        {_, %{pid: bullet_pid, shooter: shooter_tag, pos: pos},
+         %{pid: asteroid_pid, radius: radius}, game_id}
       ) do
     Process.exit(bullet_pid, {:shutdown, :detonate})
     Asteroid.destroyed(asteroid_pid)
@@ -43,19 +48,19 @@ defmodule Elixoids.Event do
   end
 
   def ship_hit_ship(
-        game_id,
-        %{
-          id: ship1_id,
-          tag: tag1,
-          pos: pos1,
-          radius: radius1
-        },
-        %{
-          id: ship2_id,
-          tag: tag2,
-          pos: pos2,
-          radius: radius2
-        }
+        {_,
+         %{
+           id: ship1_id,
+           tag: tag1,
+           pos: pos1,
+           radius: radius1
+         },
+         %{
+           id: ship2_id,
+           tag: tag2,
+           pos: pos2,
+           radius: radius2
+         }, game_id}
       ) do
     Ship.hyperspace(ship1_id)
     Ship.hyperspace(ship2_id)
