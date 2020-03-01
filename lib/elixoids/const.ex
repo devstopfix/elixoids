@@ -43,22 +43,12 @@ defmodule Elixoids.Const do
   # The spawn point of a bullet
   def nose_radius_m, do: ship_radius_m() * 1.05
 
+  @spec ws_idle_timeout :: 3_600_000
   def ws_idle_timeout, do: 1 * 60 * 60 * 1000
 
-  def saucer_speed_m_per_s, do: Application.get_env(@app, :saucer_speed_m_per_s)
-
-  def saucer_direction_change_interval,
-    do: Application.get_env(@app, :saucer_direction_change_interval)
-
-  def saucer_radius_large, do: Application.get_env(@app, :saucer_radius_large)
+  def saucers, do: Application.get_env(@app, :saucers, [])
 
   def saucer_interval_ms, do: Application.get_env(@app, :saucer_interval_ms)
-
-  @saucer_shooting_interval Application.get_env(@app, :saucer_shooting_interval)
-  def saucer_shooting_interval, do: @saucer_shooting_interval
-
-  @saucer_radar_range Application.get_env(@app, :saucer_radar_range)
-  def saucer_radar_range, do: @saucer_radar_range
 
   def saucer_tag, do: "SČR"
 

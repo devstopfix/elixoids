@@ -34,7 +34,11 @@ defmodule Elixoids.Saucer.Server do
   @initial_velocity Velocity.west(saucer_speed_m_per_s())
   @tag saucer_tag()
 
-  def start_link(game_id) do
+  defp initial_velocity, do:
+    if :rand.uniform() < 0.5, do:
+    else:
+
+  def start_link(game_id, saucer) do
     id = {game_id, @tag}
 
     saucer =
@@ -190,4 +194,5 @@ defmodule Elixoids.Saucer.Server do
     max_r = saucer_radar_range()
     Enum.filter(targets, fn [t: _, d: d, r: _] -> d <= max_r end)
   end
+
 end
