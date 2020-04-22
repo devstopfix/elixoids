@@ -38,7 +38,6 @@ defmodule Elixoids.Collision.Server do
     {:noreply, game_id}
   end
 
-  # TODO refector this to either be a dispatch function or a collector function
   def collision_check(asteroids, bullets, ships, game_id \\ -1) do
     tally = [a: MapSet.new(asteroids), b: MapSet.new(bullets), s: MapSet.new(ships), hits: []]
 
