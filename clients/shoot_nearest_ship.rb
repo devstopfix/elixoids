@@ -1,3 +1,4 @@
+require 'em/pure_ruby'
 require 'faye/websocket'
 require 'eventmachine'
 require 'json'
