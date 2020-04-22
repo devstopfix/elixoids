@@ -47,6 +47,8 @@ open http://localhost:8065/2/game
 python3 clients/miner.py --name TWO --game 2
 ```
 
+The parameters of the game can be alterted in the [config](config/config.exs).
+
 ## Clients
 
 Clients subscribe to an event stream from the game via Websockets. The resources available are:

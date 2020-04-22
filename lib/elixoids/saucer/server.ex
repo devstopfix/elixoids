@@ -30,30 +30,23 @@ defmodule Elixoids.Saucer.Server do
   @pi34 :math.pi() * 3 / 4.0
   @pi54 :math.pi() * 5 / 4.0
   @angles [@pi34, @pi34, :math.pi(), @pi54, @pi54]
-  # TODO west or east
-  @initial_velocity Velocity.west(saucer_speed_m_per_s())
   @tag saucer_tag()
 
-  defp initial_velocity, do:
-    if :rand.uniform() < 0.5, do:
-    else:
-
-  def start_link(game_id, saucer) do
+  def start_link(game_id: game_id, saucer: saucer) do
     id = {game_id, @tag}
 
-    saucer =
-      random_saucer()
+    state =
+      random_saucer(saucer.speed_m_per_s)
       |> Map.merge(%{
+        accuracy: 0.025,
         game_id: game_id,
-        rotation_rate: saucer_rotation_rate_rad_per_sec(),
-        tag: @tag,
-        target_theta: @initial_velocity.theta,
-        thetas: Enum.map(@angles, &normalize_radians/1),
         id: id,
-        accuracy: 0.025
+        tag: @tag,
+        thetas: Enum.map(@angles, &normalize_radians/1)
       })
+      |> Map.merge(saucer)
 
-    GenServer.start_link(__MODULE__, saucer, name: via(id))
+    GenServer.start_link(__MODULE__, state, name: via(id))
   end
 
   defp via(ship_id),
@@ -64,14 +57,14 @@ defmodule Elixoids.Saucer.Server do
     GameServer.link(saucer.game_id, self())
     Process.flag(:trap_exit, true)
     start_heartbeat()
-    send_change_direction_after()
-    send_fire_after()
+    send_change_direction_after(saucer.direction_change_interval)
+    send_fire_after(saucer.shooting_interval)
     {:ok, saucer}
   end
 
   # Pick a new direction
   def handle_info(:change_direction, saucer) do
-    send_change_direction_after()
+    send_change_direction_after(saucer.direction_change_interval)
     theta = Enum.random(saucer.thetas)
     {:noreply, %{saucer | target_theta: theta}}
   end
@@ -81,12 +74,12 @@ defmodule Elixoids.Saucer.Server do
     ref = make_ref()
     from = {self(), ref}
     :ok = GameServer.state_of_ship(game_id, self(), from)
-    send_fire_after()
+    send_fire_after(saucer.shooting_interval)
     {:noreply, saucer}
   end
 
   def handle_info({_ref, %Elixoids.Ship.Targets{} = targets}, %{accuracy: accuracy} = saucer) do
-    if theta = select_target(targets) do
+    if theta = select_target(targets, saucer.saucer_radar_range) do
       bullet_theta = normalize_radians(theta + :rand.normal() * accuracy)
       bullet_pos = turret(bullet_theta, saucer)
       {:ok, _pid} = GameServer.bullet_fired(saucer.game_id, saucer.tag, bullet_pos, bullet_theta)
@@ -141,24 +134,35 @@ defmodule Elixoids.Saucer.Server do
     {:ok, next_saucer}
   end
 
-  defp random_saucer,
-    do: %{
+  defp random_saucer(speed_m_per_s) do
+    velocity = initial_velocity(speed_m_per_s)
+
+    %{
       pos: random_point_on_vertical_edge(),
-      radius: saucer_radius_large(),
-      velocity: @initial_velocity
+      target_theta: velocity.theta,
+      velocity: velocity
     }
+  end
 
-  defp send_change_direction_after,
-    do: Process.send_after(self(), :change_direction, saucer_direction_change_interval())
+  defp initial_velocity(speed_m_per_s) when is_float(speed_m_per_s) do
+    if :rand.uniform() < 0.5 do
+      Velocity.west(speed_m_per_s)
+    else
+      Velocity.east(speed_m_per_s)
+    end
+  end
 
-  defp send_fire_after,
-    do: Process.send_after(self(), :fire, saucer_shooting_interval())
+  defp send_change_direction_after(time),
+    do: Process.send_after(self(), :change_direction, time)
+
+  defp send_fire_after(time),
+    do: Process.send_after(self(), :fire, time)
 
   defp turret(theta, %{pos: ship_centre, radius: radius}) do
     Point.move(ship_centre, theta, radius * 1.1)
   end
 
-  def select_target(%{origin: origin, rocks: rocks, ships: ships}) do
+  def select_target(%{origin: origin, rocks: rocks, ships: ships}, saucer_radar_range) do
     asteroids =
       rocks
       |> filter_large()
@@ -172,7 +176,7 @@ defmodule Elixoids.Saucer.Server do
 
     candidates =
       (asteroids ++ ships)
-      |> filter_radar()
+      |> filter_radar(saucer_radar_range)
       |> sort_nearest()
 
     case List.first(candidates) do
@@ -190,9 +194,7 @@ defmodule Elixoids.Saucer.Server do
     Enum.sort(targets, fn [t: _, d: d1, r: _], [t: _, d: d2, r: _] -> d1 <= d2 end)
   end
 
-  defp filter_radar(targets) do
-    max_r = saucer_radar_range()
+  defp filter_radar(targets, max_r) do
     Enum.filter(targets, fn [t: _, d: d, r: _] -> d <= max_r end)
   end
-
 end

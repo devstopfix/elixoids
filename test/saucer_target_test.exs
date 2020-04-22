@@ -49,6 +49,6 @@ defmodule Elixoids.Saucer.TargetTest do
   }
 
   test "Target closest asteroid" do
-    assert 3.99 == Saucer.select_target(@targets)
+    assert 3.99 == Saucer.select_target(@targets, 1000.0)
   end
 end

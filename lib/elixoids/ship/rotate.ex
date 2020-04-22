@@ -17,7 +17,7 @@ defmodule Elixoids.Ship.Rotate do
       %{
         target_theta: target_theta,
         velocity: %{theta: theta} = v,
-        rotation_rate: rotation_rate_per_sec
+        rotation_rate_rad_per_sec: rotation_rate_per_sec
       } ->
         new_theta = calculate_theta(theta, target_theta, rotation_rate_per_sec, delta_t_ms)
         new_v = %{v | theta: new_theta}

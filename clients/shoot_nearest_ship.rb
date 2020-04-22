@@ -33,7 +33,7 @@ def start_ship(ship_tag, retry_count)
     ws = Faye::WebSocket::Client.new(url)
 
     ws.on :open do |event|
-      p [:open]
+      p "Player #{ship_tag} connected"
     end
 
     ws.on :message do |event|
@@ -58,7 +58,7 @@ def start_ship(ship_tag, retry_count)
     end
 
     ws.on :close do |event|
-      p ["GAME OVER!", :close, event.code, event.reason]
+      p ["#{ship_tag} GAME OVER!", :close, event.code, event.reason]
       ws = nil
       sleep($RETRY_INTERVAL)
       start_ship(ship_tag, retry_count-1)
