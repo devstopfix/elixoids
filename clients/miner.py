@@ -68,6 +68,18 @@ class Miner:
     def rocks(self, state):
         return {rk: [theta, dist, radius] for [rk, theta, radius, dist] in state['rocks']}
 
+    def saucer(self, state):
+        src = next(filter(lambda x: x[0] == 'SČR', state['ships']), None)
+        if src:
+            return {-666: [src[1], src[2], 30.0]}
+        else:
+            return {}
+
+    def targets(self, state):
+        rocks = self.rocks(state)
+        rocks.update(self.saucer(state))
+        return rocks
+
     def handle(self, state, ship_theta):
         self.elapsed()
         delta_state = self.delta(self.prior_state, state)
@@ -134,14 +146,13 @@ def name():
     return 'M' + ''.join(''.join(choices(ascii_uppercase, k=2)))
 
 
-
 def on_message(miner, ws, message):
     try:
         state = json.loads(message)
-        rocks = miner.rocks(state)
-        if rocks:
+        targets = miner.targets(state)
+        if any(targets):
             ship_theta = state['theta']
-            reply = miner.handle(rocks, ship_theta)
+            reply = miner.handle(targets, ship_theta)
             if reply:
                 ws.send(json.dumps(reply))
     except:
