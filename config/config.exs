@@ -2,10 +2,9 @@ import Config
 
 large_saucer = %{
   direction_change_interval: 1_000,
-  radar_range: 1200.0,
   radius: 20.0 * (2.0 * 20 / 13.0),
   rotation_rate_rad_per_sec: :math.pi() * 2,
-  saucer_radar_range: 1000.0,
+  saucer_radar_range: 1500.0,
   shooting_interval: 500,
   speed_m_per_s: 240.0
 }
