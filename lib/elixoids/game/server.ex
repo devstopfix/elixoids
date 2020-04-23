@@ -192,6 +192,11 @@ defmodule Elixoids.Game.Server do
     {:noreply, remove_pid_from_game_state(pid, state)}
   end
 
+  def handle_info(:spawn_saucer, %{:state => %{:ships => ships}} = game) when ships == %{} do
+    Process.send_after(self(), :spawn_saucer, saucer_interval_ms())
+    {:noreply, game}
+  end
+
   def handle_info(:spawn_saucer, game) do
     Process.send_after(self(), :spawn_saucer, saucer_interval_ms())
     {:ok, _pid} = Saucer.start_saucer(game.game_id)
