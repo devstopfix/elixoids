@@ -14,6 +14,7 @@ small_saucer = %{large_saucer | radius: 20.0 * (10.0 / 13.0)}
 config :elixoids,
   asteroid_radius_m: 120.0,
   bullet_range_m: 2000.0,
+  bullet_speed_m_per_s: 1250.0,
   cowboy_port: 8065,
   fps: 60,
   initial_asteroids: 8,
@@ -22,6 +23,7 @@ config :elixoids,
   player_fps: 4,
   saucers: [large_saucer, small_saucer],
   saucer_interval_ms: 15_000,
+  ship_laser_recharge_ms: 200,
   ship_radius_m: 20.0,
   ship_rotation_rate_rad_per_sec: :math.pi() * 2 / 3.0
 

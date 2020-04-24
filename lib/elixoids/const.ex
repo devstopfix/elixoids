@@ -23,8 +23,9 @@ defmodule Elixoids.Const do
   def splittable_radius_m, do: 20.0
 
   @bullet_range_m Application.get_env(@app, :bullet_range_m)
+  @bullet_speed_m_per_s Application.get_env(@app, :bullet_speed_m_per_s)
   def bullet_range_m, do: @bullet_range_m
-  def bullet_speed_m_per_s, do: 1250.0
+  def bullet_speed_m_per_s, do: @bullet_speed_m_per_s
 
   @ms_in_s 1_000
   def fly_time_ms, do: trunc(bullet_range_m() / bullet_speed_m_per_s() * @ms_in_s)
@@ -34,7 +35,8 @@ defmodule Elixoids.Const do
   def ship_radius_m, do: @ship_radius_m
 
   # Minimum time between shots
-  def laser_recharge_ms, do: 200
+  @laser_recharge_ms Application.get_env(@app, :ship_laser_recharge_ms)
+  def laser_recharge_ms, do: @laser_recharge_ms
   def laser_recharge_penalty_ms, do: laser_recharge_ms() * 2
 
   def max_inflight_bullets, do: Application.get_env(@app, :max_inflight_bullets)
