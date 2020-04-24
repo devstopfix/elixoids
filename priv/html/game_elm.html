@@ -67,8 +67,8 @@
 
       app.ports.addGame.send({
         id: id,
-        height: 788,
-        width: 1400,
+        height: Math.floor(window.screen.width * 9 / 16.0),
+        width: window.screen.width
       });
 
       ws.onmessage = function (message) {
