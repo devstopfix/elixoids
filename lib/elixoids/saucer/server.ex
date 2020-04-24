@@ -27,9 +27,6 @@ defmodule Elixoids.Saucer.Server do
   import Elixoids.Translate
   import Elixoids.World.Angle, only: [normalize_radians: 1]
 
-  @pi34 :math.pi() * 3 / 4.0
-  @pi54 :math.pi() * 5 / 4.0
-  @angles [@pi34, @pi34, :math.pi(), @pi54, @pi54]
   @tag saucer_tag()
 
   def start_link(game_id: game_id, saucer: saucer) do
@@ -41,8 +38,7 @@ defmodule Elixoids.Saucer.Server do
         accuracy: 0.025,
         game_id: game_id,
         id: id,
-        tag: @tag,
-        thetas: Enum.map(@angles, &normalize_radians/1)
+        tag: @tag
       })
       |> Map.merge(saucer)
 
@@ -134,22 +130,21 @@ defmodule Elixoids.Saucer.Server do
     {:ok, next_saucer}
   end
 
+  @east [0, :math.pi() * 1 / 6.0, :math.pi() * 11 / 6.0]
+  @west [:math.pi(), :math.pi() * 5 / 6.0, :math.pi() * 7 / 6.0]
+  @directions [@east, @west]
+
   defp random_saucer(speed_m_per_s) do
-    velocity = initial_velocity(speed_m_per_s)
+    thetas = Enum.random(@directions)
+    [theta | _] = thetas
+    velocity = %Velocity{theta: theta, speed: speed_m_per_s}
 
     %{
       pos: random_point_on_vertical_edge(),
       target_theta: velocity.theta,
+      thetas: thetas,
       velocity: velocity
     }
-  end
-
-  defp initial_velocity(speed_m_per_s) when is_float(speed_m_per_s) do
-    if :rand.uniform() < 0.5 do
-      Velocity.west(speed_m_per_s)
-    else
-      Velocity.east(speed_m_per_s)
-    end
   end
 
   defp send_change_direction_after(time),
