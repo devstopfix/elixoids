@@ -13,7 +13,7 @@ defmodule Elixoids.FuzzTest do
   @tag fuzz: true, iterations: 1000
   property :cowboy_routing do
     {:ok, game, game_id} = GameSupervisor.start_game(asteroids: 1)
-    num = oneof([oneof([game_id, 0]), pos_integer()]) |> bind(&Integer.to_string/1)
+    num = oneof([elements([game_id, 0]), pos_integer()]) |> bind(&Integer.to_string/1)
     port = :ranch.get_port(:elixoids_http)
 
     paths =
@@ -27,7 +27,7 @@ defmodule Elixoids.FuzzTest do
         vector(1, num),
         vector(1, paths),
         bind([num, paths], & &1),
-        bind([num, oneof(["ship"]), gen_other_key()], & &1),
+        bind([num, elements(["ship"]), gen_other_key()], & &1),
         list(oneof([num, paths]))
       ])
       |> bind(fn xs -> xs |> Enum.take(8) |> Enum.join("/") end)
@@ -144,7 +144,7 @@ defmodule Elixoids.FuzzTest do
 
   defp gen_key, do: [gen_good_key(), gen_other_key()] |> oneof
 
-  defp gen_good_key, do: ["theta", "fire"] |> oneof
+  defp gen_good_key, do: ["theta", "fire"] |> elements
 
   defp gen_other_key,
     do: ~w(foo bar baz qux quux quuz corge grault garply waldo fred plugh xyzzy thud) |> oneof
@@ -172,7 +172,7 @@ defmodule Elixoids.FuzzTest do
         float(),
         bool(),
         short_list(),
-        oneof([%{}]),
+        elements([%{}]),
         unicode_string()
       ]
       |> oneof()

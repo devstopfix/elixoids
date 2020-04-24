@@ -20,7 +20,7 @@ defmodule Elixoids.Translate do
   defp asteroid_relative(asteroid, origin) do
     %{id: id, pos: pos, radius: r} = asteroid
     %{theta: theta, distance: distance} = pos |> Polar.subtract(origin)
-    [id, Float.round(theta, 3), r, Float.round(distance)]
+    [id, Float.floor(theta, 3), r, Float.round(distance)]
   end
 
   def ships_relative(ships, origin) do
@@ -31,6 +31,6 @@ defmodule Elixoids.Translate do
 
   defp ship_relative(%{tag: tag, pos: pos}, origin) do
     %{theta: theta, distance: distance} = pos |> Polar.subtract(origin)
-    [tag, Float.round(theta, 3), Float.round(distance)]
+    [tag, Float.floor(theta, 3), Float.round(distance)]
   end
 end

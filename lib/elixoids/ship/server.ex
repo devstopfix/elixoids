@@ -169,7 +169,7 @@ defmodule Elixoids.Ship.Server do
       tag: ship.tag,
       pos: ship.pos,
       radius: ship.radius,
-      theta: Float.round(ship.theta, 3)
+      theta: Float.floor(ship.theta, 3)
     }
   end
 

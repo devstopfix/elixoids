@@ -21,7 +21,7 @@ defmodule Elixoids.Ship.Location do
           theta: theta,
           radius: radius
         }) do
-      [tag, Float.round(x, 2), Float.round(y, 2), Float.round(radius), Float.round(theta, 3)]
+      [tag, Float.round(x, 2), Float.round(y, 2), Float.round(radius), Float.floor(theta, 3)]
     end
   end
 end

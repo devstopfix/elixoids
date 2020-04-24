@@ -24,10 +24,13 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
+  @tag iterations: 1000
   property :check_angle_generator do
+    max_radians = 2.0 * :math.pi()
+
     for_all t in gen_theta() do
-      assert t >= -3.2
-      assert t <= 6.3
+      assert t >= 0.0
+      assert t < max_radians
     end
   end
 
@@ -56,7 +59,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 10_000, large: true
+  @tag iterations: 1_000, large: true
   property :bullet_inside_ship_hit do
     for_all {{ps, pb, ship_r}, game_id} in {point_inside_ship(), gen_game_id()} do
       bullet = %BulletLoc{pos: pb}
@@ -66,7 +69,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 10_000, large: true
+  @tag iterations: 1_000, large: true
   property :bullet_misses_ship do
     for_all {ps, pb, ship_r} in point_outside_ship() do
       bullet = %BulletLoc{pos: pb}
@@ -86,7 +89,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 5_000, large: true
+  @tag iterations: 1_000, large: true
   property :bullet_inside_asteroid_hit do
     for_all {{pa, pb, r}, game_id} in {point_inside_asteroid(), gen_game_id()} do
       bullet = %BulletLoc{pos: pb}
@@ -96,7 +99,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 5_000, large: true
+  @tag iterations: 1_000, large: true
   property :bullet_misses_asteroid do
     for_all {pa, pb, r} in point_outside_asteroid() do
       bullet = %BulletLoc{pos: pb}
@@ -116,7 +119,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 10_000, large: true
+  @tag iterations: 1_000, large: true
   property :asteroid_hits_ship do
     for_all {[p1: ps, r1: rs, p2: pa, r2: ra], game_id} in {ship_overlapping_asteroid(),
              gen_game_id()} do
@@ -151,7 +154,7 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  @tag iterations: 10_000, large: true
+  @tag iterations: 1_000, large: true
   property :asteroid_misses_ship do
     for_all [p1: ps, r1: rs, p2: pa, r2: ra] in ship_non_overlapping_asteroid() do
       asteroid = %AsteroidLoc{pos: pa, radius: ra}
@@ -213,9 +216,9 @@ defmodule Elixoids.CollisionTest do
 
   # Generators
 
-  defp asteroid_radius, do: :triq_dom.oneof([120.0, 60.0, 30.0, 15.0])
+  defp asteroid_radius, do: :triq_dom.elements([120.0, 60.0, 30.0, 15.0])
 
-  defp ship_radius, do: :triq_dom.oneof([@ship_radius_m])
+  defp ship_radius, do: :triq_dom.elements([@ship_radius_m])
 
   # 0..0.99
   defp smaller_radius,
