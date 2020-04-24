@@ -1,35 +1,37 @@
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Asteroids Arcade</title>
-    <link rel="icon" type="image/png" href="/icon.png" >
-    <style>
 
-        div.cabinet, canvas {
-          margin-left: auto;
-          margin-right: auto;
-        }
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Asteroids Arcade</title>
+  <link rel="icon" type="image/png" href="/icon.png">
+  <style>
+    div.cabinet,
+    canvas {
+      margin-left: auto;
+      margin-right: auto;
+    }
 
-        canvas {
-          display: block;
-        }
+    canvas {
+      display: block;
+    }
 
-        #fullscreen {
-          margin-top: 2em;
-          margin-left: auto;
-        }
+    #fullscreen {
+      margin-top: 2em;
+      margin-left: auto;
+    }
 
-        body {
-            background-color: #0f1213;
-        }
-      </style>
-      <link rel="stylesheet" href="/buttons.css">
-  </head>
-  <body>
-    <!--[if lt IE 10]>
+    body {
+      background-color: #0f1213;
+    }
+  </style>
+  <link rel="stylesheet" href="/buttons.css">
+</head>
+
+<body>
+  <!--[if lt IE 10]>
       <div class="old-browser-message">
         <div class="header"><div class="nav-back"></div><div class="nav-right"></div> </div>
         <span>This browser is not supported<br/> Please use Google Chrome which can be downloaded free at
@@ -38,68 +40,75 @@
       </div>
     <![endif]-->
 
-    <div id="cabinet">
-        <main></main>
-        <div class="buttons dark">
-          <div>
-              <a class="btn btn-white btn-mid" href="https://github.com/jrothwell/sonic-asteroids">AUDIO</a>
-              <a class="btn btn-white btn-mid" id="fullscreen">FULLSCREEN</a>
-            <a class="btn btn-white btn-mid" onclick="stop()">STOP</a>
-          </div>
-        </div>
-
+  <div id="cabinet">
+    <main></main>
+    <div class="buttons dark">
+      <div>
+        <a class="btn btn-white btn-mid" href="https://github.com/jrothwell/sonic-asteroids">AUDIO</a>
+        <a class="btn btn-white btn-mid" id="fullscreen">FULLSCREEN</a>
+        <a class="btn btn-white btn-mid" onclick="stop()">STOP</a>
+      </div>
     </div>
 
+  </div>
 
-    <script src="/elixoids.js"></script>
-    <script>
-      var app = Elm.Main.init({ node: document.querySelector("main") });
-      var gameWS;
+  <script src="/elixoids.js"></script>
+  <script>
+    var app = Elm.Main.init({ node: document.querySelector("main") });
+    var gameWS;
 
-      window.addEventListener('load', function() {
-        gameWS = run(graphicsURL(window.location.href), 1);
-        fullscreenFirstCanvas(document.getElementById("fullscreen"));
-      })
+    window.addEventListener('load', function () {
+      gameWS = run(graphicsURL(window.location.href), 1);
+      fullscreenFirstCanvas(document.getElementById("fullscreen"));
+    })
 
-      function run(url, id) {
-        var ws = new WebSocket(url);
+    function run(url, id) {
+      var ws = new WebSocket(url);
 
-        app.ports.addGame.send({
+      app.ports.addGame.send({
+        id: id,
+        height: 788,
+        width: 1400,
+      });
+
+      ws.onmessage = function (message) {
+        app.ports.graphicsIn.send({
           id: id,
-          height: 788,
-          width: 1400,
+          frame: message.data
         });
+      };
 
-        ws.onmessage = function (message) {
-            app.ports.graphicsIn.send({
-              id: id,
-              frame: message.data
-            });
-        };
+      ws.onclose = function(e) {
+        setTimeout(function() { run(url, id); }, 4000);
+      };
 
-        return ws;
-      }
+      ws.onerror = function(e) {
+        setTimeout(function() { run(url, id); }, 16000);
+      };
 
-      function fullscreenFirstCanvas(ctrl) {
-        ctrl.onclick = function () {
-            var elem = document.querySelector("canvas");
-            if (elem && elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem && elem.msRequestFullscreen) {
-                elem.msRequestFullscreen();
-            } else if (elem && elem.mozRequestFullScreen) {
-                elem.mozRequestFullScreen();
-            } else if (elem && elem.webkitRequestFullscreen) {
-                elem.webkitRequestFullscreen();
-            }
+      return ws;
+    }
+
+    function fullscreenFirstCanvas(ctrl) {
+      ctrl.onclick = function () {
+        var elem = document.querySelector("canvas");
+        if (elem && elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem && elem.msRequestFullscreen) {
+          elem.msRequestFullscreen();
+        } else if (elem && elem.mozRequestFullScreen) {
+          elem.mozRequestFullScreen();
+        } else if (elem && elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
         }
       }
+    }
 
-      function stop() {
-        gameWS.close();
-      }
+    function stop() {
+      gameWS.close();
+    }
 
+  </script>
+</body>
 
-    </script>
-  </body>
 </html>
