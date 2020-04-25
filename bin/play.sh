@@ -30,9 +30,6 @@ if [ -x "$(command -v python3)" ]; then
 
     sleep 4.0
     nice -n 19 python3 clients/miner.py --host "$HOST" --game 0 &
-
-    sleep 4.0
-    nice -n 19 python3 clients/miner.py --host "$HOST" --game 0 &
 fi
 
 # Hunter that shoots ships
