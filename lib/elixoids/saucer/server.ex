@@ -3,12 +3,6 @@ defmodule Elixoids.Saucer.Server do
   Flying saucer NPC!
 
   This server is not restarted if the Saucer is destroyed.
-
-  The accuracy is a random normal value applied to the true bearing from saucer to target.
-
-  * 0.0 -> 1.000
-  * 0.05 -> 0.700
-  * 0.1 -> 0.400
   """
 
   use GenServer, restart: :transient
@@ -35,7 +29,6 @@ defmodule Elixoids.Saucer.Server do
     state =
       random_saucer(saucer.speed_m_per_s)
       |> Map.merge(%{
-        accuracy: 0.025,
         game_id: game_id,
         id: id,
         tag: @tag

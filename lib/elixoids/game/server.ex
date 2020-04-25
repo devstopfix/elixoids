@@ -18,7 +18,7 @@ defmodule Elixoids.Game.Server do
   alias Elixoids.Saucer.Supervisor, as: Saucer
   alias Elixoids.Ship.Server, as: Ship
   alias Elixoids.Ship.Targets
-  import Elixoids.Const, only: [saucer_interval_ms: 0]
+  import Elixoids.Const, only: [saucer_interval_ms: 0, saucers: 0]
   import Logger
 
   use Elixoids.Game.Heartbeat
@@ -101,7 +101,8 @@ defmodule Elixoids.Game.Server do
     %{
       :game_id => game_id,
       :state => %{:asteroids => %{}, :bullets => %{}, :ships => %{}},
-      :min_asteroid_count => asteroid_count
+      :min_asteroid_count => asteroid_count,
+      :saucers => saucers()
     }
   end
 
@@ -197,10 +198,14 @@ defmodule Elixoids.Game.Server do
     {:noreply, game}
   end
 
-  def handle_info(:spawn_saucer, game) do
-    Process.send_after(self(), :spawn_saucer, saucer_interval_ms())
-    {:ok, _pid} = Saucer.start_saucer(game.game_id)
+  def handle_info(:spawn_saucer, %{:saucers => []} = game) do
     {:noreply, game}
+  end
+
+  def handle_info(:spawn_saucer, %{:saucers => [saucer | xs]} = game) do
+    Process.send_after(self(), :spawn_saucer, saucer_interval_ms())
+    {:ok, _pid} = Saucer.start_saucer(game.game_id, saucer)
+    {:noreply, %{game | saucers: xs ++ [saucer]}}
   end
 
   @impl true
