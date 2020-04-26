@@ -123,7 +123,7 @@ defmodule Elixoids.Saucer.Server do
     {:ok, next_saucer}
   end
 
-  @east [0, :math.pi() * 1 / 6.0, :math.pi() * 11 / 6.0]
+  @east [0, :math.pi() / 6.0, :math.pi() * 11 / 6.0]
   @west [:math.pi(), :math.pi() * 5 / 6.0, :math.pi() * 7 / 6.0]
   @directions [@east, @west]
 

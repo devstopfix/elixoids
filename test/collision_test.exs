@@ -3,19 +3,13 @@ defmodule Elixoids.CollisionTest do
 
   use ExUnit.Case, async: true
   use ExCheck
-
   alias Elixoids.Asteroid.Location, as: AsteroidLoc
   alias Elixoids.Bullet.Location, as: BulletLoc
-  alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Collision.Server, as: Collision
-  alias Elixoids.World.Point
-
+  alias Elixoids.Ship.Location, as: ShipLoc
   import Elixoids.Const
   import Elixoids.Test.Generators
-
   require Elixoids.Collision.Server
-
-  @ship_radius_m ship_radius_m()
 
   property :check_point_generator do
     for_all p in gen_point() do
@@ -52,7 +46,7 @@ defmodule Elixoids.CollisionTest do
     for_all {p, game_id} in {gen_point(), gen_game_id()} do
       Process.flag(:trap_exit, true)
       bullet = %BulletLoc{pos: p, pid: self()}
-      ship = %ShipLoc{pos: p, radius: @ship_radius_m}
+      ship = %ShipLoc{pos: p, radius: ship_radius_m()}
       assert [collision] = Collision.collision_check([], [bullet], [ship], game_id)
       assert_receive {:EXIT, _, {:shutdown, :detonate}}
       assert {:bullet_hit_ship, bullet, ship, game_id} == collision
@@ -214,74 +208,6 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  # Generators
-
-  defp asteroid_radius, do: :triq_dom.elements([120.0, 60.0, 30.0, 15.0])
-
-  defp ship_radius, do: :triq_dom.elements([@ship_radius_m])
-
-  # 0..0.99
-  defp smaller_radius,
-    do:
-      0..99
-      |> Enum.to_list()
-      |> :triq_dom.oneof()
-      |> :triq_dom.bind(fn i -> i / 100.0 end)
-
-  # > 1.01
-  defp larger_radius,
-    do:
-      :triq_dom.float()
-      |> :triq_dom.bind(fn f -> abs(f) + 1.01 end)
-
-  # Generate a circle and a point offset from the centre of the circle
-  defp point_circle(sizes, delta_r) do
-    [gen_point(), gen_theta(), sizes, delta_r]
-    |> :triq_dom.bind(fn [p, t, r, dr] ->
-      dx = :math.cos(t) * (r * dr)
-      dy = :math.sin(t) * (r * dr)
-      {p, %Point{x: p.x + dx, y: p.y + dy}, r}
-    end)
-  end
-
-  defp point_inside_ship, do: point_circle(ship_radius(), smaller_radius())
-  defp point_outside_ship, do: point_circle(ship_radius(), larger_radius())
-
-  defp point_inside_asteroid, do: point_circle(asteroid_radius(), smaller_radius())
-  defp point_outside_asteroid, do: point_circle(asteroid_radius(), larger_radius())
-
-  defp circles(size1, size2, delta_r) do
-    [gen_point(), size1, size2, gen_theta(), delta_r]
-    |> :triq_dom.bind(fn [p, r1, r2, t, dr] ->
-      d = (r1 + r2) * dr
-      dx = :math.cos(t) * d
-      dy = :math.sin(t) * d
-      [p1: p, r1: r1, p2: %Point{x: p.x + dx, y: p.y + dy}, r2: r2]
-    end)
-  end
-
-  defp ship_overlapping_asteroid, do: circles(ship_radius(), asteroid_radius(), smaller_radius())
-
-  defp ship_overlapping_ship, do: circles(ship_radius(), ship_radius(), smaller_radius())
-
-  defp ship_non_overlapping_asteroid,
-    do: circles(ship_radius(), asteroid_radius(), larger_radius())
-
-  defp ship_non_overlapping_ship,
-    do: circles(ship_radius(), ship_radius(), larger_radius())
-
-  defp gen_asteroid,
-    do:
-      [gen_point(), asteroid_radius()]
-      |> :triq_dom.bind(fn [p, r] -> %AsteroidLoc{pos: p, radius: r} end)
-
-  defp gen_ship,
-    do:
-      [gen_point(), ship_radius()] |> :triq_dom.bind(fn [p, r] -> %ShipLoc{pos: p, radius: r} end)
-
-  defp gen_bullet,
-    do: [gen_point()] |> :triq_dom.bind(fn [p] -> %BulletLoc{pos: p} end)
-
   # Legacy example tests
 
   test "No collision between asteroid and rock" do
@@ -349,4 +275,33 @@ defmodule Elixoids.CollisionTest do
     refute Collision.bullet_hits_ship?(%{pos: %{x: 0, y: 50}}, ship)
     refute Collision.bullet_hits_ship?(%{pos: %{x: 50, y: 0}}, ship)
   end
+
+  @tag :collision
+  property :line_inside_circle_hit do
+    for_all {c, {p1, p2}} in line_inside_asteroid() do
+      assert true == Collision.line_segment_intersects_circle?({p1, p2}, c)
+    end
+  end
+
+  property :line_crossing_circle_hit do
+    for_all {c, {p1, p2}} in line_intersecting_asteroid() do
+      assert Collision.line_segment_intersects_circle?({p1, p2}, c)
+    end
+  end
+
+  property :line_impaling_circle_hit do
+    for_all {c, {p1, p2}} in line_impaling_asteroid() do
+      assert Collision.line_segment_intersects_circle?({p1, p2}, c)
+    end
+  end
+
+  # TODO Will not reliably work with two thetas
+  @tag :collision
+  property :line_outside_circle_miss do
+    for_all {c, {p1, p2}} in line_outside_asteroid() do
+      refute Collision.line_segment_intersects_circle?({p1, p2}, c)
+    end
+  end
+
+  # ** (ExCheck.Error) check failed: Counterexample: [{%{pos: %Elixoids.World.Point{x: 0.0, y: 0.0}, radius: 120.0}, {%Elixoids.World.Point{x: 114.3, y: 65.9}, %Elixoids.World.Point{x: 114.3, y: 65.9}}}]
 end
