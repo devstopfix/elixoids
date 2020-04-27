@@ -6,9 +6,11 @@ defmodule Elixoids.Event do
   alias Elixoids.Asteroid.Server, as: Asteroid
   alias Elixoids.Game.Server, as: Game
   alias Elixoids.Ship.Server, as: Ship
+  import Elixoids.Const, only: [saucer_tag: 0]
   import Elixoids.News
 
   @asteroid "ASTEROID"
+  @saucer_tag saucer_tag()
 
   def asteroid_hit_ship(
         {_, %{pid: asteroid_pid, radius: radius},
@@ -22,6 +24,16 @@ defmodule Elixoids.Event do
     Game.explosion(game_id, pos, radius)
     Asteroid.destroyed(asteroid_pid)
     publish_news(game_id, [@asteroid, "hit", tag])
+  end
+
+  # Don't let saucers move into the path of their newly fired bullet!
+  def bullet_hit_ship(
+        {_, %{shooter: @saucer_tag},
+         %{
+           tag: @saucer_tag
+         }, _game_id}
+      ) do
+    nil
   end
 
   def bullet_hit_ship(

@@ -36,6 +36,7 @@ defmodule Elixoids.Ship.Server do
         :game_id => game_id,
         :shields => max_shields(),
         :bullets_in_flight => 0,
+        :nose_radius_m => nose_radius_m(),
         :rotation_rate => ship_rotation_rate_rad_per_sec()
       })
 
@@ -156,8 +157,8 @@ defmodule Elixoids.Ship.Server do
     ship
   end
 
-  defp turret(%{pos: ship_centre, theta: theta}) do
-    Point.move(ship_centre, theta, nose_radius_m())
+  defp turret(%{pos: ship_centre, theta: theta, nose_radius_m: nose_radius_m}) do
+    Point.move(ship_centre, theta, nose_radius_m)
   end
 
   # Data

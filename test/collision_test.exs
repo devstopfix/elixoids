@@ -45,8 +45,8 @@ defmodule Elixoids.CollisionTest do
   property :bullet_in_center_of_ship_hit do
     for_all {p, game_id} in {gen_point(), gen_game_id()} do
       Process.flag(:trap_exit, true)
-      bullet = %BulletLoc{pos: [p], pid: self()}
-      ship = %ShipLoc{pos: p, radius: ship_radius_m()}
+      bullet = %BulletLoc{pos: [p], pid: self(), shooter: "KIL"}
+      ship = %ShipLoc{pos: p, radius: ship_radius_m(), tag: "VIC"}
       assert [collision] = Collision.collision_check([], [bullet], [ship], game_id)
       assert_receive {:EXIT, _, {:shutdown, :detonate}}
       assert {:bullet_hit_ship, bullet, ship, game_id} == collision
@@ -56,8 +56,8 @@ defmodule Elixoids.CollisionTest do
   @tag iterations: 1_000, large: true
   property :bullet_inside_ship_hit do
     for_all {{ps, pb, ship_r}, game_id} in {point_inside_ship(), gen_game_id()} do
-      bullet = %BulletLoc{pos: [pb]}
-      ship = %ShipLoc{pos: ps, radius: ship_r}
+      bullet = %BulletLoc{pos: [pb], shooter: "KIL"}
+      ship = %ShipLoc{pos: ps, radius: ship_r, tag: "VIC"}
       collisions = Collision.collision_check([], [bullet], [ship], game_id)
       assert [{:bullet_hit_ship, bullet, ship, game_id}] == collisions
     end
