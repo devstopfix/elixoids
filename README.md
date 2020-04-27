@@ -74,7 +74,7 @@ The news stream at `http://example.com/0/news` is a stream of text lines of the 
 Example dialogue:
 
 ```bash
-$ curl -H 'Accept: text/event-stream' http://localhost:8065/0/news
+$ curl -H 'Accept: text/event-stream' http://localhost:8065/0/news 2>&1
 
 PLY fires
 PLY shot ASTEROID
