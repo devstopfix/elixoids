@@ -3,19 +3,13 @@ defmodule Elixoids.CollisionTest do
 
   use ExUnit.Case, async: true
   use ExCheck
-
   alias Elixoids.Asteroid.Location, as: AsteroidLoc
   alias Elixoids.Bullet.Location, as: BulletLoc
-  alias Elixoids.Ship.Location, as: ShipLoc
   alias Elixoids.Collision.Server, as: Collision
-  alias Elixoids.World.Point
-
+  alias Elixoids.Ship.Location, as: ShipLoc
   import Elixoids.Const
   import Elixoids.Test.Generators
-
   require Elixoids.Collision.Server
-
-  @ship_radius_m ship_radius_m()
 
   property :check_point_generator do
     for_all p in gen_point() do
@@ -51,8 +45,8 @@ defmodule Elixoids.CollisionTest do
   property :bullet_in_center_of_ship_hit do
     for_all {p, game_id} in {gen_point(), gen_game_id()} do
       Process.flag(:trap_exit, true)
-      bullet = %BulletLoc{pos: p, pid: self()}
-      ship = %ShipLoc{pos: p, radius: @ship_radius_m}
+      bullet = %BulletLoc{pos: [p], pid: self()}
+      ship = %ShipLoc{pos: p, radius: ship_radius_m()}
       assert [collision] = Collision.collision_check([], [bullet], [ship], game_id)
       assert_receive {:EXIT, _, {:shutdown, :detonate}}
       assert {:bullet_hit_ship, bullet, ship, game_id} == collision
@@ -62,7 +56,7 @@ defmodule Elixoids.CollisionTest do
   @tag iterations: 1_000, large: true
   property :bullet_inside_ship_hit do
     for_all {{ps, pb, ship_r}, game_id} in {point_inside_ship(), gen_game_id()} do
-      bullet = %BulletLoc{pos: pb}
+      bullet = %BulletLoc{pos: [pb]}
       ship = %ShipLoc{pos: ps, radius: ship_r}
       collisions = Collision.collision_check([], [bullet], [ship], game_id)
       assert [{:bullet_hit_ship, bullet, ship, game_id}] == collisions
@@ -72,7 +66,7 @@ defmodule Elixoids.CollisionTest do
   @tag iterations: 1_000, large: true
   property :bullet_misses_ship do
     for_all {ps, pb, ship_r} in point_outside_ship() do
-      bullet = %BulletLoc{pos: pb}
+      bullet = %BulletLoc{pos: [pb]}
       ship = %ShipLoc{pos: ps, radius: ship_r}
       assert [] == Collision.collision_check([], [bullet], [ship])
     end
@@ -81,7 +75,7 @@ defmodule Elixoids.CollisionTest do
   @tag iterations: 10
   property :bullet_in_center_of_asteroid_hit do
     for_all {p, r, game_id} in {gen_point(), asteroid_radius(), gen_game_id()} do
-      bullet = %BulletLoc{pos: p}
+      bullet = %BulletLoc{pos: [p]}
       asteroid = %AsteroidLoc{pos: p, radius: r}
 
       assert [{:bullet_hit_asteroid, bullet, asteroid, game_id}] ==
@@ -92,7 +86,7 @@ defmodule Elixoids.CollisionTest do
   @tag iterations: 1_000, large: true
   property :bullet_inside_asteroid_hit do
     for_all {{pa, pb, r}, game_id} in {point_inside_asteroid(), gen_game_id()} do
-      bullet = %BulletLoc{pos: pb}
+      bullet = %BulletLoc{pos: [pb]}
       asteroid = %AsteroidLoc{pos: pa, radius: r}
       collisions = Collision.collision_check([asteroid], [bullet], [], game_id)
       assert [{:bullet_hit_asteroid, bullet, asteroid, game_id}] == collisions
@@ -102,7 +96,7 @@ defmodule Elixoids.CollisionTest do
   @tag iterations: 1_000, large: true
   property :bullet_misses_asteroid do
     for_all {pa, pb, r} in point_outside_asteroid() do
-      bullet = %BulletLoc{pos: pb}
+      bullet = %BulletLoc{pos: [pb]}
       asteroid = %AsteroidLoc{pos: pa, radius: r}
       assert [] == Collision.collision_check([asteroid], [bullet], [])
     end
@@ -112,7 +106,7 @@ defmodule Elixoids.CollisionTest do
   property :bullet_hits_asteroids_before_ships do
     for_all {{pa, pb, r}, ships, game_id} in {point_inside_asteroid(), list(gen_ship()),
              gen_game_id()} do
-      bullet = %BulletLoc{pos: pb}
+      bullet = %BulletLoc{pos: [pb]}
       asteroid = %AsteroidLoc{pos: pa, radius: r}
       collisions = Collision.collision_check([asteroid], [bullet], ships, game_id)
       assert [{:bullet_hit_asteroid, bullet, asteroid, game_id}] == collisions
@@ -168,7 +162,7 @@ defmodule Elixoids.CollisionTest do
   property :bullet_hits_asteroid_before_asteroid_hit_ships do
     for_all {{pa, pb, r}, ships, game_id} in {point_inside_asteroid(), list(gen_ship()),
              gen_game_id()} do
-      bullet = %BulletLoc{pos: pb}
+      bullet = %BulletLoc{pos: [pb]}
       asteroid = %AsteroidLoc{pos: pa, radius: r}
 
       assert [{:bullet_hit_asteroid, bullet, asteroid, game_id}] ==
@@ -193,7 +187,7 @@ defmodule Elixoids.CollisionTest do
   @tag iterations: 10
   property :bullet_can_hit_multiple_ships do
     for_all {{ps, pb, ship_r}, ships} in {point_inside_ship(), list(gen_ship())} do
-      bullet = %BulletLoc{pos: pb}
+      bullet = %BulletLoc{pos: [pb]}
       ship = %ShipLoc{pos: ps, radius: ship_r}
       collisions = Collision.collision_check([], [bullet], [ship | ships])
 
@@ -214,75 +208,36 @@ defmodule Elixoids.CollisionTest do
     end
   end
 
-  # Generators
-
-  defp asteroid_radius, do: :triq_dom.elements([120.0, 60.0, 30.0, 15.0])
-
-  defp ship_radius, do: :triq_dom.elements([@ship_radius_m])
-
-  # 0..0.99
-  defp smaller_radius,
-    do:
-      0..99
-      |> Enum.to_list()
-      |> :triq_dom.oneof()
-      |> :triq_dom.bind(fn i -> i / 100.0 end)
-
-  # > 1.01
-  defp larger_radius,
-    do:
-      :triq_dom.float()
-      |> :triq_dom.bind(fn f -> abs(f) + 1.01 end)
-
-  # Generate a circle and a point offset from the centre of the circle
-  defp point_circle(sizes, delta_r) do
-    [gen_point(), gen_theta(), sizes, delta_r]
-    |> :triq_dom.bind(fn [p, t, r, dr] ->
-      dx = :math.cos(t) * (r * dr)
-      dy = :math.sin(t) * (r * dr)
-      {p, %Point{x: p.x + dx, y: p.y + dy}, r}
-    end)
+  @tag iterations: 1_000
+  property :line_inside_circle_hit do
+    for_all {c, {p1, p2}} in such_that({_c, {pp1, pp2}} in line_inside_asteroid() when pp1 != pp2) do
+      assert true == Collision.line_segment_intersects_circle?([p1, p2], c)
+    end
   end
 
-  defp point_inside_ship, do: point_circle(ship_radius(), smaller_radius())
-  defp point_outside_ship, do: point_circle(ship_radius(), larger_radius())
-
-  defp point_inside_asteroid, do: point_circle(asteroid_radius(), smaller_radius())
-  defp point_outside_asteroid, do: point_circle(asteroid_radius(), larger_radius())
-
-  defp circles(size1, size2, delta_r) do
-    [gen_point(), size1, size2, gen_theta(), delta_r]
-    |> :triq_dom.bind(fn [p, r1, r2, t, dr] ->
-      d = (r1 + r2) * dr
-      dx = :math.cos(t) * d
-      dy = :math.sin(t) * d
-      [p1: p, r1: r1, p2: %Point{x: p.x + dx, y: p.y + dy}, r2: r2]
-    end)
+  @tag iterations: 1_000
+  property :line_crossing_circle_hit do
+    for_all {c, {p1, p2}} in line_intersecting_asteroid() do
+      assert Collision.line_segment_intersects_circle?([p1, p2], c)
+    end
   end
 
-  defp ship_overlapping_asteroid, do: circles(ship_radius(), asteroid_radius(), smaller_radius())
+  @tag iterations: 1_000
+  property :line_impaling_circle_hit do
+    for_all {c, {p1, p2}} in line_impaling_asteroid() do
+      assert Collision.line_segment_intersects_circle?([p1, p2], c)
+    end
+  end
 
-  defp ship_overlapping_ship, do: circles(ship_radius(), ship_radius(), smaller_radius())
+  # TODO generator can create lines that touch the circle!
+  # @tag iterations: 10_000
+  # property :line_outside_circle_miss do
+  #   for_all {c, {p1, p2}} in line_outside_asteroid() do
+  #     refute Collision.line_segment_intersects_circle?([p1, p2], c)
+  #   end
+  # end
 
-  defp ship_non_overlapping_asteroid,
-    do: circles(ship_radius(), asteroid_radius(), larger_radius())
-
-  defp ship_non_overlapping_ship,
-    do: circles(ship_radius(), ship_radius(), larger_radius())
-
-  defp gen_asteroid,
-    do:
-      [gen_point(), asteroid_radius()]
-      |> :triq_dom.bind(fn [p, r] -> %AsteroidLoc{pos: p, radius: r} end)
-
-  defp gen_ship,
-    do:
-      [gen_point(), ship_radius()] |> :triq_dom.bind(fn [p, r] -> %ShipLoc{pos: p, radius: r} end)
-
-  defp gen_bullet,
-    do: [gen_point()] |> :triq_dom.bind(fn [p] -> %BulletLoc{pos: p} end)
-
-  # Legacy example tests
+  # Legacy unit tests
 
   test "No collision between asteroid and rock" do
     ship = %ShipLoc{pos: %{x: 1020, y: 0.0}, radius: 20}
@@ -318,8 +273,8 @@ defmodule Elixoids.CollisionTest do
 
   test "No collision" do
     bullets = [
-      %{id: 869, pos: %{x: 1408.1, y: 427.8}, pid: self()},
-      %{id: 687, pos: %{x: 500.8, y: 500.4}, pid: self()}
+      %{id: 869, pos: [%{x: 1408.1, y: 427.8}], pid: self()},
+      %{id: 687, pos: [%{x: 500.8, y: 500.4}], pid: self()}
     ]
 
     ships = [
@@ -331,7 +286,7 @@ defmodule Elixoids.CollisionTest do
   end
 
   test "Collision between bullet and ship" do
-    bullet = %{pos: %{x: 5, y: 5}, pid: self()}
+    bullet = %BulletLoc{pos: [%{x: 5, y: 5}], pid: self()}
     ship = %ShipLoc{pos: %{x: 4, y: 4}, radius: 20, tag: "AAA", pid: self()}
 
     assert Collision.bullet_hits_ship?(bullet, ship)
@@ -340,13 +295,13 @@ defmodule Elixoids.CollisionTest do
   test "Collision between bullet and asteroid" do
     asteroid = %{id: 2, pos: %{x: 4.0, y: 4.0}, radius: 20}
 
-    assert Collision.bullet_hits_asteroid?(%{pos: %{x: 5, y: 5}}, asteroid)
+    assert Collision.bullet_hits_asteroid?(%BulletLoc{pos: [%{x: 5, y: 5}]}, asteroid)
   end
 
   test "No Collision" do
     ship = %ShipLoc{pos: %{x: 4, y: 4}, radius: 20, tag: "AAA"}
-    refute Collision.bullet_hits_ship?(%{pos: %{x: 50, y: 50}}, ship)
-    refute Collision.bullet_hits_ship?(%{pos: %{x: 0, y: 50}}, ship)
-    refute Collision.bullet_hits_ship?(%{pos: %{x: 50, y: 0}}, ship)
+    refute Collision.bullet_hits_ship?(%BulletLoc{pos: [%{x: 50, y: 50}]}, ship)
+    refute Collision.bullet_hits_ship?(%BulletLoc{pos: [%{x: 0, y: 50}]}, ship)
+    refute Collision.bullet_hits_ship?(%BulletLoc{pos: [%{x: 50, y: 0}]}, ship)
   end
 end

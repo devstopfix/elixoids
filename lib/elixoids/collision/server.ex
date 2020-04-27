@@ -136,21 +136,18 @@ defmodule Elixoids.Collision.Server do
   end
 
   @doc """
-  We use points (bullets) inside circles (ships)
+  Bullet can either be newly spawned (a point), or moving (a line segment).
   """
-  def bullet_hits_ship?(bullet, ship) do
-    %{pos: %{x: bx, y: by}} = bullet
-    %{pos: %{x: sx, y: sy}, radius: sr} = ship
+  def bullet_hits_ship?(%{pos: [_, _] = line}, ship),
+    do: line_segment_intersects_circle?(line, ship)
 
-    sq(bx - sx) + sq(by - sy) < sq(sr)
-  end
+  def bullet_hits_ship?(%{pos: [bullet]}, ship), do: point_inside_circle?(bullet, ship)
 
-  def bullet_hits_asteroid?(bullet, asteroid) do
-    %{pos: %{x: bx, y: by}} = bullet
-    %{pos: %{x: ax, y: ay}, radius: ar} = asteroid
+  def bullet_hits_asteroid?(%{pos: [_, _] = line}, asteroid),
+    do: line_segment_intersects_circle?(line, asteroid)
 
-    sq(bx - ax) + sq(by - ay) < sq(ar)
-  end
+  def bullet_hits_asteroid?(%{pos: [bullet]}, asteroid),
+    do: point_inside_circle?(bullet, asteroid)
 
   @doc """
   Test if two circles touch or overlap by comparing
@@ -168,4 +165,42 @@ defmodule Elixoids.Collision.Server do
     %{pos: %{x: s2x, y: s2y}, radius: s2r} = s2
     sq(s2x - s1x) + sq(s2y - s1y) < sq(s1r + s2r)
   end
+
+  def point_inside_circle?(%{x: px, y: py}, %{pos: %{x: cx, y: cy}, radius: r}) do
+    sq(px - cx) + sq(py - cy) < sq(r)
+  end
+
+  # https://stackoverflow.com/a/1084899/3366
+  def line_segment_intersects_circle?(
+        [%{x: ex, y: ey} = p1, %{x: lx, y: ly} = p2],
+        %{
+          pos: %{x: cx, y: cy},
+          radius: r
+        } = o
+      ) do
+    d = {lx - ex, ly - ey}
+    f = {ex - cx, ey - cy}
+
+    a = dot(d, d)
+    b = 2 * dot(f, d)
+    c = dot(f, f) - r * r
+
+    discriminant = b * b - 4 * a * c
+
+    if discriminant < 0 do
+      false
+    else
+      discriminant = :math.sqrt(discriminant)
+      t1 = (-b - discriminant) / (2 * a)
+      t2 = (-b + discriminant) / (2 * a)
+
+      cond do
+        t1 >= 0 && t1 <= 1 -> true
+        t2 >= 0 && t2 <= 1 -> true
+        true -> point_inside_circle?(p1, o) || point_inside_circle?(p2, o)
+      end
+    end
+  end
+
+  defp dot({a1, a2}, {b1, b2}), do: a1 * b1 + a2 * b2
 end

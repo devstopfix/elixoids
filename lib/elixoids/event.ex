@@ -40,6 +40,12 @@ defmodule Elixoids.Event do
         {_, %{pid: bullet_pid, shooter: shooter_tag, pos: pos},
          %{pid: asteroid_pid, radius: radius}, game_id}
       ) do
+    pos =
+      case pos do
+        [pos, _] -> pos
+        pos -> pos
+      end
+
     Process.exit(bullet_pid, {:shutdown, :detonate})
     Asteroid.destroyed(asteroid_pid)
     Game.explosion(game_id, pos, radius)

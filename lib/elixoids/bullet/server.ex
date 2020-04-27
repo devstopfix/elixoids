@@ -29,7 +29,7 @@ defmodule Elixoids.Bullet.Server do
              is_binary(shooter) do
     b = %{
       :id => next_id(),
-      :pos => pos,
+      :pos => [pos],
       :velocity => bullet_velocity(theta),
       :shooter => shooter,
       :game_id => game_id,
@@ -61,18 +61,15 @@ defmodule Elixoids.Bullet.Server do
     end
   end
 
-  defp move(b = %{velocity: v}, delta_t_ms) do
-    update_in(b, [:pos], fn pos ->
-      pos |> Velocity.apply_velocity(v, delta_t_ms) |> Space.wrap()
-    end)
+  defp move(b = %{velocity: v, pos: [pos | _]}, delta_t_ms) do
+    new_pos = pos |> Velocity.apply_velocity(v, delta_t_ms) |> Space.wrap()
+    %{b | pos: [new_pos, pos]}
   end
 
   @doc """
   The tuple that will be shown to the UI for rendering.
   """
-  def state_tuple(b) do
-    %BulletLoc{pid: self(), id: b.id, shooter: b.shooter, pos: b.pos}
-  end
+  def state_tuple(b), do: %BulletLoc{pid: self(), id: b.id, shooter: b.shooter, pos: b.pos}
 
   @doc """
   Calculate the time to live (in ms) of a bullet

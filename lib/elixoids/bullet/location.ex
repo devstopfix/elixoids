@@ -8,7 +8,7 @@ defmodule Elixoids.Bullet.Location do
   defstruct pid: nil, id: 0, shooter: "", pos: nil
 
   defimpl WorldJSON, for: __MODULE__ do
-    def to_json_list(%{id: id, pos: %{x: x, y: y}}),
+    def to_json_list(%{id: id, pos: [%{x: x, y: y} | _]}),
       do: [id, Float.round(x, 2), Float.round(y, 2)]
   end
 end

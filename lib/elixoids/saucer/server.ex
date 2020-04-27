@@ -146,6 +146,7 @@ defmodule Elixoids.Saucer.Server do
   defp send_fire_after(time),
     do: Process.send_after(self(), :fire, time)
 
+  # TODO move constant into config and make larger for saucer. 1.1 for ships
   defp turret(theta, %{pos: ship_centre, radius: radius}) do
     Point.move(ship_centre, theta, radius * 1.1)
   end
