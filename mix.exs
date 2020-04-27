@@ -12,8 +12,8 @@ defmodule Elixoids.Mixfile do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
-      dialyzer: [flags: [:error_handling, :underspecs]]
-      # TODO exunit breaks: elixirc_options: [warnings_as_errors: true]
+      dialyzer: [flags: [:error_handling, :underspecs]],
+      elixirc_options: [warnings_as_errors: true]
     ]
   end
 
@@ -42,7 +42,7 @@ defmodule Elixoids.Mixfile do
     [
       {:cowboy, "~> 2.7"},
       {:credo, "~> 1.1", only: [:dev, :test]},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:gnuplot, "~> 1.19", only: :test},
       {:jason, "~> 1.1"},
       {:protobuf, "~> 0.7"},
