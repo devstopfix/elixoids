@@ -47,7 +47,6 @@
   (let [[out transmit] (elixoids.ship/ship-socket ship-name)]
    (a/go-loop []
      (when-let [e (a/<! out)]
-       (clojure.pprint/pprint e)
        (clojure.core.async/close! transmit)))))
 
 (defn turn-ship [ch ^Double theta]
@@ -59,22 +58,22 @@
 
 (defn smallest-theta [as]
   (->> as
-       (map :theta)
        (sort-by :radius)
+;       (sort-by (juxt :radius :distance))
+       (map :theta)
        (last)))
 
 (defn echo-state-fire [ship-name]
   (let [[out transmit] (elixoids.ship/ship-socket ship-name)]
     (a/go-loop [prev-state (empty-state)]
       (when-let [e (a/<! out)]
+        (clojure.pprint/pprint e)
         (let [delta (frame-delta prev-state e)
-              los (polar-to-cartesian (:theta e) 100)]
+              los (polar-to-cartesian (get e :theta 0) 100)]
           (when (vector-intersects? los delta)
-              (clojure.pprint/pprint los)
-              (fire transmit)
-              (println "Fires"))
+              ;(clojure.pprint/pprint los)
+              (fire transmit))
           (when-let [theta (smallest-theta delta)]
-            (println theta)
             (turn-ship transmit theta))
           (clojure.pprint/pprint delta)
           (recur e))))))

@@ -14,6 +14,13 @@ Beware! This client does not (yet) check to see if there are any ships between i
 
     lein uberjar
 
+## Repl
+
+```clojure
+(use 'elixoids.ship)
+(for [a (range 71 73)] (echo-state-fire (apply str ["R" "K" (char a)])))
+```
+
 # License
 
 Copyright © 2016 devstopfix
