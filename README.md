@@ -97,7 +97,7 @@ See [Elixoids Java Client](https://github.com/jrothwell/asteroids-client) by [J 
 
 The [CBDR](https://en.wikipedia.org/wiki/Constant_bearing,_decreasing_range) Python client at [miner.py](clients/miner.py) will try and shoot the asteroid which is on the most constant bearing with it:
 
-    pip3 install websocket-client
+    pip3 install websocket-client --user
     python3 clients/miner.py --host localhost:8065 --name MCB
 
 ### Ruby Client
