@@ -41,10 +41,10 @@ defmodule Elixoids.Mixfile do
   defp deps do
     [
       {:cowboy, "~> 2.8"},
-      {:credo, "~> 1.1", only: [:dev, :test]},
+      {:credo, "~> 1.5", only: [:dev, :test]},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:gnuplot, "~> 1.19", only: :test},
-      {:jason, "~> 1.1"},
+      {:jason, "~> 1.2"},
       {:protobuf, "~> 0.7"},
       {:excheck, git: "https://github.com/devstopfix/excheck.git", tag: "0.7.6", only: :test},
       {:triq, "~> 1.3", only: [:dev, :test]}

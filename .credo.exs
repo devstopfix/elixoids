@@ -110,6 +110,7 @@
         {Credo.Check.Refactor.PipeChainStart, false},
         {Credo.Check.Refactor.UnlessWithElse},
 
+        {Credo.Check.Warning.ApplicationConfigInModuleAttribute, false},
         {Credo.Check.Warning.BoolOperationOnSameValues},
         {Credo.Check.Warning.IExPry},
         {Credo.Check.Warning.IoInspect},

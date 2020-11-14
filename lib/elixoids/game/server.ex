@@ -214,9 +214,7 @@ defmodule Elixoids.Game.Server do
     {:reply, {:ok, bullet_pid}, game}
   end
 
-  @doc """
-  Spawn a new ship controlled by player with given tag (unless that ship already exists)
-  """
+  # Spawn a new ship controlled by player with given tag (unless that ship already exists)
   def handle_call({:spawn_player, player_tag}, _from, game = %{game_id: game_id}) do
     case Ship.start_link(game_id, player_tag) do
       {:ok, ship_pid, ship_id} -> {:reply, {:ok, ship_pid, ship_id}, game}
@@ -224,9 +222,7 @@ defmodule Elixoids.Game.Server do
     end
   end
 
-  @doc """
-  Return the current state of the game to the UI websocket.
-  """
+  # Return the current state of the game to the UI websocket.
   def handle_call(:state, _from, game) do
     game_state = %{
       :dim => Elixoids.Space.dimensions(),

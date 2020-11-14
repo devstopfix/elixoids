@@ -1,16 +1,17 @@
 language: elixir
 
 elixir:
+  - 1.11
   - 1.10
   - 1.9
 
 otp_release:
-  - '22.3'
+  - '22.3.4'
 
 before_script:
   - mix compile –warnings-as-errors
   - mix credo --strict
-  - if [[ "$TRAVIS_ELIXIR_VERSION" =~ "1.10" ]]; then mix format mix.exs "{config,clients,games,lib,test}/**/*.{ex,exs}" --check-formatted; fi
+  - if [[ "$TRAVIS_ELIXIR_VERSION" =~ "1.11" ]]; then mix format mix.exs "{config,clients,games,lib,test}/**/*.{ex,exs}" --check-formatted; fi
 
 script: mix test --include large --include fuzz --exclude gnuplot --exclude bullet
 
