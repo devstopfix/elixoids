@@ -23,7 +23,7 @@ defmodule Elixoids.Game.ServerTest do
     :timer.sleep(200)
 
     game_state = Game.state(game_id)
-    assert %{tag: tag, radius: 20.0} = List.first(game_state[:s])
+    assert %{tag: ^tag, radius: 20.0} = List.first(game_state[:s])
 
     Process.exit(game, :normal)
   end

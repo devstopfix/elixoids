@@ -267,7 +267,7 @@ defmodule Elixoids.CollisionTest do
     asteroid2 = %{id: 99, pos: %{x: 1000.0, y: 200}, radius: 80, pid: self()}
 
     assert [collision] = Collision.collision_check([asteroid1, asteroid2], [], [ship])
-    assert {:asteroid_hit_ship, asteroid1, ship, _} = collision
+    assert {:asteroid_hit_ship, ^asteroid1, ^ship, _} = collision
     assert_receive {_, :destroyed}
   end
 
