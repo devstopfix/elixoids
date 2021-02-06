@@ -62,7 +62,7 @@
 
         # For some checks, like AliasUsage, you can only customize the priority
         # Priority values are: `low, normal, high, higher`
-        # TODO!
+
         {Credo.Check.Design.AliasUsage, priority: :low, if_called_more_often_than: 5},
 
         # For others you can set parameters
@@ -136,11 +136,7 @@
 
         # Deprecated checks (these will be deleted after a grace period)
         #
-        {Credo.Check.Readability.Specs, false},
-        {Credo.Check.Warning.NameRedeclarationByAssignment, false},
-        {Credo.Check.Warning.NameRedeclarationByCase, false},
-        {Credo.Check.Warning.NameRedeclarationByDef, false},
-        {Credo.Check.Warning.NameRedeclarationByFn, false},
+        {Credo.Check.Readability.Specs, false}
 
         # Custom checks can be created using `mix credo.gen.check`.
         #

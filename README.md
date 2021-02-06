@@ -6,7 +6,8 @@
 
 The original UI was rendered by [JavaScript asteroids-ui][3] and has had a recent [Elm conversion](ui/elm/README.md). Audio provided by [SonicAsteroids][4].
 
-Master: [![Build Status](https://travis-ci.org/devstopfix/elixoids.svg?branch=master)](https://travis-ci.org/devstopfix/elixoids)
+[![Build Status](https://github.com/devstopfix/elixoids/workflows/ci/badge.svg)](https://github.com/devstopfix/elixoids/actions)
+
 
 ## Build
 
