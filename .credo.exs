@@ -63,7 +63,7 @@
         # For some checks, like AliasUsage, you can only customize the priority
         # Priority values are: `low, normal, high, higher`
 
-        {Credo.Check.Design.AliasUsage, priority: :low, if_called_more_often_than: 5},
+        {Credo.Check.Design.AliasUsage, priority: :low, if_called_more_often_than: 3},
 
         # For others you can set parameters
 
@@ -114,7 +114,7 @@
         {Credo.Check.Warning.BoolOperationOnSameValues},
         {Credo.Check.Warning.IExPry},
         {Credo.Check.Warning.IoInspect},
-        {Credo.Check.Warning.LazyLogging},
+        {Credo.Check.Warning.LazyLogging, false},
         {Credo.Check.Warning.OperationOnSameValues},
         {Credo.Check.Warning.OperationWithConstantResult},
         {Credo.Check.Warning.UnusedEnumOperation},
