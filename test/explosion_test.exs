@@ -1,9 +1,9 @@
 defmodule Elixoids.ExplosionTest do
   use ExUnit.Case, async: true
 
+  alias Elixoids.Game.Server, as: Game
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
-  alias Elixoids.Game.Server, as: Game
 
   test "Explosion hard left" do
     pos = %{x: 0.0, y: 2.0}

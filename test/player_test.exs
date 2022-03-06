@@ -1,10 +1,10 @@
 defmodule Elixoids.PlayerTest do
   use ExUnit.Case, async: true
 
+  alias Elixoids.Game.Server, as: Game
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.News
   alias Elixoids.Ship.Server, as: Ship
-  alias Elixoids.Game.Server, as: Game
 
   test "Two players with can connect" do
     tag1 = "ALC"

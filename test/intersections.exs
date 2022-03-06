@@ -71,7 +71,7 @@ defmodule Elixoids.Intersections do
     draw(title, datasets)
   end
 
-  def main() do
+  def main do
     chart("Bullet missing asteroid", &line_outside_asteroid/0)
     chart("Bullet intersecting asteroid", &line_intersecting_asteroid/0)
     chart("Bullet inside asteroid", &line_inside_asteroid/0)

@@ -20,6 +20,8 @@ defmodule Elixoids.Game.Heartbeat do
 
   """
 
+  # credo:disable-for-this-file Credo.Check.Design.AliasUsage
+
   defmacro __using__(_opts) do
     quote do
       @behaviour Elixoids.Game.Tick

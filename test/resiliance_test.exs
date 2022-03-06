@@ -4,9 +4,9 @@ defmodule Elixoids.ResilianceTest do
 
   alias Elixoids.Asteroid.Server, as: Asteroid
   alias Elixoids.Bullet.Server, as: Bullet
+  alias Elixoids.Game.Server, as: Game
   alias Elixoids.Game.Supervisor, as: GameSupervisor
   alias Elixoids.World.Point
-  alias Elixoids.Game.Server, as: Game
 
   test "When asteroid exits the game continues" do
     Process.flag(:trap_exit, true)
