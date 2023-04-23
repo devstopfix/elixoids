@@ -2,7 +2,7 @@ defmodule Elixoids.Application do
   @moduledoc false
 
   use Application
-  @port Application.get_env(:elixoids, :cowboy_port)
+  @port Application.compile_env!(:elixoids, :cowboy_port)
 
   def start(_start_type, _start_args) do
     children = [

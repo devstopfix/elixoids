@@ -7,13 +7,13 @@ defmodule Elixoids.Mixfile do
       description: "Asteroids Arcade Game Server",
       name: "Elixoids",
       version: "3.23.66",
-      elixir: "~> 1.12",
+      elixir: "~> 1.13",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
       dialyzer: [flags: [:error_handling, :underspecs]],
-      elixirc_options: [warnings_as_errors: false]
+      elixirc_options: [warnings_as_errors: true]
     ]
   end
 
