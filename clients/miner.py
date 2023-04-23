@@ -165,7 +165,7 @@ def on_error(ws, error):
     sys.stderr.write("\n{}\n\n".format(str(error)))
 
 
-def on_close(ws):
+def on_close(ws, close_status_code, close_msg):
     sys.stderr.write("GAME OVER!\n")
 
 
