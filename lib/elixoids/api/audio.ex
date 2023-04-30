@@ -20,11 +20,6 @@ defmodule Elixoids.Api.Audio do
     @moduledoc false
     use Protobuf, syntax: :proto3
 
-    @type t :: %__MODULE__{
-            noise: atom | integer,
-            pan: float,
-            size: integer
-          }
     defstruct [:noise, :pan, :size]
 
     field(:noise, 1, type: Sound.Noise, enum: true)
