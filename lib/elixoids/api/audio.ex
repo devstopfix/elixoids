@@ -20,8 +20,6 @@ defmodule Elixoids.Api.Audio do
     @moduledoc false
     use Protobuf, syntax: :proto3
 
-    defstruct [:noise, :pan, :size]
-
     field(:noise, 1, type: Sound.Noise, enum: true)
     field(:pan, 2, type: :float)
     field(:size, 3, type: :int32)
