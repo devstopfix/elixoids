@@ -43,7 +43,7 @@ defmodule Elixoids.Mixfile do
       {:cowboy, "~> 2.10"},
       {:credo, "~> 1.7", only: [:dev, :test]},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
-      {:gnuplot, "~> 1.20", only: :test},
+      {:gnuplot, "~> 1.22", only: :test},
       {:jason, "~> 1.3"},
       {:protobuf, "~> 0.10"},
       {:excheck, git: "https://github.com/devstopfix/excheck.git", tag: "0.7.6", only: :test},
