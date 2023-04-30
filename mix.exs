@@ -40,7 +40,7 @@ defmodule Elixoids.Mixfile do
 
   defp deps do
     [
-      {:cowboy, "~> 2.9"},
+      {:cowboy, "~> 2.10"},
       {:credo, "~> 1.7", only: [:dev, :test]},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
       {:gnuplot, "~> 1.20", only: :test},
