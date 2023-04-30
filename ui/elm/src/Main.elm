@@ -6,7 +6,7 @@ import Browser.Events exposing (onAnimationFrameDelta)
 import Canvas exposing (..)
 import Dict exposing (Dict)
 import Explosions exposing (updateExplosions)
-import Game exposing (Game, mergeGame, newGame, viewGame)
+import Game exposing (Game, NextGameState, mergeGame, newGame, viewGame)
 import GraphicsDecoder exposing (Frame, gameDecoder)
 import Html exposing (Html, div, p, text)
 import Html.Attributes exposing (style)
@@ -15,6 +15,9 @@ import Json.Encode as E
 
 
 port graphicsIn : (E.Value -> msg) -> Sub msg
+
+-- type alias Bundle = (String, Int, Float)
+port playAudio : String -> Cmd msg
 
 
 port addGame : (E.Value -> msg) -> Sub msg
@@ -109,14 +112,14 @@ handleFrame framev games =
             cmdNone games
 
 
-mergeGraphics : String -> Game -> Game
+mergeGraphics : String -> Game -> NextGameState
 mergeGraphics state_json game =
     case Decode.decodeString gameDecoder state_json of
         Ok frame ->
             mergeGame frame game
 
         Err _ ->
-            game
+            (game, [])
 
 
 updateGame : Float -> Int -> Game -> Game

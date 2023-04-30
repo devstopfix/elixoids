@@ -1,5 +1,6 @@
-module Explosions exposing (Explosion, newExplosion, renderExplosion, updateExplosions)
+module Explosions exposing (Explosion, explosionAudio, newExplosion, renderExplosion, updateExplosions)
 
+import Audio exposing (Audio, newAudioExplosion)
 import Canvas exposing (..)
 import Canvas.Settings exposing (fill, stroke)
 import Canvas.Settings.Advanced exposing (Transform, rotate, transform, translate)
@@ -86,3 +87,8 @@ explosionExpansion =
 
 explosionDurationMS =
     100
+
+
+explosionAudio : Explosion -> Audio
+explosionAudio e =
+    newAudioExplosion

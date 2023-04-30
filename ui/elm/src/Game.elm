@@ -1,6 +1,7 @@
-module Game exposing (Game, mergeGame, newGame, viewGame)
+module Game exposing (Game, NextGameState, mergeGame, newGame, viewGame)
 
 import Asteroids exposing (..)
+import Audio exposing (Audio)
 import Bullets exposing (..)
 import Canvas exposing (..)
 import Canvas.Settings exposing (fill, stroke)
@@ -8,7 +9,7 @@ import Canvas.Settings.Advanced exposing (Transform, applyMatrix, rotate, transf
 import Circle2d exposing (Circle2d, withRadius)
 import Color exposing (Color)
 import Dict exposing (Dict)
-import Explosions exposing (Explosion, newExplosion, renderExplosion)
+import Explosions exposing (Explosion, explosionAudio, newExplosion, renderExplosion)
 import GraphicsDecoder exposing (..)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
@@ -30,6 +31,10 @@ type alias Game =
     , spaceColor : Color
     , transform : Transform
     }
+
+
+type alias NextGameState =
+    (Game, List Audio)
 
 
 gameDimensions =
@@ -124,20 +129,22 @@ renderShips tf =
     List.map (renderShip tf)
 
 
-mergeGame : Frame -> Game -> Game
+mergeGame : Frame -> Game -> NextGameState
 mergeGame frame game =
-    { game
-        | asteroids = updateAsteroids frame.asteroids game.asteroids
-        , bullets = updateBullets frame.bullets game.bullets
-        , explosions = appendExplosions frame.explosions game.explosions
-        , ships = updateShips frame.ships game.ships
-    }
-
-
-appendExplosions new_explosions explosions =
-    List.append
-        explosions
-        (List.map newExplosion new_explosions)
+    let
+        explosions =
+            (List.map newExplosion frame.explosions)
+        audio =
+            (List.map explosionAudio explosions)
+        next_game =
+            { game
+            | asteroids = updateAsteroids frame.asteroids game.asteroids
+            , bullets = updateBullets frame.bullets game.bullets
+            , explosions = List.append explosions game.explosions
+            , ships = updateShips frame.ships game.ships
+            }
+    in
+        (next_game, audio)
 
 
 updateAsteroids asteroids game_asteroids =
