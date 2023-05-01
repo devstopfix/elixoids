@@ -41,7 +41,6 @@ function loadSoundBuffer(url, target) {
 }
 
 function playExplosion(audio) {
-    // TODO check for empty buffer list
     var index = (audio.index || 0) % fxAudioBuffers.explosion.length;
     var source = fxAudioContext.createBufferSource();
     source.buffer = fxAudioBuffers.explosion[index];

@@ -133,14 +133,16 @@ mergeGame : Frame -> Game -> NextGameState
 mergeGame frame game =
     let
         explosions =
-            (List.map newExplosion frame.explosions)
+            List.map newExplosion frame.explosions
+
         audio =
-            (List.map explosionAudio explosions)
+            List.map explosionAudio explosions
+
         next_game =
             { game
             | asteroids = updateAsteroids frame.asteroids game.asteroids
             , bullets = updateBullets frame.bullets game.bullets
-            , explosions = List.append explosions game.explosions
+            , explosions = List.append game.explosions explosions
             , ships = updateShips frame.ships game.ships
             }
     in
@@ -156,7 +158,7 @@ mergeAsteroids graphics_asteroids game_asteroids =
     Dict.merge
         (\id a -> Dict.insert id (newAsteroid id a.location))
         (\id a b -> Dict.insert id { b | position = a.location })
-        (\id _ -> identity)
+        (\_ _ -> identity)
         graphics_asteroids
         game_asteroids
         Dict.empty
@@ -175,7 +177,7 @@ mergeShips graphics_ships game_ships =
     Dict.merge
         (\id a -> Dict.insert id (newShip id a.location a.theta))
         (\id a b -> Dict.insert id { b | position = a.location, theta = a.theta })
-        (\id _ -> identity)
+        (\_ _ -> identity)
         graphics_ships
         game_ships
         Dict.empty

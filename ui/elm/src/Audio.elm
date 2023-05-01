@@ -5,9 +5,9 @@ type alias Audio =
     { name : String, index: Int, pan: Float}
 
 
-newAudioExplosion : Audio
-newAudioExplosion =
+newAudioExplosion : Int -> Audio
+newAudioExplosion index =
     { name = "explosion"
-    ,    index = 1
+    ,    index = index
     ,    pan = 0.0
     }

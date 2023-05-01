@@ -1,6 +1,7 @@
 port module Main exposing (main)
 
 import Asteroids exposing (rotateAsteroids)
+import Audio exposing (Audio)
 import Browser
 import Browser.Events exposing (onAnimationFrameDelta)
 import Canvas exposing (..)
@@ -16,8 +17,8 @@ import Json.Encode as E
 
 port graphicsIn : (E.Value -> msg) -> Sub msg
 
--- type alias Bundle = (String, Int, Float)
-port playAudio : String -> Cmd msg
+
+port playAudio : List Audio -> Cmd msg
 
 
 port addGame : (E.Value -> msg) -> Sub msg
@@ -99,12 +100,17 @@ handleFrame framev games =
             case Dict.get frame.id games of
                 Just game ->
                     let
-                        next_game =
+                        (next_game, audio) =
                             mergeGraphics frame.frame game
                         next_games=
                             Dict.insert frame.id next_game games
                     in
-                        cmdNone next_games
+                        case audio of
+                            [] ->
+                                cmdNone next_games
+
+                            a ->
+                                (games, playAudio a)
 
                 _ ->
                     cmdNone games

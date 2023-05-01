@@ -600,11 +600,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.bv.aA === region.bH.aA)
+	if (region.bu.az === region.bG.az)
 	{
-		return 'on line ' + region.bv.aA;
+		return 'on line ' + region.bu.az;
 	}
-	return 'on lines ' + region.bv.aA + ' through ' + region.bH.aA;
+	return 'on lines ' + region.bu.az + ' through ' + region.bG.az;
 }
 
 
@@ -2929,8 +2929,8 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.K;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.bx;
+		var message = !tag ? value : tag < 3 ? value.a : value.J;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.bw;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
 			(tag == 2 ? value.b : tag == 3 && value.bo) && event.preventDefault(),
@@ -3932,7 +3932,7 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.cf);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.ch);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
@@ -4014,9 +4014,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.b0 === next.b0
-							&& curr.bM === next.bM
-							&& curr.bZ.a === next.bZ.a
+							&& curr.b2 === next.b2
+							&& curr.bL === next.bL
+							&& curr.b$.a === next.b$.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4202,8 +4202,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		cb: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		bL: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		cd: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		bK: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4226,9 +4226,9 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			b5: {
-				cb: node.scrollWidth,
-				bL: node.scrollHeight
+			b7: {
+				cd: node.scrollWidth,
+				bK: node.scrollHeight
 			},
 			ca: {
 				aX: node.scrollLeft,
@@ -5257,7 +5257,7 @@ var $author$project$Main$subscriptions = function (model) {
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$Main$FrameInput = F2(
 	function (id, frame) {
-		return {bK: frame, bO: id};
+		return {bJ: frame, bN: id};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
@@ -6167,7 +6167,7 @@ var $author$project$Game$toAsteroidMap = A2(
 	$elm$core$Dict$fromList,
 	$elm$core$List$map(
 		function (a) {
-			return _Utils_Tuple2(a.bO, a);
+			return _Utils_Tuple2(a.bN, a);
 		}));
 var $author$project$Game$updateAsteroids = F2(
 	function (asteroids, game_asteroids) {
@@ -6248,7 +6248,7 @@ var $author$project$Game$toBulletMap = A2(
 	$elm$core$Dict$fromList,
 	$elm$core$List$map(
 		function (a) {
-			return _Utils_Tuple2(a.bO, a);
+			return _Utils_Tuple2(a.bN, a);
 		}));
 var $author$project$Game$updateBullets = F2(
 	function (bullets, game_bullets) {
@@ -6419,7 +6419,7 @@ var $author$project$Game$toShipMap = A2(
 	$elm$core$Dict$fromList,
 	$elm$core$List$map(
 		function (a) {
-			return _Utils_Tuple2(a.bO, a);
+			return _Utils_Tuple2(a.bN, a);
 		}));
 var $author$project$Game$updateShips = F2(
 	function (ships, game_ships) {
@@ -6430,7 +6430,8 @@ var $author$project$Game$updateShips = F2(
 	});
 var $author$project$Game$mergeGame = F2(
 	function (frame, game) {
-		return _Utils_update(
+		var explosions = A2(elm$core$List$map, author$project$Explosions$newExplosion, frame.ag);
+		var next_game = _Utils_update(
 			game,
 			{
 				ab: A2($author$project$Game$updateAsteroids, frame.ab, game.ab),
@@ -6438,6 +6439,8 @@ var $author$project$Game$mergeGame = F2(
 				ah: A2($author$project$Game$appendExplosions, frame.ah, game.ah),
 				V: A2($author$project$Game$updateShips, frame.V, game.V)
 			});
+		var audio = A2(elm$core$List$map, author$project$Explosions$explosionAudio, explosions);
+		return _Utils_Tuple2(next_game, audio);
 	});
 var $author$project$Main$mergeGraphics = F2(
 	function (state_json, game) {
@@ -6446,7 +6449,7 @@ var $author$project$Main$mergeGraphics = F2(
 			var frame = _v0.a;
 			return A2($author$project$Game$mergeGame, frame, game);
 		} else {
-			return game;
+			return _Utils_Tuple2(game, _List_Nil);
 		}
 	});
 var $author$project$Main$handleFrame = F2(
@@ -6773,7 +6776,7 @@ var $joakin$elm_canvas$Canvas$addSettingsToRenderable = F2(
 						return _Utils_update(
 							r,
 							{
-								ae: f(r.ae)
+								ad: f(r.ad)
 							});
 					default:
 						var op = setting.a;
@@ -6931,7 +6934,7 @@ var $author$project$Asteroids$renderAsteroid = F2(
 					$joakin$elm_canvas$Canvas$Settings$Line$lineWidth(4.0)
 				]),
 			_List_fromArray(
-				[asteroid.bt]));
+				[asteroid.bs]));
 	});
 var $author$project$Game$renderAsteroids = function (tf) {
 	return $elm$core$List$map(
@@ -7032,7 +7035,7 @@ var $author$project$Bullets$renderWarhead = F2(
 							]))
 					]),
 				_List_fromArray(
-					[bullet.bt])));
+					[bullet.bs])));
 	});
 var $author$project$Bullets$renderBullet = F2(
 	function (tf, bullet) {
@@ -7073,7 +7076,7 @@ var $author$project$Explosions$renderExplosion = F2(
 					A2(
 					$joakin$elm_canvas$Canvas$circle,
 					_Utils_Tuple2(0, 0),
-					explosion.aC)
+					explosion.aB)
 				]));
 	});
 var $author$project$Game$renderExplosions = function (tf) {
@@ -7101,7 +7104,7 @@ var $author$project$Ships$renderShip = F2(
 					$joakin$elm_canvas$Canvas$Settings$Line$lineWidth(ship.a9)
 				]),
 			_List_fromArray(
-				[ship.bt]));
+				[ship.bs]));
 	});
 var $author$project$Game$renderShips = function (tf) {
 	return $elm$core$List$map(

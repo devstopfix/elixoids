@@ -5,7 +5,7 @@ import Canvas exposing (..)
 import Canvas.Settings exposing (fill, stroke)
 import Canvas.Settings.Advanced exposing (Transform, rotate, transform, translate)
 import Color exposing (Color)
-import Point2d exposing (Point2d, coordinates)
+import Point2d exposing (Point2d, coordinates, xCoordinate)
 
 
 type alias Radius =
@@ -89,6 +89,15 @@ explosionDurationMS =
     100
 
 
+modSamples : Int -> Int
+modSamples =
+    modBy 8
+
+
 explosionAudio : Explosion -> Audio
 explosionAudio e =
-    newAudioExplosion
+    let
+        x = (xCoordinate e.position)
+        index = modSamples (truncate (abs x))
+    in
+        newAudioExplosion index

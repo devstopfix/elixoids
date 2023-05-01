@@ -5267,6 +5267,7 @@ var $author$project$Main$FrameInput = F2(
 	function (id, frame) {
 		return {frame: frame, id: id};
 	});
+<<<<<<< HEAD
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$string = _Json_decodeString;
@@ -5424,6 +5425,35 @@ var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $ianmackenzie$elm_geometry$Geometry$Types$Point2d = function (a) {
 	return {$: 'Point2d', a: a};
+=======
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$int = _Json_decodeInt;
+var elm$json$Json$Decode$string = _Json_decodeString;
+var author$project$Main$frameInputDecoder = A3(
+	elm$json$Json$Decode$map2,
+	author$project$Main$FrameInput,
+	A2(elm$json$Json$Decode$field, 'id', elm$json$Json$Decode$int),
+	A2(elm$json$Json$Decode$field, 'frame', elm$json$Json$Decode$string));
+var author$project$Audio$newAudioExplosion = function (index) {
+	return {index: index, name: 'explosion', pan: 0.0};
+};
+var elm$core$Basics$modBy = _Basics_modBy;
+var author$project$Explosions$modSamples = elm$core$Basics$modBy(8);
+var elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var elm$core$Basics$truncate = _Basics_truncate;
+var ianmackenzie$elm_geometry$Point2d$xCoordinate = function (_n0) {
+	var _n1 = _n0.a;
+	var x = _n1.a;
+	return x;
+};
+var author$project$Explosions$explosionAudio = function (e) {
+	var x = ianmackenzie$elm_geometry$Point2d$xCoordinate(e.position);
+	var index = author$project$Explosions$modSamples(
+		elm$core$Basics$abs(x) | 0);
+	return author$project$Audio$newAudioExplosion(index);
+>>>>>>> b28ce56 (Explosion sounds)
 };
 var $ianmackenzie$elm_geometry$Point2d$fromCoordinates = $ianmackenzie$elm_geometry$Geometry$Types$Point2d;
 var $ianmackenzie$elm_geometry$Geometry$Types$Circle2d = function (a) {
@@ -5658,9 +5688,15 @@ var $avh4$elm_color$Color$rgba = F4(
 	function (r, g, b, a) {
 		return A4($avh4$elm_color$Color$RgbaSpace, r, g, b, a);
 	});
+<<<<<<< HEAD
 var $author$project$Explosions$pickColor = function (n) {
 	var _v0 = A2($elm$core$Basics$modBy, 8, n);
 	switch (_v0) {
+=======
+var author$project$Explosions$pickColor = function (n) {
+	var _n0 = A2(elm$core$Basics$modBy, 8, n);
+	switch (_n0) {
+>>>>>>> b28ce56 (Explosion sounds)
 		case 0:
 			return A4($avh4$elm_color$Color$rgba, 1.0, 1.0, 1.0, 1.0);
 		case 1:
@@ -5673,11 +5709,22 @@ var $author$project$Explosions$pickColor = function (n) {
 			return A4($avh4$elm_color$Color$rgba, 1, 1, 1, 0.95);
 	}
 };
+<<<<<<< HEAD
 var $elm$core$Basics$truncate = _Basics_truncate;
 var $author$project$Explosions$newExplosion = function (p) {
 	var _v0 = $ianmackenzie$elm_geometry$Point2d$coordinates(p);
 	var x = _v0.a;
 	var y = _v0.b;
+=======
+var ianmackenzie$elm_geometry$Point2d$coordinates = function (_n0) {
+	var coordinates_ = _n0.a;
+	return coordinates_;
+};
+var author$project$Explosions$newExplosion = function (p) {
+	var _n0 = ianmackenzie$elm_geometry$Point2d$coordinates(p);
+	var x = _n0.a;
+	var y = _n0.b;
+>>>>>>> b28ce56 (Explosion sounds)
 	return {
 		color: $author$project$Explosions$pickColor((x + y) | 0),
 		position: p,
@@ -6168,8 +6215,13 @@ var $author$project$Game$mergeAsteroids = F2(
 							{position: a.location}));
 				}),
 			F2(
+<<<<<<< HEAD
 				function (id, _v0) {
 					return $elm$core$Basics$identity;
+=======
+				function (_n0, _n1) {
+					return elm$core$Basics$identity;
+>>>>>>> b28ce56 (Explosion sounds)
 				}),
 			graphics_asteroids,
 			game_asteroids,
@@ -6432,8 +6484,13 @@ var $author$project$Game$mergeShips = F2(
 							{position: a.location, theta: a.theta}));
 				}),
 			F2(
+<<<<<<< HEAD
 				function (id, _v0) {
 					return $elm$core$Basics$identity;
+=======
+				function (_n0, _n1) {
+					return elm$core$Basics$identity;
+>>>>>>> b28ce56 (Explosion sounds)
 				}),
 			graphics_ships,
 			game_ships,
@@ -6459,24 +6516,233 @@ var $author$project$Game$mergeGame = F2(
 		var next_game = _Utils_update(
 			game,
 			{
+<<<<<<< HEAD
 				asteroids: A2($author$project$Game$updateAsteroids, frame.asteroids, game.asteroids),
 				bullets: A2($author$project$Game$updateBullets, frame.bullets, game.bullets),
 				explosions: A2($author$project$Game$appendExplosions, frame.explosions, game.explosions),
 				ships: A2($author$project$Game$updateShips, frame.ships, game.ships)
+=======
+				asteroids: A2(author$project$Game$updateAsteroids, frame.asteroids, game.asteroids),
+				bullets: A2(author$project$Game$updateBullets, frame.bullets, game.bullets),
+				explosions: A2(elm$core$List$append, game.explosions, explosions),
+				ships: A2(author$project$Game$updateShips, frame.ships, game.ships)
+>>>>>>> b28ce56 (Explosion sounds)
 			});
 		var audio = A2(elm$core$List$map, author$project$Explosions$explosionAudio, explosions);
 		return _Utils_Tuple2(next_game, audio);
 	});
+<<<<<<< HEAD
 var $author$project$Main$mergeGraphics = F2(
 	function (state_json, game) {
 		var _v0 = A2($elm$json$Json$Decode$decodeString, $author$project$GraphicsDecoder$gameDecoder, state_json);
 		if (_v0.$ === 'Ok') {
 			var frame = _v0.a;
 			return A2($author$project$Game$mergeGame, frame, game);
+=======
+var author$project$GraphicsDecoder$Frame = F5(
+	function (asteroids, bullets, dimensions, explosions, ships) {
+		return {asteroids: asteroids, bullets: bullets, dimensions: dimensions, explosions: explosions, ships: ships};
+	});
+var elm$json$Json$Decode$andThen = _Json_andThen;
+var elm$json$Json$Decode$float = _Json_decodeFloat;
+var ianmackenzie$elm_geometry$Geometry$Types$Circle2d = function (a) {
+	return {$: 'Circle2d', a: a};
+};
+var ianmackenzie$elm_geometry$Circle2d$withRadius = F2(
+	function (radius_, centerPoint_) {
+		return ianmackenzie$elm_geometry$Geometry$Types$Circle2d(
+			{
+				centerPoint: centerPoint_,
+				radius: elm$core$Basics$abs(radius_)
+			});
+	});
+var author$project$GraphicsDecoder$asteroidDecoder = A2(
+	elm$json$Json$Decode$andThen,
+	function (id) {
+		return A2(
+			elm$json$Json$Decode$andThen,
+			function (x) {
+				return A2(
+					elm$json$Json$Decode$andThen,
+					function (y) {
+						return A2(
+							elm$json$Json$Decode$andThen,
+							function (r) {
+								return elm$json$Json$Decode$succeed(
+									{
+										id: id,
+										location: A2(
+											ianmackenzie$elm_geometry$Circle2d$withRadius,
+											r,
+											ianmackenzie$elm_geometry$Point2d$fromCoordinates(
+												_Utils_Tuple2(x, y)))
+									});
+							},
+							A2(elm$json$Json$Decode$field, '3', elm$json$Json$Decode$float));
+					},
+					A2(elm$json$Json$Decode$field, '2', elm$json$Json$Decode$float));
+			},
+			A2(elm$json$Json$Decode$field, '1', elm$json$Json$Decode$float));
+	},
+	A2(elm$json$Json$Decode$field, '0', elm$json$Json$Decode$int));
+var elm$json$Json$Decode$list = _Json_decodeList;
+var author$project$GraphicsDecoder$asteroidsDecoder = elm$json$Json$Decode$list(author$project$GraphicsDecoder$asteroidDecoder);
+var author$project$GraphicsDecoder$bulletDecoder = A2(
+	elm$json$Json$Decode$andThen,
+	function (id) {
+		return A2(
+			elm$json$Json$Decode$andThen,
+			function (x) {
+				return A2(
+					elm$json$Json$Decode$andThen,
+					function (y) {
+						return elm$json$Json$Decode$succeed(
+							{
+								id: id,
+								location: ianmackenzie$elm_geometry$Point2d$fromCoordinates(
+									_Utils_Tuple2(x, y))
+							});
+					},
+					A2(elm$json$Json$Decode$field, '2', elm$json$Json$Decode$float));
+			},
+			A2(elm$json$Json$Decode$field, '1', elm$json$Json$Decode$float));
+	},
+	A2(elm$json$Json$Decode$field, '0', elm$json$Json$Decode$int));
+var author$project$GraphicsDecoder$bulletsDecoder = elm$json$Json$Decode$list(author$project$GraphicsDecoder$bulletDecoder);
+var elm$json$Json$Decode$fail = _Json_fail;
+var elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var ianmackenzie$elm_geometry$Geometry$Types$BoundingBox2d = function (a) {
+	return {$: 'BoundingBox2d', a: a};
+};
+var ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema = function (extrema_) {
+	return ((_Utils_cmp(extrema_.minX, extrema_.maxX) < 1) && (_Utils_cmp(extrema_.minY, extrema_.maxY) < 1)) ? ianmackenzie$elm_geometry$Geometry$Types$BoundingBox2d(extrema_) : ianmackenzie$elm_geometry$Geometry$Types$BoundingBox2d(
+		{
+			maxX: A2(elm$core$Basics$max, extrema_.minX, extrema_.maxX),
+			maxY: A2(elm$core$Basics$max, extrema_.minY, extrema_.maxY),
+			minX: A2(elm$core$Basics$min, extrema_.minX, extrema_.maxX),
+			minY: A2(elm$core$Basics$min, extrema_.minY, extrema_.maxY)
+		});
+};
+var ianmackenzie$elm_geometry$BoundingBox2d$from = F2(
+	function (firstPoint, secondPoint) {
+		var _n0 = ianmackenzie$elm_geometry$Point2d$coordinates(secondPoint);
+		var x2 = _n0.a;
+		var y2 = _n0.b;
+		var _n1 = ianmackenzie$elm_geometry$Point2d$coordinates(firstPoint);
+		var x1 = _n1.a;
+		var y1 = _n1.b;
+		return ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema(
+			{
+				maxX: A2(elm$core$Basics$max, x1, x2),
+				maxY: A2(elm$core$Basics$max, y1, y2),
+				minX: A2(elm$core$Basics$min, x1, x2),
+				minY: A2(elm$core$Basics$min, y1, y2)
+			});
+	});
+var author$project$GraphicsDecoder$dimHelp = function (fs) {
+	if ((fs.b && fs.b.b) && (!fs.b.b.b)) {
+		var x = fs.a;
+		var _n1 = fs.b;
+		var y = _n1.a;
+		return elm$json$Json$Decode$succeed(
+			A2(
+				ianmackenzie$elm_geometry$BoundingBox2d$from,
+				ianmackenzie$elm_geometry$Point2d$origin,
+				ianmackenzie$elm_geometry$Point2d$fromCoordinates(
+					_Utils_Tuple2(x, y))));
+	} else {
+		return elm$json$Json$Decode$fail('Expecting 2 floats');
+	}
+};
+var author$project$GraphicsDecoder$dimDecoder = A2(
+	elm$json$Json$Decode$andThen,
+	author$project$GraphicsDecoder$dimHelp,
+	elm$json$Json$Decode$list(elm$json$Json$Decode$float));
+var author$project$GraphicsDecoder$explosionDecoder = A2(
+	elm$json$Json$Decode$andThen,
+	function (x) {
+		return A2(
+			elm$json$Json$Decode$andThen,
+			function (y) {
+				return elm$json$Json$Decode$succeed(
+					ianmackenzie$elm_geometry$Point2d$fromCoordinates(
+						_Utils_Tuple2(x, y)));
+			},
+			A2(elm$json$Json$Decode$field, '1', elm$json$Json$Decode$float));
+	},
+	A2(elm$json$Json$Decode$field, '0', elm$json$Json$Decode$float));
+var author$project$GraphicsDecoder$explosionsDecoder = elm$json$Json$Decode$list(author$project$GraphicsDecoder$explosionDecoder);
+var author$project$GraphicsDecoder$shipDecoder = A2(
+	elm$json$Json$Decode$andThen,
+	function (tag) {
+		return A2(
+			elm$json$Json$Decode$andThen,
+			function (x) {
+				return A2(
+					elm$json$Json$Decode$andThen,
+					function (y) {
+						return A2(
+							elm$json$Json$Decode$andThen,
+							function (r) {
+								return A2(
+									elm$json$Json$Decode$andThen,
+									function (theta) {
+										return elm$json$Json$Decode$succeed(
+											{
+												id: tag,
+												location: A2(
+													ianmackenzie$elm_geometry$Circle2d$withRadius,
+													r,
+													ianmackenzie$elm_geometry$Point2d$fromCoordinates(
+														_Utils_Tuple2(x, y))),
+												theta: theta
+											});
+									},
+									A2(elm$json$Json$Decode$field, '4', elm$json$Json$Decode$float));
+							},
+							A2(elm$json$Json$Decode$field, '3', elm$json$Json$Decode$float));
+					},
+					A2(elm$json$Json$Decode$field, '2', elm$json$Json$Decode$float));
+			},
+			A2(elm$json$Json$Decode$field, '1', elm$json$Json$Decode$float));
+	},
+	A2(elm$json$Json$Decode$field, '0', elm$json$Json$Decode$string));
+var author$project$GraphicsDecoder$shipsDecoder = elm$json$Json$Decode$list(author$project$GraphicsDecoder$shipDecoder);
+var elm$json$Json$Decode$map5 = _Json_map5;
+var elm$json$Json$Decode$oneOf = _Json_oneOf;
+var elm$json$Json$Decode$maybe = function (decoder) {
+	return elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder),
+				elm$json$Json$Decode$succeed(elm$core$Maybe$Nothing)
+			]));
+};
+var author$project$GraphicsDecoder$gameDecoder = A6(
+	elm$json$Json$Decode$map5,
+	author$project$GraphicsDecoder$Frame,
+	A2(elm$json$Json$Decode$field, 'a', author$project$GraphicsDecoder$asteroidsDecoder),
+	A2(elm$json$Json$Decode$field, 'b', author$project$GraphicsDecoder$bulletsDecoder),
+	elm$json$Json$Decode$maybe(
+		A2(elm$json$Json$Decode$field, 'dim', author$project$GraphicsDecoder$dimDecoder)),
+	A2(elm$json$Json$Decode$field, 'x', author$project$GraphicsDecoder$explosionsDecoder),
+	A2(elm$json$Json$Decode$field, 's', author$project$GraphicsDecoder$shipsDecoder));
+var elm$json$Json$Decode$decodeString = _Json_runOnString;
+var author$project$Main$mergeGraphics = F2(
+	function (state_json, game) {
+		var _n0 = A2(elm$json$Json$Decode$decodeString, author$project$GraphicsDecoder$gameDecoder, state_json);
+		if (_n0.$ === 'Ok') {
+			var frame = _n0.a;
+			return A2(author$project$Game$mergeGame, frame, game);
+>>>>>>> b28ce56 (Explosion sounds)
 		} else {
-			return game;
+			return _Utils_Tuple2(game, _List_Nil);
 		}
 	});
+<<<<<<< HEAD
 var $author$project$Main$handleFrame = F2(
 	function (framev, games) {
 		var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$frameInputDecoder, framev);
@@ -6488,6 +6754,103 @@ var $author$project$Main$handleFrame = F2(
 				var next_game = A2($author$project$Main$mergeGraphics, frame.frame, game);
 				var next_games = A3($elm$core$Dict$insert, frame.id, next_game, games);
 				return $author$project$Main$cmdNone(next_games);
+=======
+var elm$json$Json$Encode$float = _Json_wrap;
+var elm$json$Json$Encode$int = _Json_wrap;
+var elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$Main$playAudio = _Platform_outgoingPort(
+	'playAudio',
+	elm$json$Json$Encode$list(
+		function ($) {
+			return elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'index',
+						elm$json$Json$Encode$int($.index)),
+						_Utils_Tuple2(
+						'name',
+						elm$json$Json$Encode$string($.name)),
+						_Utils_Tuple2(
+						'pan',
+						elm$json$Json$Encode$float($.pan))
+					]));
+		}));
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var elm$json$Json$Decode$decodeValue = _Json_run;
+var author$project$Main$handleFrame = F2(
+	function (framev, games) {
+		var _n0 = A2(elm$json$Json$Decode$decodeValue, author$project$Main$frameInputDecoder, framev);
+		if (_n0.$ === 'Ok') {
+			var frame = _n0.a;
+			var _n1 = A2(elm$core$Dict$get, frame.id, games);
+			if (_n1.$ === 'Just') {
+				var game = _n1.a;
+				var _n2 = A2(author$project$Main$mergeGraphics, frame.frame, game);
+				var next_game = _n2.a;
+				var audio = _n2.b;
+				var next_games = A3(elm$core$Dict$insert, frame.id, next_game, games);
+				if (!audio.b) {
+					return author$project$Main$cmdNone(next_games);
+				} else {
+					var a = audio;
+					return _Utils_Tuple2(
+						games,
+						author$project$Main$playAudio(a));
+				}
+>>>>>>> b28ce56 (Explosion sounds)
 			} else {
 				return $author$project$Main$cmdNone(games);
 			}
@@ -6838,6 +7201,7 @@ var $joakin$elm_canvas$Canvas$Settings$stroke = function (color) {
 var $joakin$elm_canvas$Canvas$Internal$Canvas$SettingCommands = function (a) {
 	return {$: 'SettingCommands', a: a};
 };
+<<<<<<< HEAD
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
 		return _Json_wrap(
@@ -6848,6 +7212,9 @@ var $elm$json$Json$Encode$list = F2(
 				entries));
 	});
 var $joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$fn = F2(
+=======
+var joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$fn = F2(
+>>>>>>> b28ce56 (Explosion sounds)
 	function (name, args) {
 		return $elm$json$Json$Encode$object(
 			_List_fromArray(
