@@ -40,18 +40,8 @@ function loadSoundBuffer(url, target) {
     request.send();
 }
 
-function testSound() {
-    var source = fxAudioContext.createBufferSource();
-    source.buffer = fxAudioBuffers.explosion[0];
-    var gainFadeOut = fxAudioContext.createGain();
-    gainFadeOut.gain.setValueAtTime(gainFadeOut.gain.value - 0.2, fxAudioContext.currentTime);
-    source.connect(gainFadeOut)
-    gainFadeOut.connect(fxAudioContext.destination);       // connect the source to the context's destination (the speakers)
-    gainFadeOut.gain.exponentialRampToValueAtTime(0.01, fxAudioContext.currentTime + 4);
-    source.start();
-}
-
 function playExplosion(audio) {
+    // TODO check for empty buffer list
     var index = (audio.index || 0) % fxAudioBuffers.explosion.length;
     var source = fxAudioContext.createBufferSource();
     source.buffer = fxAudioBuffers.explosion[index];
