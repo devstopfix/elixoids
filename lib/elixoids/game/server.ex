@@ -66,6 +66,7 @@ defmodule Elixoids.Game.Server do
     case Registry.lookup(Registry.Elixoids.Games, {game_id}) do
       [{pid, _}] ->
         Process.send(pid, :spawn_saucer, [])
+
       [] ->
         false
     end
