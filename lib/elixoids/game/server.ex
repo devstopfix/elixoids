@@ -62,6 +62,15 @@ defmodule Elixoids.Game.Server do
     GenServer.cast(via(game_id), {:spawn_asteroids, rocks})
   end
 
+  def spawn_saucer(game_id) do
+    case Registry.lookup(Registry.Elixoids.Games, {game_id}) do
+      [{pid, _}] ->
+        Process.send(pid, :spawn_saucer, [])
+      [] ->
+        false
+    end
+  end
+
   def link(game_id, pid) do
     GenServer.cast(via(game_id), {:link, pid})
   end
