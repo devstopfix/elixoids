@@ -89,9 +89,6 @@ renderTag tf ship =
                 tag =
                     trimTag ship.id
 
-                color =
-                    ship.tagColor
-
                 tagTheta =
                     offset90deg ship.theta
 

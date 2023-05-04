@@ -9,9 +9,9 @@ import Circle2d exposing (Circle2d, centerPoint, radius)
 import Color exposing (Color)
 import Dict exposing (Dict)
 import Point2d exposing (coordinates, origin)
-import Points exposing (convertPoints, readPoints)
-import Polygon exposing (pointsToShape, polygonToShape)
-import Polygon2d exposing (Polygon2d, outerLoop, scaleAbout, singleLoop)
+import Points exposing (readPoints)
+import Polygon exposing (polygonToShape)
+import Polygon2d exposing (Polygon2d, scaleAbout, singleLoop)
 
 
 type alias Id =

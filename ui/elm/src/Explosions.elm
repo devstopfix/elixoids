@@ -2,7 +2,7 @@ module Explosions exposing (Explosion, newExplosion, renderExplosion, updateExpl
 
 import Canvas exposing (..)
 import Canvas.Settings exposing (fill, stroke)
-import Canvas.Settings.Advanced exposing (Transform, rotate, transform, translate)
+import Canvas.Settings.Advanced exposing (Transform, transform, translate)
 import Color exposing (Color)
 import Point2d exposing (Point2d, coordinates)
 
@@ -41,6 +41,7 @@ updateExplosion msSincePreviousFrame explosion =
     }
 
 
+isActive : { a | ttl : number } -> Bool
 isActive explosion =
     explosion.ttl > 0
 

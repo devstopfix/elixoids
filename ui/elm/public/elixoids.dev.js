@@ -6261,7 +6261,7 @@ var $author$project$Bullets$mergeBullets = F2(
 						A2($author$project$Bullets$bulletAndTail, f, b));
 				}),
 			F2(
-				function (id, _v0) {
+				function (_v0, _v1) {
 					return $elm$core$Basics$identity;
 				}),
 			graphics_bullets,
@@ -6590,7 +6590,7 @@ var $author$project$Explosions$updateExplosions = function (msSincePreviousFrame
 			$author$project$Explosions$updateExplosion(msSincePreviousFrame)));
 };
 var $author$project$Main$updateGame = F3(
-	function (msSincePreviousFrame, game_id, game) {
+	function (msSincePreviousFrame, _v0, game) {
 		return _Utils_update(
 			game,
 			{
@@ -7246,7 +7246,6 @@ var $author$project$Ships$renderTag = F2(
 			var tagDY = $author$project$Ships$tagOffset(
 				$ianmackenzie$elm_geometry$Circle2d$radius(ship.position));
 			var tag = $author$project$Ships$trimTag(ship.id);
-			var color = ship.tagColor;
 			var _v1 = $ianmackenzie$elm_geometry$Point2d$coordinates(
 				$ianmackenzie$elm_geometry$Circle2d$centerPoint(ship.position));
 			var x = _v1.a;

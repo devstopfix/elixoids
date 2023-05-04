@@ -6,10 +6,9 @@ import Browser.Events exposing (onAnimationFrameDelta)
 import Canvas exposing (..)
 import Dict exposing (Dict)
 import Explosions exposing (updateExplosions)
-import Game exposing (Game, mergeGame, newGame, viewGame)
+import Game exposing (Game, mergeGame, newGame)
 import GraphicsDecoder exposing (Frame, gameDecoder)
-import Html exposing (Html, div, p, text)
-import Html.Attributes exposing (style)
+import Html exposing (Html, div)
 import Json.Decode as Decode exposing (..)
 import Json.Encode as E
 
@@ -120,7 +119,7 @@ mergeGraphics state_json game =
 
 
 updateGame : Float -> Int -> Game -> Game
-updateGame msSincePreviousFrame game_id game =
+updateGame msSincePreviousFrame _ game =
     { game
         | asteroids = rotateAsteroids msSincePreviousFrame game.asteroids
         , explosions = updateExplosions msSincePreviousFrame game.explosions

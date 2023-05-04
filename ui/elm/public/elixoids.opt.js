@@ -600,11 +600,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.bv.aA === region.bH.aA)
+	if (region.bv.aA === region.bG.aA)
 	{
 		return 'on line ' + region.bv.aA;
 	}
-	return 'on lines ' + region.bv.aA + ' through ' + region.bH.aA;
+	return 'on lines ' + region.bv.aA + ' through ' + region.bG.aA;
 }
 
 
@@ -4014,9 +4014,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.b0 === next.b0
-							&& curr.bM === next.bM
-							&& curr.bZ.a === next.bZ.a
+							&& curr.b$ === next.b$
+							&& curr.bL === next.bL
+							&& curr.bY.a === next.bY.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4187,12 +4187,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		b5: _Browser_getScene(),
+		b4: _Browser_getScene(),
 		ca: {
 			aX: _Browser_window.pageXOffset,
 			aY: _Browser_window.pageYOffset,
 			cb: _Browser_doc.documentElement.clientWidth,
-			bL: _Browser_doc.documentElement.clientHeight
+			bK: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4203,7 +4203,7 @@ function _Browser_getScene()
 	var elem = _Browser_doc.documentElement;
 	return {
 		cb: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		bL: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		bK: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4226,15 +4226,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			b5: {
+			b4: {
 				cb: node.scrollWidth,
-				bL: node.scrollHeight
+				bK: node.scrollHeight
 			},
 			ca: {
 				aX: node.scrollLeft,
 				aY: node.scrollTop,
 				cb: node.clientWidth,
-				bL: node.clientHeight
+				bK: node.clientHeight
 			}
 		};
 	});
@@ -4264,18 +4264,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			b5: _Browser_getScene(),
+			b4: _Browser_getScene(),
 			ca: {
 				aX: x,
 				aY: y,
 				cb: _Browser_doc.documentElement.clientWidth,
-				bL: _Browser_doc.documentElement.clientHeight
+				bK: _Browser_doc.documentElement.clientHeight
 			},
 			co: {
 				aX: x + rect.left,
 				aY: y + rect.top,
 				cb: rect.width,
-				bL: rect.height
+				bK: rect.height
 			}
 		};
 	});
@@ -4819,7 +4819,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {bJ: fragment, bM: host, bW: path, bZ: port_, b0: protocol, b1: query};
+		return {bI: fragment, bL: host, bV: path, bY: port_, b$: protocol, b0: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5118,7 +5118,7 @@ var $elm$browser$Browser$AnimationManager$Delta = function (a) {
 };
 var $elm$browser$Browser$AnimationManager$State = F3(
 	function (subs, request, oldTime) {
-		return {be: oldTime, b3: request, b6: subs};
+		return {be: oldTime, b2: request, b5: subs};
 	});
 var $elm$browser$Browser$AnimationManager$init = $elm$core$Task$succeed(
 	A3($elm$browser$Browser$AnimationManager$State, _List_Nil, $elm$core$Maybe$Nothing, 0));
@@ -5129,7 +5129,7 @@ var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
 var $elm$core$Process$spawn = _Scheduler_spawn;
 var $elm$browser$Browser$AnimationManager$onEffects = F3(
 	function (router, subs, _v0) {
-		var request = _v0.b3;
+		var request = _v0.b2;
 		var oldTime = _v0.be;
 		var _v1 = _Utils_Tuple2(request, subs);
 		if (_v1.a.$ === 1) {
@@ -5178,7 +5178,7 @@ var $elm$time$Time$Posix = $elm$core$Basics$identity;
 var $elm$time$Time$millisToPosix = $elm$core$Basics$identity;
 var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
 	function (router, newTime, _v0) {
-		var subs = _v0.b6;
+		var subs = _v0.b5;
 		var oldTime = _v0.be;
 		var send = function (sub) {
 			if (!sub.$) {
@@ -5257,7 +5257,7 @@ var $author$project$Main$subscriptions = function (model) {
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$Main$FrameInput = F2(
 	function (id, frame) {
-		return {bK: frame, bO: id};
+		return {bJ: frame, bN: id};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
@@ -5444,7 +5444,7 @@ var $author$project$GraphicsDecoder$asteroidDecoder = A2(
 							function (r) {
 								return $elm$json$Json$Decode$succeed(
 									{
-										bO: id,
+										bN: id,
 										aS: A2(
 											$ianmackenzie$elm_geometry$Circle2d$withRadius,
 											r,
@@ -5472,7 +5472,7 @@ var $author$project$GraphicsDecoder$bulletDecoder = A2(
 					function (y) {
 						return $elm$json$Json$Decode$succeed(
 							{
-								bO: id,
+								bN: id,
 								aS: $ianmackenzie$elm_geometry$Point2d$fromCoordinates(
 									_Utils_Tuple2(x, y))
 							});
@@ -5579,7 +5579,7 @@ var $author$project$GraphicsDecoder$shipDecoder = A2(
 									function (theta) {
 										return $elm$json$Json$Decode$succeed(
 											{
-												bO: tag,
+												bN: tag,
 												aS: A2(
 													$ianmackenzie$elm_geometry$Circle2d$withRadius,
 													r,
@@ -6116,7 +6116,7 @@ var $author$project$Asteroids$newAsteroid = F2(
 			$ianmackenzie$elm_geometry$Circle2d$radius(position));
 		return {
 			a$: $author$project$Asteroids$granite,
-			bO: id,
+			bN: id,
 			bn: position,
 			bt: shape,
 			aG: A2($elm$core$Basics$modBy, 628, id)
@@ -6167,7 +6167,7 @@ var $author$project$Game$toAsteroidMap = A2(
 	$elm$core$Dict$fromList,
 	$elm$core$List$map(
 		function (a) {
-			return _Utils_Tuple2(a.bO, a);
+			return _Utils_Tuple2(a.bN, a);
 		}));
 var $author$project$Game$updateAsteroids = F2(
 	function (asteroids, game_asteroids) {
@@ -6208,7 +6208,7 @@ var $joakin$elm_canvas$Canvas$circle = F2(
 var $author$project$Bullets$newBullet = F2(
 	function (id, position) {
 		return {
-			bO: id,
+			bN: id,
 			bn: position,
 			bt: A2(
 				$joakin$elm_canvas$Canvas$circle,
@@ -6236,7 +6236,7 @@ var $author$project$Bullets$mergeBullets = F2(
 						A2($author$project$Bullets$bulletAndTail, f, b));
 				}),
 			F2(
-				function (id, _v0) {
+				function (_v0, _v1) {
 					return $elm$core$Basics$identity;
 				}),
 			graphics_bullets,
@@ -6248,7 +6248,7 @@ var $author$project$Game$toBulletMap = A2(
 	$elm$core$Dict$fromList,
 	$elm$core$List$map(
 		function (a) {
-			return _Utils_Tuple2(a.bO, a);
+			return _Utils_Tuple2(a.bN, a);
 		}));
 var $author$project$Game$updateBullets = F2(
 	function (bullets, game_bullets) {
@@ -6378,11 +6378,11 @@ var $author$project$Ships$newShip = F3(
 		var lineWidth = _v0.b;
 		return {
 			a$: A3($avh4$elm_color$Color$rgb255, 251, 255, 251),
-			bO: id,
+			bN: id,
 			a9: lineWidth,
 			bn: position,
 			bt: shape,
-			by: A4($avh4$elm_color$Color$rgba, 1, 1, 1, 0.8),
+			b6: A4($avh4$elm_color$Color$rgba, 1, 1, 1, 0.8),
 			aG: theta
 		};
 	});
@@ -6419,7 +6419,7 @@ var $author$project$Game$toShipMap = A2(
 	$elm$core$Dict$fromList,
 	$elm$core$List$map(
 		function (a) {
-			return _Utils_Tuple2(a.bO, a);
+			return _Utils_Tuple2(a.bN, a);
 		}));
 var $author$project$Game$updateShips = F2(
 	function (ships, game_ships) {
@@ -6454,11 +6454,11 @@ var $author$project$Main$handleFrame = F2(
 		var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$frameInputDecoder, framev);
 		if (!_v0.$) {
 			var frame = _v0.a;
-			var _v1 = A2($elm$core$Dict$get, frame.bO, games);
+			var _v1 = A2($elm$core$Dict$get, frame.bN, games);
 			if (!_v1.$) {
 				var game = _v1.a;
-				var next_game = A2($author$project$Main$mergeGraphics, frame.bK, game);
-				var next_games = A3($elm$core$Dict$insert, frame.bO, next_game, games);
+				var next_game = A2($author$project$Main$mergeGraphics, frame.bJ, game);
+				var next_games = A3($elm$core$Dict$insert, frame.bN, next_game, games);
 				return $author$project$Main$cmdNone(next_games);
 			} else {
 				return $author$project$Main$cmdNone(games);
@@ -6512,7 +6512,7 @@ var $author$project$Game$newGame = function (dims) {
 };
 var $author$project$Main$NewGameInput = F3(
 	function (id, width, height) {
-		return {bL: height, bO: id, cb: width};
+		return {bK: height, bN: id, cb: width};
 	});
 var $elm$json$Json$Decode$map3 = _Json_map3;
 var $author$project$Main$newGameInputDecoder = A4(
@@ -6565,7 +6565,7 @@ var $author$project$Explosions$updateExplosions = function (msSincePreviousFrame
 			$author$project$Explosions$updateExplosion(msSincePreviousFrame)));
 };
 var $author$project$Main$updateGame = F3(
-	function (msSincePreviousFrame, game_id, game) {
+	function (msSincePreviousFrame, _v0, game) {
 		return _Utils_update(
 			game,
 			{
@@ -6594,9 +6594,9 @@ var $author$project$Main$update = F2(
 					return $author$project$Main$cmdNone(
 						A3(
 							$elm$core$Dict$insert,
-							g.bO,
+							g.bN,
 							$author$project$Game$newGame(
-								_Utils_Tuple2(g.cb, g.bL)),
+								_Utils_Tuple2(g.cb, g.bK)),
 							games));
 				} else {
 					return $author$project$Main$cmdNone(games);
@@ -7196,7 +7196,7 @@ var $joakin$elm_canvas$Canvas$text = F3(
 				H: _List_Nil,
 				ad: $joakin$elm_canvas$Canvas$Internal$Canvas$NotSpecified,
 				ae: $joakin$elm_canvas$Canvas$Internal$Canvas$DrawableText(
-					{ba: $elm$core$Maybe$Nothing, bY: point, bz: str})
+					{ba: $elm$core$Maybe$Nothing, bX: point, by: str})
 			});
 	});
 var $elm$core$String$trim = _String_trim;
@@ -7206,15 +7206,14 @@ var $author$project$Ships$trimTag = A2(
 	$elm$core$String$trim);
 var $author$project$Ships$renderTag = F2(
 	function (tf, ship) {
-		var _v0 = ship.bO;
+		var _v0 = ship.bN;
 		if (_v0 === 'SČR') {
 			return _List_Nil;
 		} else {
 			var tagTheta = $author$project$Ships$offset90deg(ship.aG);
 			var tagDY = $author$project$Ships$tagOffset(
 				$ianmackenzie$elm_geometry$Circle2d$radius(ship.bn));
-			var tag = $author$project$Ships$trimTag(ship.bO);
-			var color = ship.by;
+			var tag = $author$project$Ships$trimTag(ship.bN);
 			var _v1 = $ianmackenzie$elm_geometry$Point2d$coordinates(
 				$ianmackenzie$elm_geometry$Circle2d$centerPoint(ship.bn));
 			var x = _v1.a;
@@ -7633,7 +7632,7 @@ var $joakin$elm_canvas$Canvas$renderTextFill = F5(
 	function (txt, x, y, color, cmds) {
 		return A2(
 			$elm$core$List$cons,
-			A4($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$fillText, txt.bz, x, y, txt.ba),
+			A4($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$fillText, txt.by, x, y, txt.ba),
 			A2(
 				$elm$core$List$cons,
 				$joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$fillStyle(color),
@@ -7669,7 +7668,7 @@ var $joakin$elm_canvas$Canvas$renderTextStroke = F5(
 	function (txt, x, y, color, cmds) {
 		return A2(
 			$elm$core$List$cons,
-			A4($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$strokeText, txt.bz, x, y, txt.ba),
+			A4($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$strokeText, txt.by, x, y, txt.ba),
 			A2(
 				$elm$core$List$cons,
 				$joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$strokeStyle(color),
@@ -7677,7 +7676,7 @@ var $joakin$elm_canvas$Canvas$renderTextStroke = F5(
 	});
 var $joakin$elm_canvas$Canvas$renderTextDrawOp = F3(
 	function (drawOp, txt, cmds) {
-		var _v0 = txt.bY;
+		var _v0 = txt.bX;
 		var x = _v0.a;
 		var y = _v0.b;
 		switch (drawOp.$) {
@@ -7730,11 +7729,11 @@ var $joakin$elm_canvas$Canvas$Internal$Texture$drawTexture = F4(
 			function () {
 				if (!t.$) {
 					var image = t.a;
-					return A9($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$drawImage, 0, 0, image.cb, image.bL, x, y, image.cb, image.bL, image.cA);
+					return A9($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$drawImage, 0, 0, image.cb, image.bK, x, y, image.cb, image.bK, image.cA);
 				} else {
 					var sprite = t.a;
 					var image = t.b;
-					return A9($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$drawImage, sprite.aX, sprite.aY, sprite.cb, sprite.bL, x, y, sprite.cb, sprite.bL, image.cA);
+					return A9($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$drawImage, sprite.aX, sprite.aY, sprite.cb, sprite.bK, x, y, sprite.cb, sprite.bK, image.cA);
 				}
 			}(),
 			cmds);
@@ -7808,7 +7807,7 @@ var $joakin$elm_canvas$Canvas$decodeTextureImageInfo = A2(
 			$elm$json$Json$Decode$map2,
 			F2(
 				function (width, height) {
-					return {bL: height, cA: target, cb: width};
+					return {bK: height, cA: target, cb: width};
 				}),
 			A2(
 				$elm$json$Json$Decode$at,
@@ -7895,7 +7894,7 @@ var $joakin$elm_canvas$Canvas$toHtmlWith = F3(
 					$joakin$elm_canvas$Canvas$render(entities)),
 				A2(
 					$elm$core$List$cons,
-					$elm$html$Html$Attributes$height(options.bL),
+					$elm$html$Html$Attributes$height(options.bK),
 					A2(
 						$elm$core$List$cons,
 						$elm$html$Html$Attributes$width(options.cb),
@@ -7911,7 +7910,7 @@ var $joakin$elm_canvas$Canvas$toHtml = F3(
 		var h = _v0.b;
 		return A3(
 			$joakin$elm_canvas$Canvas$toHtmlWith,
-			{bL: h, b8: _List_Nil, cb: w},
+			{bK: h, b8: _List_Nil, cb: w},
 			attrs,
 			entities);
 	});
