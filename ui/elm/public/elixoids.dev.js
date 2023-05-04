@@ -5631,6 +5631,23 @@ var $elm$core$List$append = F2(
 			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
 		}
 	});
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$Explosions$modSamples = $elm$core$Basics$modBy(7);
+var $author$project$Audio$newAudioExplosion = function (index) {
+	return {index: index, name: 'explosion', pan: 0.0};
+};
+var $elm$core$Basics$truncate = _Basics_truncate;
+var $ianmackenzie$elm_geometry$Point2d$xCoordinate = function (_v0) {
+	var _v1 = _v0.a;
+	var x = _v1.a;
+	return x;
+};
+var $author$project$Explosions$explosionAudio = function (e) {
+	var x = $ianmackenzie$elm_geometry$Point2d$xCoordinate(e.position);
+	var index = $author$project$Explosions$modSamples(
+		$elm$core$Basics$abs(x) | 0);
+	return $author$project$Audio$newAudioExplosion(index);
+};
 var $author$project$Explosions$explosionDurationMS = 100;
 var $avh4$elm_color$Color$RgbaSpace = F4(
 	function (a, b, c, d) {
@@ -5653,7 +5670,6 @@ var $avh4$elm_color$Color$hsla = F4(
 		var r = hueToRgb(h + (1 / 3));
 		return A4($avh4$elm_color$Color$RgbaSpace, r, g, b, alpha);
 	});
-var $elm$core$Basics$modBy = _Basics_modBy;
 var $avh4$elm_color$Color$rgba = F4(
 	function (r, g, b, a) {
 		return A4($avh4$elm_color$Color$RgbaSpace, r, g, b, a);
@@ -5673,7 +5689,6 @@ var $author$project$Explosions$pickColor = function (n) {
 			return A4($avh4$elm_color$Color$rgba, 1, 1, 1, 0.95);
 	}
 };
-var $elm$core$Basics$truncate = _Basics_truncate;
 var $author$project$Explosions$newExplosion = function (p) {
 	var _v0 = $ianmackenzie$elm_geometry$Point2d$coordinates(p);
 	var x = _v0.a;
@@ -5685,13 +5700,6 @@ var $author$project$Explosions$newExplosion = function (p) {
 		ttl: $author$project$Explosions$explosionDurationMS
 	};
 };
-var $author$project$Game$appendExplosions = F2(
-	function (new_explosions, explosions) {
-		return A2(
-			$elm$core$List$append,
-			explosions,
-			A2($elm$core$List$map, $author$project$Explosions$newExplosion, new_explosions));
-	});
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
@@ -6432,7 +6440,7 @@ var $author$project$Game$mergeShips = F2(
 							{position: a.location, theta: a.theta}));
 				}),
 			F2(
-				function (id, _v0) {
+				function (_v0, _v1) {
 					return $elm$core$Basics$identity;
 				}),
 			graphics_ships,
@@ -6455,12 +6463,14 @@ var $author$project$Game$updateShips = F2(
 	});
 var $author$project$Game$mergeGame = F2(
 	function (frame, game) {
+		var new_explosions = A2($elm$core$List$map, $author$project$Explosions$newExplosion, frame.explosions);
+		var _v0 = A2($elm$core$List$map, $author$project$Explosions$explosionAudio, new_explosions);
 		return _Utils_update(
 			game,
 			{
 				asteroids: A2($author$project$Game$updateAsteroids, frame.asteroids, game.asteroids),
 				bullets: A2($author$project$Game$updateBullets, frame.bullets, game.bullets),
-				explosions: A2($author$project$Game$appendExplosions, frame.explosions, game.explosions),
+				explosions: A2($elm$core$List$append, game.explosions, new_explosions),
 				ships: A2($author$project$Game$updateShips, frame.ships, game.ships)
 			});
 	});

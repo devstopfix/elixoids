@@ -1,14 +1,15 @@
 module Game exposing (Game, mergeGame, newGame, viewGame)
 
 import Asteroids exposing (..)
+import Audio exposing (Audio)
 import Bullets exposing (..)
 import Canvas exposing (..)
-import Canvas.Settings exposing (fill, stroke)
+import Canvas.Settings exposing (fill)
 import Canvas.Settings.Advanced exposing (Transform, applyMatrix, rotate, transform, translate)
 import Circle2d exposing (Circle2d, withRadius)
 import Color exposing (Color)
 import Dict exposing (Dict)
-import Explosions exposing (Explosion, newExplosion, renderExplosion)
+import Explosions exposing (Explosion, explosionAudio, newExplosion, renderExplosion)
 import GraphicsDecoder exposing (..)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
@@ -32,6 +33,7 @@ type alias Game =
     }
 
 
+gameDimensions : (Float, Float)
 gameDimensions =
     ( 4000.0, 2250.0 )
 
@@ -126,20 +128,21 @@ renderShips tf =
 
 mergeGame : Frame -> Game -> Game
 mergeGame frame game =
+    let
+        new_explosions = 
+            List.map newExplosion frame.explosions
+        _ = 
+            List.map explosionAudio new_explosions
+    in
     { game
         | asteroids = updateAsteroids frame.asteroids game.asteroids
         , bullets = updateBullets frame.bullets game.bullets
-        , explosions = appendExplosions frame.explosions game.explosions
+        , explosions = List.append game.explosions new_explosions
         , ships = updateShips frame.ships game.ships
     }
 
 
-appendExplosions new_explosions explosions =
-    List.append
-        explosions
-        (List.map newExplosion new_explosions)
-
-
+updateAsteroids : List AsteroidLocation -> Dict Int Asteroid -> Dict Int Asteroid
 updateAsteroids asteroids game_asteroids =
     mergeAsteroids (toAsteroidMap asteroids) game_asteroids
 
@@ -159,6 +162,7 @@ updateBullets bullets game_bullets =
     mergeBullets (toBulletMap bullets) game_bullets
 
 
+updateShips : List ShipLocation -> Dict String Ship -> Dict String Ship
 updateShips ships game_ships =
     mergeShips (toShipMap ships) game_ships
 
@@ -168,7 +172,7 @@ mergeShips graphics_ships game_ships =
     Dict.merge
         (\id a -> Dict.insert id (newShip id a.location a.theta))
         (\id a b -> Dict.insert id { b | position = a.location, theta = a.theta })
-        (\id _ -> identity)
+        (\_ _ -> identity)
         graphics_ships
         game_ships
         Dict.empty
