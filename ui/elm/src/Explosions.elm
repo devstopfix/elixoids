@@ -94,7 +94,7 @@ explosionDurationMS =
 
 modSamples : Int -> Int
 modSamples =
-    modBy 8
+    modBy 7
 
 
 explosionAudio : Explosion -> Audio
