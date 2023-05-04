@@ -1,10 +1,11 @@
-module Explosions exposing (Explosion, newExplosion, renderExplosion, updateExplosions)
+module Explosions exposing (Explosion, explosionAudio, newExplosion, renderExplosion, updateExplosions)
 
+import Audio exposing (Audio, newAudioExplosion)
 import Canvas exposing (..)
 import Canvas.Settings exposing (fill, stroke)
-import Canvas.Settings.Advanced exposing (Transform, rotate, transform, translate)
+import Canvas.Settings.Advanced exposing (Transform, transform, translate)
 import Color exposing (Color)
-import Point2d exposing (Point2d, coordinates)
+import Point2d exposing (Point2d, coordinates, xCoordinate)
 
 
 type alias Radius =
@@ -41,6 +42,7 @@ updateExplosion msSincePreviousFrame explosion =
     }
 
 
+isActive : { a | ttl : number } -> Bool
 isActive explosion =
     explosion.ttl > 0
 
@@ -80,9 +82,25 @@ pickColor n =
 
 {-| At 60 FPS explosion is shown for 6 frames. 1.07^6 == x1.5 growth
 -}
+explosionExpansion : Float
 explosionExpansion =
     1.07
 
 
+explosionDurationMS : number
 explosionDurationMS =
     100
+
+
+modSamples : Int -> Int
+modSamples =
+    modBy 8
+
+
+explosionAudio : Explosion -> Audio
+explosionAudio e =
+    let
+        x = (xCoordinate e.position)
+        index = modSamples (truncate (abs x))
+    in
+        newAudioExplosion index
