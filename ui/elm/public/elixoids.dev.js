@@ -6474,6 +6474,49 @@ var $author$project$Main$mergeGraphics = F2(
 			return game;
 		}
 	});
+var $elm$json$Json$Encode$float = _Json_wrap;
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Main$playAudio = _Platform_outgoingPort(
+	'playAudio',
+	$elm$json$Json$Encode$list(
+		function ($) {
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'index',
+						$elm$json$Json$Encode$int($.index)),
+						_Utils_Tuple2(
+						'name',
+						$elm$json$Json$Encode$string($.name)),
+						_Utils_Tuple2(
+						'pan',
+						$elm$json$Json$Encode$float($.pan))
+					]));
+		}));
 var $author$project$Main$handleFrame = F2(
 	function (framev, games) {
 		var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$frameInputDecoder, framev);
@@ -6484,7 +6527,9 @@ var $author$project$Main$handleFrame = F2(
 				var game = _v1.a;
 				var next_game = A2($author$project$Main$mergeGraphics, frame.frame, game);
 				var next_games = A3($elm$core$Dict$insert, frame.id, next_game, games);
-				return $author$project$Main$cmdNone(next_games);
+				return _Utils_Tuple2(
+					next_games,
+					$author$project$Main$playAudio(_List_Nil));
 			} else {
 				return $author$project$Main$cmdNone(games);
 			}
@@ -6657,20 +6702,6 @@ var $avh4$elm_color$Color$gray = A4($avh4$elm_color$Color$RgbaSpace, 211 / 255, 
 var $joakin$elm_canvas$Canvas$Internal$Canvas$SettingCommand = function (a) {
 	return {$: 'SettingCommand', a: a};
 };
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$field = F2(
 	function (name, value) {
 		return $elm$json$Json$Encode$object(
@@ -6685,7 +6716,6 @@ var $joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$field = F2(
 					_Utils_Tuple2('value', value)
 				]));
 	});
-var $elm$json$Json$Encode$float = _Json_wrap;
 var $joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$lineWidth = function (value) {
 	return A2(
 		$joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$field,
@@ -6835,15 +6865,6 @@ var $joakin$elm_canvas$Canvas$Settings$stroke = function (color) {
 var $joakin$elm_canvas$Canvas$Internal$Canvas$SettingCommands = function (a) {
 	return {$: 'SettingCommands', a: a};
 };
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
 var $joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$fn = F2(
 	function (name, args) {
 		return $elm$json$Json$Encode$object(

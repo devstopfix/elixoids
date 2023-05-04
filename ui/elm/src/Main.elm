@@ -1,15 +1,15 @@
 port module Main exposing (main)
 
 import Asteroids exposing (rotateAsteroids)
+import Audio exposing (Audio)
 import Browser
 import Browser.Events exposing (onAnimationFrameDelta)
 import Canvas exposing (..)
 import Dict exposing (Dict)
 import Explosions exposing (updateExplosions)
-import Game exposing (Game, mergeGame, newGame, viewGame)
+import Game exposing (Game, mergeGame, newGame)
 import GraphicsDecoder exposing (Frame, gameDecoder)
-import Html exposing (Html, div, p, text)
-import Html.Attributes exposing (style)
+import Html exposing (Html, div)
 import Json.Decode as Decode exposing (..)
 import Json.Encode as E
 
@@ -18,6 +18,9 @@ port graphicsIn : (E.Value -> msg) -> Sub msg
 
 
 port addGame : (E.Value -> msg) -> Sub msg
+
+
+port playAudio : List Audio -> Cmd msg
 
 
 type alias FrameInput =
@@ -101,7 +104,7 @@ handleFrame framev games =
                         next_games=
                             Dict.insert frame.id next_game games
                     in
-                        cmdNone next_games
+                        (next_games, playAudio [])
 
                 _ ->
                     cmdNone games
