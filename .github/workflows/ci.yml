@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        otp: ['24.3', '25.2']
+        otp: ['24.3', '25.3']
         elixir: ['1.14.4', '1.13.4']
     steps:
       - uses: actions/checkout@v3
@@ -22,4 +22,4 @@ jobs:
       - name: "Check formatted?"
         run: mix format mix.exs "examples/*.exs" "lib/**/*.{ex,exs}" "test/**/*.exs" --check-formatted
         if: ${{ startsWith(matrix.elixir, '1.14') }}
-      - run: mix test --include large --include fuzz --exclude gnuplot --exclude bullet
+      - run: mix test --exclude gnuplot --exclude bullet
