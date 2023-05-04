@@ -49,6 +49,6 @@ function playExplosion(audio) {
     gainFadeOut.gain.setValueAtTime(gainFadeOut.gain.value - 0.2, fxAudioContext.currentTime);
     source.connect(gainFadeOut)
     gainFadeOut.connect(fxAudioContext.destination);
-    gainFadeOut.gain.exponentialRampToValueAtTime(0.01, fxAudioContext.currentTime + 4);
+    gainFadeOut.gain.exponentialRampToValueAtTime(0.01, fxAudioContext.currentTime + 2);
     source.start();
 }

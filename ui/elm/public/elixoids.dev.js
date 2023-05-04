@@ -6480,11 +6480,9 @@ var $author$project$Main$mergeGraphics = F2(
 		var _v0 = A2($elm$json$Json$Decode$decodeString, $author$project$GraphicsDecoder$gameDecoder, state_json);
 		if (_v0.$ === 'Ok') {
 			var frame = _v0.a;
-			var _v1 = A2($author$project$Game$mergeGame, frame, game);
-			var new_game = _v1.a;
-			return new_game;
+			return A2($author$project$Game$mergeGame, frame, game);
 		} else {
-			return game;
+			return _Utils_Tuple2(game, _List_Nil);
 		}
 	});
 var $elm$json$Json$Encode$float = _Json_wrap;
@@ -6538,11 +6536,13 @@ var $author$project$Main$handleFrame = F2(
 			var _v1 = A2($elm$core$Dict$get, frame.id, games);
 			if (_v1.$ === 'Just') {
 				var game = _v1.a;
-				var next_game = A2($author$project$Main$mergeGraphics, frame.frame, game);
+				var _v2 = A2($author$project$Main$mergeGraphics, frame.frame, game);
+				var next_game = _v2.a;
+				var audio = _v2.b;
 				var next_games = A3($elm$core$Dict$insert, frame.id, next_game, games);
 				return _Utils_Tuple2(
 					next_games,
-					$author$project$Main$playAudio(_List_Nil));
+					$author$project$Main$playAudio(audio));
 			} else {
 				return $author$project$Main$cmdNone(games);
 			}
