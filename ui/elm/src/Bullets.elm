@@ -88,11 +88,11 @@ bulletAndTail f b =
 
 
 tailColor =
-    Color.hsl (199 / 360) 0.96 0.82
+    Color.hsl (300 / 360) 0.96 0.82
 
 
 warheadColor =
-    Color.hsl (199 / 360) 0.96 0.9
+    Color.hsl (300 / 360) 0.96 0.9
 
 
 longestTail =

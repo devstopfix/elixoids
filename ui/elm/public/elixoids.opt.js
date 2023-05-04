@@ -7009,7 +7009,7 @@ var $avh4$elm_color$Color$hsl = F3(
 	function (h, s, l) {
 		return A4($avh4$elm_color$Color$hsla, h, s, l, 1.0);
 	});
-var $author$project$Bullets$tailColor = A3($avh4$elm_color$Color$hsl, 199 / 360, 0.96, 0.82);
+var $author$project$Bullets$tailColor = A3($avh4$elm_color$Color$hsl, 300 / 360, 0.96, 0.82);
 var $author$project$Bullets$renderTail = F2(
 	function (tf, bullet) {
 		return A2(
@@ -7045,7 +7045,7 @@ var $author$project$Bullets$renderTail = F2(
 			},
 			bullet.aE);
 	});
-var $author$project$Bullets$warheadColor = A3($avh4$elm_color$Color$hsl, 199 / 360, 0.96, 0.9);
+var $author$project$Bullets$warheadColor = A3($avh4$elm_color$Color$hsl, 300 / 360, 0.96, 0.9);
 var $author$project$Bullets$renderWarhead = F2(
 	function (tf, bullet) {
 		var _v0 = $ianmackenzie$elm_geometry$Point2d$coordinates(bullet.bm);
