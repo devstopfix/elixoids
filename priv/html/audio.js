@@ -5,12 +5,14 @@ function toggleSound() {
         initFX();
     } else {
         fxAudioContext = undefined;
+        document.getElementById('toggle_audio').innerText = "AUDIO";
     }
 }
 
 function initFX() {
     try {
         fxAudioContext = new AudioContext();
+        document.getElementById('toggle_audio').innerText = "AUDIO 🔉";
         var root = [window.location.protocol, window.location.host].join('//');
         for (var i = 1; i <= 7; i++) {
             var url = [root, 'audio', 'explosion', i + '.mp3'].join('/');
@@ -19,6 +21,7 @@ function initFX() {
         return true;
     }
     catch (e) {
+        document.getElementById('toggle_audio').innerText = "AUDIO \u274c";
         console.error('Web Audio API is not supported in this browser');
         console.error(e)
         return false;
