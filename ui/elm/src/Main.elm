@@ -33,6 +33,7 @@ type alias NewGameInput =
     }
 
 
+-- Model is a map of game number to game allowing us to render multiple games
 type alias Model =
     Dict Int Game
 
@@ -77,8 +78,7 @@ update msg games =
                 (Dict.map (updateGame msSincePreviousFrame) games)
 
         GraphicsIn frame_json ->
-            cmdNone
-                (handleFrame frame_json games)
+            (handleFrame frame_json games)
 
         AddGame input ->
             case Decode.decodeValue newGameInputDecoder input of
@@ -89,14 +89,24 @@ update msg games =
                     cmdNone games
 
 
-handleFrame : E.Value -> Model -> Model
+handleFrame : E.Value -> Model -> ( Model, Cmd Msg )
 handleFrame framev games =
     case Decode.decodeValue frameInputDecoder framev of
         Ok frame ->
-            Dict.update frame.id (Maybe.map (mergeGraphics frame.frame)) games
+            case Dict.get frame.id games of
+                Just game ->
+                    let
+                        next_game =
+                            mergeGraphics frame.frame game
+                        next_games=
+                            Dict.insert frame.id next_game games
+                    in
+                        cmdNone next_games
 
+                _ ->
+                    cmdNone games
         Err _ ->
-            games
+            cmdNone games
 
 
 mergeGraphics : String -> Game -> Game
