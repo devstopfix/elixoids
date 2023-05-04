@@ -6439,8 +6439,7 @@ var $author$project$Game$updateShips = F2(
 var $author$project$Game$mergeGame = F2(
 	function (frame, game) {
 		var new_explosions = A2($elm$core$List$map, $author$project$Explosions$newExplosion, frame.ag);
-		var _v0 = A2($elm$core$List$map, $author$project$Explosions$explosionAudio, new_explosions);
-		return _Utils_update(
+		var next_game = _Utils_update(
 			game,
 			{
 				aa: A2($author$project$Game$updateAsteroids, frame.aa, game.aa),
@@ -6448,13 +6447,17 @@ var $author$project$Game$mergeGame = F2(
 				ag: A2($elm$core$List$append, game.ag, new_explosions),
 				U: A2($author$project$Game$updateShips, frame.U, game.U)
 			});
+		var audio_explosions = A2($elm$core$List$map, $author$project$Explosions$explosionAudio, new_explosions);
+		return _Utils_Tuple2(next_game, audio_explosions);
 	});
 var $author$project$Main$mergeGraphics = F2(
 	function (state_json, game) {
 		var _v0 = A2($elm$json$Json$Decode$decodeString, $author$project$GraphicsDecoder$gameDecoder, state_json);
 		if (!_v0.$) {
 			var frame = _v0.a;
-			return A2($author$project$Game$mergeGame, frame, game);
+			var _v1 = A2($author$project$Game$mergeGame, frame, game);
+			var new_game = _v1.a;
+			return new_game;
 		} else {
 			return game;
 		}
@@ -6620,7 +6623,7 @@ var $author$project$Explosions$updateExplosions = function (msSincePreviousFrame
 			$author$project$Explosions$updateExplosion(msSincePreviousFrame)));
 };
 var $author$project$Main$updateGame = F3(
-	function (msSincePreviousFrame, game_id, game) {
+	function (msSincePreviousFrame, _v0, game) {
 		return _Utils_update(
 			game,
 			{

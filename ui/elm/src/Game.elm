@@ -1,4 +1,4 @@
-module Game exposing (Game, mergeGame, newGame, viewGame)
+module Game exposing (Game, GameAudio, mergeGame, newGame, viewGame)
 
 import Asteroids exposing (..)
 import Audio exposing (Audio)
@@ -31,6 +31,10 @@ type alias Game =
     , spaceColor : Color
     , transform : Transform
     }
+
+
+type alias GameAudio =
+    (Game, List Audio)
 
 
 gameDimensions : (Float, Float)
@@ -126,20 +130,22 @@ renderShips tf =
     List.map (renderShip tf)
 
 
-mergeGame : Frame -> Game -> Game
+mergeGame : Frame -> Game -> GameAudio
 mergeGame frame game =
     let
         new_explosions = 
             List.map newExplosion frame.explosions
-        _ = 
+        audio_explosions = 
             List.map explosionAudio new_explosions
+        next_game = 
+            { game
+                | asteroids = updateAsteroids frame.asteroids game.asteroids
+                , bullets = updateBullets frame.bullets game.bullets
+                , explosions = List.append game.explosions new_explosions
+                , ships = updateShips frame.ships game.ships
+            }
     in
-    { game
-        | asteroids = updateAsteroids frame.asteroids game.asteroids
-        , bullets = updateBullets frame.bullets game.bullets
-        , explosions = List.append game.explosions new_explosions
-        , ships = updateShips frame.ships game.ships
-    }
+        (next_game, audio_explosions)
 
 
 updateAsteroids : List AsteroidLocation -> Dict Int Asteroid -> Dict Int Asteroid
