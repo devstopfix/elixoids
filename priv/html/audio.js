@@ -40,14 +40,16 @@ function loadSoundBuffer(url, target) {
     request.send();
 }
 
-function playExplosion(audio) {
-    var index = (audio.index || 0) % fxAudioBuffers.explosion.length;
-    var source = fxAudioContext.createBufferSource();
-    source.buffer = fxAudioBuffers.explosion[index];
-    var gainFadeOut = fxAudioContext.createGain();
-    gainFadeOut.gain.setValueAtTime(gainFadeOut.gain.value - 0.2, fxAudioContext.currentTime);
-    source.connect(gainFadeOut)
-    gainFadeOut.connect(fxAudioContext.destination);
-    gainFadeOut.gain.exponentialRampToValueAtTime(0.01, fxAudioContext.currentTime + 4);
-    source.start();
+function playExplosion(audio, buffers) {
+    if (buffers.length > 0) {
+        var index = (audio.index || 0) % buffers.length;
+        var source = fxAudioContext.createBufferSource();
+        source.buffer = fxAudioBuffers.explosion[index];
+        var gainFadeOut = fxAudioContext.createGain();
+        gainFadeOut.gain.setValueAtTime(gainFadeOut.gain.value - 0.2, fxAudioContext.currentTime);
+        source.connect(gainFadeOut)
+        gainFadeOut.connect(fxAudioContext.destination);
+        gainFadeOut.gain.exponentialRampToValueAtTime(0.01, fxAudioContext.currentTime + 2);
+        source.start();
+    }
 }
