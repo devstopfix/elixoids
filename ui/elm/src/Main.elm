@@ -99,12 +99,12 @@ handleFrame framev games =
             case Dict.get frame.id games of
                 Just game ->
                     let
-                        next_game =
+                        (next_game, audio) =
                             mergeGraphics frame.frame game
                         next_games=
                             Dict.insert frame.id next_game games
                     in
-                        (next_games, playAudio [])
+                        (next_games, playAudio audio)
 
                 _ ->
                     cmdNone games
@@ -112,16 +112,13 @@ handleFrame framev games =
             cmdNone games
 
 
-mergeGraphics : String -> Game -> Game
+mergeGraphics : String -> Game -> GameAudio
 mergeGraphics state_json game =
     case Decode.decodeString gameDecoder state_json of
         Ok frame ->
-            let
-                (new_game, _) = mergeGame frame game
-            in
-                new_game
+            mergeGame frame game
         Err _ ->
-            game
+            (game, [])
 
 
 updateGame : Float -> Int -> Game -> Game
