@@ -5,16 +5,13 @@ import Audio exposing (Audio)
 import Bullets exposing (..)
 import Canvas exposing (..)
 import Canvas.Settings exposing (fill)
-import Canvas.Settings.Advanced exposing (Transform, applyMatrix, rotate, transform, translate)
-import Circle2d exposing (Circle2d, withRadius)
+import Canvas.Settings.Advanced exposing (Transform, applyMatrix)
 import Color exposing (Color)
 import Dict exposing (Dict)
 import Explosions exposing (Explosion, explosionAudio, newExplosion, renderExplosion)
 import GraphicsDecoder exposing (..)
 import Html exposing (Html)
-import Html.Attributes exposing (style)
 import List.FlatMap exposing (flatMap)
-import Point2d exposing (origin)
 import Ships exposing (..)
 
 
@@ -110,22 +107,27 @@ renderSpace game =
     ]
 
 
+renderAsteroids : Transform -> List Asteroid -> List Renderable
 renderAsteroids tf =
     List.map (renderAsteroid tf)
 
 
+renderBullets : Transform -> List Bullet -> List Renderable
 renderBullets tf =
     flatMap (renderBullet tf)
 
 
+renderExplosions : Transform -> List Explosion -> List Renderable
 renderExplosions tf =
     List.map (renderExplosion tf)
 
 
+renderTags : Transform -> List Ship -> List Renderable
 renderTags tf =
     flatMap (renderTag tf)
 
 
+renderShips : Transform -> List Ship -> List Renderable
 renderShips tf =
     List.map (renderShip tf)
 
@@ -158,7 +160,7 @@ mergeAsteroids graphics_asteroids game_asteroids =
     Dict.merge
         (\id a -> Dict.insert id (newAsteroid id a.location))
         (\id a b -> Dict.insert id { b | position = a.location })
-        (\id _ -> identity)
+        (\_ _ -> identity)
         graphics_asteroids
         game_asteroids
         Dict.empty
