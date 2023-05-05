@@ -137,8 +137,17 @@ mergeGame frame game =
     let
         new_explosions = 
             List.map newExplosion frame.explosions
-        audio_explosions = 
+        audio_explosions =        
             List.map explosionAudio new_explosions
+
+        bullet_audio = 
+            []
+            -- List.map bulletAudio (List.take 1 frame.bullets)
+            -- TODO we get a list of all bullets to draw!!
+
+        audio = 
+            bullet_audio ++ audio_explosions
+
         next_game = 
             { game
                 | asteroids = updateAsteroids frame.asteroids game.asteroids
@@ -147,7 +156,7 @@ mergeGame frame game =
                 , ships = updateShips frame.ships game.ships
             }
     in
-        (next_game, audio_explosions)
+        (next_game, audio)
 
 
 updateAsteroids : List AsteroidLocation -> Dict Int Asteroid -> Dict Int Asteroid

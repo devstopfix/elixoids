@@ -6472,8 +6472,10 @@ var $author$project$Game$mergeGame = F2(
 				explosions: A2($elm$core$List$append, game.explosions, new_explosions),
 				ships: A2($author$project$Game$updateShips, frame.ships, game.ships)
 			});
+		var bullet_audio = _List_Nil;
 		var audio_explosions = A2($elm$core$List$map, $author$project$Explosions$explosionAudio, new_explosions);
-		return _Utils_Tuple2(next_game, audio_explosions);
+		var audio = _Utils_ap(bullet_audio, audio_explosions);
+		return _Utils_Tuple2(next_game, audio);
 	});
 var $author$project$Main$mergeGraphics = F2(
 	function (state_json, game) {

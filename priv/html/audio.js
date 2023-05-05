@@ -64,27 +64,28 @@ function playExplosion(audio, buffers) {
     }
 }
 
-function playShot(audio, buffers) {
-    if (buffer.length > 0) {
+function playShot(audio, buffers, context) {
+    if (buffers.length > 0) {
         var index = (audio.index || 0) % buffers.length;
-        var source = fxAudioContext.createBufferSource();
+        var source = context.createBufferSource();
         source.buffer = buffers[index];
-        var gainFadeOut = fxAudioContext.createGain();
-        gainFadeOut.gain.setValueAtTime(gainFadeOut.gain.value - 0.2, fxAudioContext.currentTime);
+        var gainFadeOut = context.createGain();
+        gainFadeOut.gain.setValueAtTime(gainFadeOut.gain.value - 0.2, context.currentTime);
         source.connect(gainFadeOut)
-        gainFadeOut.connect(fxAudioContext.destination);
-        gainFadeOut.gain.exponentialRampToValueAtTime(0.01, fxAudioContext.currentTime + 0.5);
+        gainFadeOut.connect(context.destination);
+        gainFadeOut.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
         source.start();
     }
 }
 
-function playSound(audio) {
+function playSound(audio, context) {
+    console.log(audio)
     switch(audio.name) {
         case "explosion":
           playExplosion(audio, fxAudioBuffers.explosion);
           break;
         case "bullet":
-          playShot(audio, fxAudioBuffers.bullet);
+          playShot(audio, fxAudioBuffers.bullet, context);
           break;
       }
 }

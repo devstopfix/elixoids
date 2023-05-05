@@ -1,11 +1,13 @@
-module Bullets exposing (Bullet, mergeBullets, newBullet, renderBullet)
+module Bullets exposing (Bullet, bulletAudio, mergeBullets, newBullet, renderBullet)
 
+import Audio exposing (Audio, newBulletExplosion)
 import Canvas exposing (..)
 import Canvas.Settings exposing (fill, stroke)
 import Canvas.Settings.Advanced exposing (Transform, transform, translate)
 import Canvas.Settings.Line exposing (lineWidth)
 import Color exposing (Color)
 import Dict exposing (..)
+import GraphicsDecoder exposing (BulletLocation)
 import Point2d exposing (Point2d, coordinates)
 import Vector2d exposing (..)
 
@@ -100,3 +102,15 @@ warheadColor =
 longestTail : Float
 longestTail =
     80.0 * 80.0
+
+modSamples : Int -> Int
+modSamples =
+    modBy 8
+
+
+bulletAudio : BulletLocation -> Audio
+bulletAudio b =
+    let
+        index = modSamples b.id
+    in
+        newBulletExplosion index

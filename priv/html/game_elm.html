@@ -69,7 +69,7 @@
     app.ports?.playAudio?.subscribe(function (audios) {
       if (fxAudioContext != undefined) {
         audios.forEach(function (audio) {
-          playExplosion(audio, fxAudioBuffers.explosion);
+          playSound(audio, fxAudioContext);
         })
       }
     });
