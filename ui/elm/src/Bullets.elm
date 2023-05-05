@@ -2,7 +2,7 @@ module Bullets exposing (Bullet, mergeBullets, newBullet, renderBullet)
 
 import Canvas exposing (..)
 import Canvas.Settings exposing (fill, stroke)
-import Canvas.Settings.Advanced exposing (Transform, rotate, transform, translate)
+import Canvas.Settings.Advanced exposing (Transform, transform, translate)
 import Canvas.Settings.Line exposing (lineWidth)
 import Color exposing (Color)
 import Dict exposing (..)
@@ -69,7 +69,7 @@ mergeBullets graphics_bullets game_bullets =
     Dict.merge
         (\id f -> Dict.insert id (newBullet id f.location))
         (\id f b -> Dict.insert id (bulletAndTail f b))
-        (\id _ -> identity)
+        (\_ _ -> identity)
         graphics_bullets
         game_bullets
         Dict.empty
@@ -87,13 +87,16 @@ bulletAndTail f b =
         { b | position = f.location, tail = Just tail }
 
 
+tailColor : Color
 tailColor =
     Color.hsl (199 / 360) 0.96 0.82
 
 
+warheadColor : Color
 warheadColor =
     Color.hsl (199 / 360) 0.96 0.9
 
 
+longestTail : Float
 longestTail =
     80.0 * 80.0

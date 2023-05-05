@@ -6269,7 +6269,7 @@ var $author$project$Bullets$mergeBullets = F2(
 						A2($author$project$Bullets$bulletAndTail, f, b));
 				}),
 			F2(
-				function (id, _v0) {
+				function (_v0, _v1) {
 					return $elm$core$Basics$identity;
 				}),
 			graphics_bullets,
