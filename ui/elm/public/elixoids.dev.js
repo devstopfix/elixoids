@@ -5253,7 +5253,7 @@ var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagg
 		$elm$browser$Browser$AnimationManager$Delta(tagger));
 };
 var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
-var $author$project$Main$subscriptions = function (model) {
+var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
@@ -6176,7 +6176,7 @@ var $author$project$Game$mergeAsteroids = F2(
 							{position: a.location}));
 				}),
 			F2(
-				function (id, _v0) {
+				function (_v0, _v1) {
 					return $elm$core$Basics$identity;
 				}),
 			graphics_asteroids,
@@ -6269,7 +6269,7 @@ var $author$project$Bullets$mergeBullets = F2(
 						A2($author$project$Bullets$bulletAndTail, f, b));
 				}),
 			F2(
-				function (id, _v0) {
+				function (_v0, _v1) {
 					return $elm$core$Basics$identity;
 				}),
 			graphics_bullets,
@@ -7280,7 +7280,6 @@ var $author$project$Ships$renderTag = F2(
 			var tagDY = $author$project$Ships$tagOffset(
 				$ianmackenzie$elm_geometry$Circle2d$radius(ship.position));
 			var tag = $author$project$Ships$trimTag(ship.id);
-			var color = ship.tagColor;
 			var _v1 = $ianmackenzie$elm_geometry$Point2d$coordinates(
 				$ianmackenzie$elm_geometry$Circle2d$centerPoint(ship.position));
 			var x = _v1.a;

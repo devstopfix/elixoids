@@ -9,9 +9,9 @@ import Circle2d exposing (Circle2d, centerPoint, radius)
 import Color exposing (Color)
 import Dict exposing (Dict)
 import Point2d exposing (coordinates, origin)
-import Points exposing (convertPoints, readPoints)
-import Polygon exposing (pointsToShape, polygonToShape)
-import Polygon2d exposing (Polygon2d, outerLoop, scaleAbout, singleLoop)
+import Points exposing (readPoints)
+import Polygon exposing (polygonToShape)
+import Polygon2d exposing (Polygon2d, scaleAbout, singleLoop)
 
 
 type alias Id =
@@ -19,10 +19,6 @@ type alias Id =
 
 
 type alias Theta =
-    Float
-
-
-type alias Radius =
     Float
 
 
@@ -82,21 +78,6 @@ rotateAsteroid msSincePreviousFrame asteroid =
             (pi * 2) * delta_t / 30
     in
     { asteroid | theta = asteroid.theta + delta_theta }
-
-
-cycle : Int -> Theta
-cycle t =
-    let
-        framesPerRevolution =
-            960
-
-        n =
-            modBy framesPerRevolution t
-
-        f =
-            toFloat n / framesPerRevolution
-    in
-    f * 2 * pi
 
 
 renderAsteroid : Transform -> Asteroid -> Renderable

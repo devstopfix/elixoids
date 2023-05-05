@@ -2,7 +2,7 @@ module GraphicsDecoder exposing (AsteroidLocation, BulletLocation, Frame, Id, Sh
 
 import BoundingBox2d exposing (BoundingBox2d, from)
 import Circle2d exposing (Circle2d, withRadius)
-import Json.Decode as Decode exposing (Decoder, andThen, at, fail, field, float, int, list, map3, map5, maybe, string, succeed)
+import Json.Decode exposing (Decoder, andThen, fail, field, float, int, list, map5, maybe, string, succeed)
 import Point2d exposing (Point2d, fromCoordinates, origin)
 
 

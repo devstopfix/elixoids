@@ -10,16 +10,12 @@ import Color exposing (Color)
 import Point2d exposing (coordinates, origin)
 import Points exposing (readPoints)
 import Polygon exposing (polygonCentroid, polygonToShape)
-import Polygon2d exposing (scaleAbout, singleLoop, translateBy)
+import Polygon2d exposing (Polygon2d, scaleAbout, singleLoop, translateBy)
 import Vector2d exposing (from)
 
 
 type alias Id =
     String
-
-
-type alias Radius =
-    Float
 
 
 type alias Theta =
@@ -28,11 +24,6 @@ type alias Theta =
 
 type alias Ship =
     { id : Id, position : Circle2d, theta : Theta, color : Color, tagColor : Color, shape : Shape, lineWidth : Float }
-
-
-shipRadius : Radius
-shipRadius =
-    20.0
 
 
 newShip : Id -> Circle2d -> Theta -> Ship
@@ -89,9 +80,6 @@ renderTag tf ship =
                 tag =
                     trimTag ship.id
 
-                color =
-                    ship.tagColor
-
                 tagTheta =
                     offset90deg ship.theta
 
@@ -104,22 +92,27 @@ renderTag tf ship =
             [ text [ stroke tagColor, fill tagColor, transform transformations, font { size = 36, family = tagFont }, align Center ] ( x, y ) tag ]
 
 
+offset90deg : Float -> Float
 offset90deg =
     (+) (pi / 2)
 
 
+tagOffset : Float -> Float
 tagOffset =
     (*) 3.0
 
 
+tagFont : String
 tagFont =
     "Source Code Pro,monospace"
 
 
+trimTag : String -> String
 trimTag =
     String.left 3 << String.trim
 
 
+tagColor : Color
 tagColor =
     Color.rgb 0.6 0.6 0.6
 
@@ -133,6 +126,7 @@ shipWithRadius r =
     ( shape, 2.0 )
 
 
+arcadeShipEast : Polygon2d
 arcadeShipEast =
     [ ( 24, 0 ), ( -24, -16 ), ( -16, -8 ), ( -16, 8 ), ( -24, 16 ), ( 24, 0 ) ]
         |> readPoints
@@ -150,6 +144,7 @@ saucerWithRadius r =
     ( shape, 4.0 )
 
 
+saucerShip : Polygon2d
 saucerShip =
     [ ( 0.22, 0.61 ), ( 0.39, 0.17 ), ( 1.0, -0.17 ), ( 0.39, -0.5 ), ( -0.39, -0.5 ), ( -1.0, -0.17 ), ( -0.39, 0.17 ), ( -0.22, 0.61 ) ]
         |> readPoints
@@ -157,6 +152,7 @@ saucerShip =
         |> centreAboutMass
 
 
+centreAboutMass : Polygon2d -> Polygon2d
 centreAboutMass ship =
     case polygonCentroid ship of
         Nothing ->
