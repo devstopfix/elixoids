@@ -59,7 +59,7 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch
         [ graphicsIn GraphicsIn
         , onAnimationFrameDelta Frame
