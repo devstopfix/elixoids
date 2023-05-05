@@ -7280,7 +7280,6 @@ var $author$project$Ships$renderTag = F2(
 			var tagDY = $author$project$Ships$tagOffset(
 				$ianmackenzie$elm_geometry$Circle2d$radius(ship.position));
 			var tag = $author$project$Ships$trimTag(ship.id);
-			var color = ship.tagColor;
 			var _v1 = $ianmackenzie$elm_geometry$Point2d$coordinates(
 				$ianmackenzie$elm_geometry$Circle2d$centerPoint(ship.position));
 			var x = _v1.a;
