@@ -12,12 +12,11 @@ defmodule Elixoids.Asteroid.Server do
   alias Elixoids.Space
   alias Elixoids.World.Velocity
   import Elixoids.Const
-  import Elixoids.Game.Identifiers
   use Elixoids.Game.Heartbeat
 
   def start_link(game_id, rock \\ %{}) when is_integer(game_id) do
     a = %{
-      :id => next_id(),
+      :id => System.unique_integer([:positive, :monotonic]),
       :game_id => game_id,
       :rock => Map.merge(random_asteroid(), rock)
     }

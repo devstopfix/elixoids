@@ -14,7 +14,6 @@ defmodule Elixoids.Bullet.Server do
   alias Elixoids.World.Velocity
   import Elixoids.Const
   import Elixoids.World.Clock
-  import Elixoids.Game.Identifiers
   use Elixoids.Game.Heartbeat
 
   @doc """
@@ -28,7 +27,7 @@ defmodule Elixoids.Bullet.Server do
              is_number(theta) and
              is_binary(shooter) do
     b = %{
-      :id => next_id(),
+      :id => System.unique_integer([:positive, :monotonic]),
       :pos => [pos],
       :velocity => bullet_velocity(theta),
       :shooter => shooter,
