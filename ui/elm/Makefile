@@ -42,6 +42,7 @@ $(opt_simple_js): $(opt_js) closure_compiler
 $(target): $(opt_js) closure_compiler
 	closure-compiler --js $(opt_js) $(canvas) $(resources) --compilation_level $(level) --language_out ECMASCRIPT_2015 --js_output_file $(target)
 
+.PHONY: clean
 clean:
 	rm -f $(dev_js) $(dev_simple_js) $(opt_js) $(opt_simple_js) $(target)
 
