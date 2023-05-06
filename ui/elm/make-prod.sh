@@ -13,7 +13,7 @@ target1=public/elixoids.dev.js
 target2=public/elixoids.opt.js
 target3=public/elixoids.dev.simple.js
 target4=public/elixoids.opt.simple.js
-target5=public/elixoids_canvas.dev.simple.js
+# target5=public/elixoids_canvas.dev.simple.js
 target6=public/elixoids_canvas.opt.simple.js
 
 target=public/elixoids.js
@@ -27,7 +27,7 @@ time closure-compiler --js $target2 --compilation_level SIMPLE_OPTIMIZATIONS --j
 
 # PROD
 
-time closure-compiler --js $target1 $canvas $resources --compilation_level SIMPLE_OPTIMIZATIONS --language_out ECMASCRIPT_2015 --js_output_file $target5
+# time closure-compiler --js $target1 $canvas $resources --compilation_level SIMPLE_OPTIMIZATIONS --language_out ECMASCRIPT_2015 --js_output_file $target5
 if closure-compiler --js $target2 $canvas $resources --compilation_level SIMPLE_OPTIMIZATIONS --language_out ECMASCRIPT_2015 --js_output_file $target6; then
     rm $target
     cp $target6 $target

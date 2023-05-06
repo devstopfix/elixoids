@@ -6,6 +6,10 @@ Start a reactor that serves your files, and a process that compiles the code whe
 
     elm reactor && find src | entr -r elm make src/main.elm --output public/elixoids.dev.js
 
+or
+
+    make compile && elm reactor
+
 Open the browser:
 
     http://localhost:8000/public/dev.html
@@ -13,9 +17,7 @@ Open the browser:
 ## Production build
 
 ```bash
-elm make src/Main.elm --optimize --output public/elm.js
-
-closure-compiler --js public/elm.js public/elm-canvas.2.2.js --compilation_level SIMPLE_OPTIMIZATIONS --language_out ECMASCRIPT_2015 --js_output_file public/elixoids.js
+make build
 ```
 
 Compressed with the [Closure Compiler](https://developers.google.com/closure/compiler/).
