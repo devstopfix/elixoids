@@ -1,4 +1,4 @@
-module Bullets exposing (Bullet, bulletAudio, mergeBullets, newBullet, renderBullet)
+module Bullets exposing (Bullet, Id, bulletAudio, mergeBullets, newBullet, renderBullet)
 
 import Audio exposing (Audio, newBulletExplosion)
 import Canvas exposing (..)
@@ -8,7 +8,7 @@ import Canvas.Settings.Line exposing (lineWidth)
 import Color exposing (Color)
 import Dict exposing (..)
 import GraphicsDecoder exposing (BulletLocation)
-import Point2d exposing (Point2d, coordinates)
+import Point2d exposing (Point2d, coordinates, xCoordinate)
 import Vector2d exposing (..)
 
 
@@ -111,6 +111,9 @@ modSamples =
 bulletAudio : BulletLocation -> Audio
 bulletAudio b =
     let
-        index = modSamples b.id
+        x = 
+            xCoordinate b.location
+        index = 
+            modSamples (truncate (abs x))
     in
         newBulletExplosion index

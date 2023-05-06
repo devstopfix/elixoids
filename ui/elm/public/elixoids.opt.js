@@ -2659,7 +2659,7 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		J: func(record.J),
+		K: func(record.K),
 		bz: record.bz,
 		bq: record.bq
 	}
@@ -2929,7 +2929,7 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.J;
+		var message = !tag ? value : tag < 3 ? value.a : value.K;
 		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.bz;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
@@ -4719,10 +4719,10 @@ var $elm$core$Array$builderToArray = F2(
 		if (!builder.h) {
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.aE),
+				$elm$core$Elm$JsArray$length(builder.aF),
 				$elm$core$Array$shiftStep,
 				$elm$core$Elm$JsArray$empty,
-				builder.aE);
+				builder.aF);
 		} else {
 			var treeLen = builder.h * $elm$core$Array$branchFactor;
 			var depth = $elm$core$Basics$floor(
@@ -4731,10 +4731,10 @@ var $elm$core$Array$builderToArray = F2(
 			var tree = A2($elm$core$Array$treeFromBuilder, correctNodeList, builder.h);
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.aE) + treeLen,
+				$elm$core$Elm$JsArray$length(builder.aF) + treeLen,
 				A2($elm$core$Basics$max, 5, depth * $elm$core$Array$shiftStep),
 				tree,
-				builder.aE);
+				builder.aF);
 		}
 	});
 var $elm$core$Basics$idiv = _Basics_idiv;
@@ -4747,7 +4747,7 @@ var $elm$core$Array$initializeHelp = F5(
 				return A2(
 					$elm$core$Array$builderToArray,
 					false,
-					{k: nodeList, h: (len / $elm$core$Array$branchFactor) | 0, aE: tail});
+					{k: nodeList, h: (len / $elm$core$Array$branchFactor) | 0, aF: tail});
 			} else {
 				var leaf = $elm$core$Array$Leaf(
 					A3($elm$core$Elm$JsArray$initialize, $elm$core$Array$branchFactor, fromIndex, fn));
@@ -5410,7 +5410,7 @@ var $elm$core$Dict$insert = F3(
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $author$project$GraphicsDecoder$Frame = F5(
 	function (asteroids, bullets, dimensions, explosions, ships) {
-		return {aa: asteroids, ab: bullets, cn: dimensions, ag: explosions, U: ships};
+		return {ab: asteroids, G: bullets, cn: dimensions, ag: explosions, V: ships};
 	});
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
@@ -5427,7 +5427,7 @@ var $ianmackenzie$elm_geometry$Circle2d$withRadius = F2(
 	function (radius_, centerPoint_) {
 		return {
 			cj: centerPoint_,
-			aB: $elm$core$Basics$abs(radius_)
+			aC: $elm$core$Basics$abs(radius_)
 		};
 	});
 var $author$project$GraphicsDecoder$asteroidDecoder = A2(
@@ -5445,7 +5445,7 @@ var $author$project$GraphicsDecoder$asteroidDecoder = A2(
 								return $elm$json$Json$Decode$succeed(
 									{
 										bP: id,
-										aR: A2(
+										aA: A2(
 											$ianmackenzie$elm_geometry$Circle2d$withRadius,
 											r,
 											$ianmackenzie$elm_geometry$Point2d$fromCoordinates(
@@ -5473,7 +5473,7 @@ var $author$project$GraphicsDecoder$bulletDecoder = A2(
 						return $elm$json$Json$Decode$succeed(
 							{
 								bP: id,
-								aR: $ianmackenzie$elm_geometry$Point2d$fromCoordinates(
+								aA: $ianmackenzie$elm_geometry$Point2d$fromCoordinates(
 									_Utils_Tuple2(x, y))
 							});
 					},
@@ -5580,12 +5580,12 @@ var $author$project$GraphicsDecoder$shipDecoder = A2(
 										return $elm$json$Json$Decode$succeed(
 											{
 												bP: tag,
-												aR: A2(
+												aA: A2(
 													$ianmackenzie$elm_geometry$Circle2d$withRadius,
 													r,
 													$ianmackenzie$elm_geometry$Point2d$fromCoordinates(
 														_Utils_Tuple2(x, y))),
-												aF: theta
+												aG: theta
 											});
 									},
 									A2($elm$json$Json$Decode$field, '4', $elm$json$Json$Decode$float));
@@ -5632,6 +5632,188 @@ var $author$project$Explosions$explosionAudio = function (e) {
 		$elm$core$Basics$abs(x) | 0);
 	return $author$project$Audio$newAudioExplosion(index);
 };
+var $author$project$Bullets$modSamples = $elm$core$Basics$modBy(8);
+var $author$project$Audio$newBulletExplosion = function (index) {
+	return {a0: index, bc: 'bullet', bg: 0.0};
+};
+var $author$project$Bullets$bulletAudio = function (b) {
+	var x = $ianmackenzie$elm_geometry$Point2d$xCoordinate(b.aA);
+	var index = $author$project$Bullets$modSamples(
+		$elm$core$Basics$abs(x) | 0);
+	return $author$project$Audio$newBulletExplosion(index);
+};
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $author$project$Game$newBulletAudio = F2(
+	function (game_ids, locations) {
+		if (!locations.b) {
+			return _List_Nil;
+		} else {
+			var _v1 = $elm$core$List$maximum(game_ids);
+			if (!_v1.$) {
+				var max_id = _v1.a;
+				return A2(
+					$elm$core$List$map,
+					$author$project$Bullets$bulletAudio,
+					A2(
+						$elm$core$List$take,
+						4,
+						A2(
+							$elm$core$List$filter,
+							function (b) {
+								return _Utils_cmp(b.bP, max_id) > 0;
+							},
+							locations)));
+			} else {
+				return A2($elm$core$List$map, $author$project$Bullets$bulletAudio, locations);
+			}
+		}
+	});
 var $author$project$Explosions$explosionDurationMS = 100;
 var $avh4$elm_color$Color$RgbaSpace = F4(
 	function (a, b, c, d) {
@@ -5680,8 +5862,8 @@ var $author$project$Explosions$newExplosion = function (p) {
 	return {
 		a_: $author$project$Explosions$pickColor((x + y) | 0),
 		bp: p,
-		aB: 40.0,
-		aI: $author$project$Explosions$explosionDurationMS
+		aC: 40.0,
+		aJ: $author$project$Explosions$explosionDurationMS
 	};
 };
 var $elm$core$Dict$foldl = F3(
@@ -5805,7 +5987,7 @@ var $avh4$elm_color$Color$rgb255 = F3(
 var $author$project$Asteroids$granite = A3($avh4$elm_color$Color$rgb255, 5, 8, 9);
 var $ianmackenzie$elm_geometry$Circle2d$radius = function (_v0) {
 	var properties = _v0;
-	return properties.aB;
+	return properties.aC;
 };
 var $author$project$Points$readPoints = $elm$core$List$map($ianmackenzie$elm_geometry$Point2d$fromCoordinates);
 var $ianmackenzie$elm_geometry$Geometry$Types$Polygon2d = $elm$core$Basics$identity;
@@ -6127,7 +6309,7 @@ var $author$project$Asteroids$newAsteroid = F2(
 			bP: id,
 			bp: position,
 			bv: shape,
-			aF: A2($elm$core$Basics$modBy, 628, id)
+			aG: A2($elm$core$Basics$modBy, 628, id)
 		};
 	});
 var $author$project$Game$mergeAsteroids = F2(
@@ -6139,7 +6321,7 @@ var $author$project$Game$mergeAsteroids = F2(
 					return A2(
 						$elm$core$Dict$insert,
 						id,
-						A2($author$project$Asteroids$newAsteroid, id, a.aR));
+						A2($author$project$Asteroids$newAsteroid, id, a.aA));
 				}),
 			F3(
 				function (id, a, b) {
@@ -6148,7 +6330,7 @@ var $author$project$Game$mergeAsteroids = F2(
 						id,
 						_Utils_update(
 							b,
-							{bp: a.aR}));
+							{bp: a.aA}));
 				}),
 			F2(
 				function (_v0, _v1) {
@@ -6193,16 +6375,16 @@ var $ianmackenzie$elm_geometry$Vector2d$squaredLength = function (vector) {
 };
 var $author$project$Bullets$bulletAndTail = F2(
 	function (f, b) {
-		var tail = A2($ianmackenzie$elm_geometry$Vector2d$from, b.bp, f.aR);
+		var tail = A2($ianmackenzie$elm_geometry$Vector2d$from, b.bp, f.aA);
 		return (_Utils_cmp(
 			$ianmackenzie$elm_geometry$Vector2d$squaredLength(tail),
 			$author$project$Bullets$longestTail) > 0) ? _Utils_update(
 			b,
-			{bp: f.aR, aE: $elm$core$Maybe$Nothing}) : _Utils_update(
+			{bp: f.aA, aF: $elm$core$Maybe$Nothing}) : _Utils_update(
 			b,
 			{
-				bp: f.aR,
-				aE: $elm$core$Maybe$Just(tail)
+				bp: f.aA,
+				aF: $elm$core$Maybe$Just(tail)
 			});
 	});
 var $joakin$elm_canvas$Canvas$Internal$Canvas$Circle = F2(
@@ -6222,7 +6404,7 @@ var $author$project$Bullets$newBullet = F2(
 				$joakin$elm_canvas$Canvas$circle,
 				_Utils_Tuple2(0, 0),
 				4),
-			aE: $elm$core$Maybe$Nothing
+			aF: $elm$core$Maybe$Nothing
 		};
 	});
 var $author$project$Bullets$mergeBullets = F2(
@@ -6234,7 +6416,7 @@ var $author$project$Bullets$mergeBullets = F2(
 					return A2(
 						$elm$core$Dict$insert,
 						id,
-						A2($author$project$Bullets$newBullet, id, f.aR));
+						A2($author$project$Bullets$newBullet, id, f.aA));
 				}),
 			F3(
 				function (id, f, b) {
@@ -6391,7 +6573,7 @@ var $author$project$Ships$newShip = F3(
 			bp: position,
 			bv: shape,
 			b8: A4($avh4$elm_color$Color$rgba, 1, 1, 1, 0.8),
-			aF: theta
+			aG: theta
 		};
 	});
 var $author$project$Game$mergeShips = F2(
@@ -6403,7 +6585,7 @@ var $author$project$Game$mergeShips = F2(
 					return A2(
 						$elm$core$Dict$insert,
 						id,
-						A3($author$project$Ships$newShip, id, a.aR, a.aF));
+						A3($author$project$Ships$newShip, id, a.aA, a.aG));
 				}),
 			F3(
 				function (id, a, b) {
@@ -6412,7 +6594,7 @@ var $author$project$Game$mergeShips = F2(
 						id,
 						_Utils_update(
 							b,
-							{bp: a.aR, aF: a.aF}));
+							{bp: a.aA, aG: a.aG}));
 				}),
 			F2(
 				function (_v0, _v1) {
@@ -6442,12 +6624,15 @@ var $author$project$Game$mergeGame = F2(
 		var next_game = _Utils_update(
 			game,
 			{
-				aa: A2($author$project$Game$updateAsteroids, frame.aa, game.aa),
-				ab: A2($author$project$Game$updateBullets, frame.ab, game.ab),
+				ab: A2($author$project$Game$updateAsteroids, frame.ab, game.ab),
+				G: A2($author$project$Game$updateBullets, frame.G, game.G),
 				ag: A2($elm$core$List$append, game.ag, new_explosions),
-				U: A2($author$project$Game$updateShips, frame.U, game.U)
+				V: A2($author$project$Game$updateShips, frame.V, game.V)
 			});
-		var bullet_audio = _List_Nil;
+		var bullet_audio = A2(
+			$author$project$Game$newBulletAudio,
+			$elm$core$Dict$keys(game.G),
+			frame.G);
 		var audio_explosions = A2($elm$core$List$map, $author$project$Explosions$explosionAudio, new_explosions);
 		var audio = _Utils_ap(bullet_audio, audio_explosions);
 		return _Utils_Tuple2(next_game, audio);
@@ -6560,13 +6745,13 @@ var $author$project$Game$newGame = function (dims) {
 	var canvas_width = _v1.a;
 	var canvas_height = _v1.b;
 	return {
-		aa: $elm$core$Dict$empty,
 		ab: $elm$core$Dict$empty,
-		aO: dims,
+		G: $elm$core$Dict$empty,
+		aP: dims,
 		ag: _List_Nil,
-		U: $elm$core$Dict$empty,
+		V: $elm$core$Dict$empty,
 		bw: $avh4$elm_color$Color$black,
-		Y: $joakin$elm_canvas$Canvas$Settings$Advanced$applyMatrix(
+		Z: $joakin$elm_canvas$Canvas$Settings$Advanced$applyMatrix(
 			{co: 0, cp: canvas_height, cE: canvas_width / game_x, cF: 0, cG: 0, cH: (-1) * (canvas_height / game_y)})
 	};
 };
@@ -6588,7 +6773,7 @@ var $author$project$Asteroids$rotateAsteroid = F2(
 		var delta_theta = (($elm$core$Basics$pi * 2) * delta_t) / 30;
 		return _Utils_update(
 			asteroid,
-			{aF: asteroid.aF + delta_theta});
+			{aG: asteroid.aG + delta_theta});
 	});
 var $author$project$Asteroids$rotateAsteroids = function (msSincePreviousFrame) {
 	return $elm$core$Dict$map(
@@ -6596,26 +6781,15 @@ var $author$project$Asteroids$rotateAsteroids = function (msSincePreviousFrame) 
 			return $author$project$Asteroids$rotateAsteroid(msSincePreviousFrame);
 		});
 };
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
 var $author$project$Explosions$isActive = function (explosion) {
-	return explosion.aI > 0;
+	return explosion.aJ > 0;
 };
 var $author$project$Explosions$explosionExpansion = 1.07;
 var $author$project$Explosions$updateExplosion = F2(
 	function (msSincePreviousFrame, explosion) {
 		return _Utils_update(
 			explosion,
-			{aB: explosion.aB * $author$project$Explosions$explosionExpansion, aI: explosion.aI - msSincePreviousFrame});
+			{aC: explosion.aC * $author$project$Explosions$explosionExpansion, aJ: explosion.aJ - msSincePreviousFrame});
 	});
 var $author$project$Explosions$updateExplosions = function (msSincePreviousFrame) {
 	return A2(
@@ -6629,7 +6803,7 @@ var $author$project$Main$updateGame = F3(
 		return _Utils_update(
 			game,
 			{
-				aa: A2($author$project$Asteroids$rotateAsteroids, msSincePreviousFrame, game.aa),
+				ab: A2($author$project$Asteroids$rotateAsteroids, msSincePreviousFrame, game.ab),
 				ag: A2($author$project$Explosions$updateExplosions, msSincePreviousFrame, game.ag)
 			});
 	});
@@ -6804,14 +6978,14 @@ var $joakin$elm_canvas$Canvas$addSettingsToRenderable = F2(
 						return _Utils_update(
 							r,
 							{
-								G: A2($elm$core$List$cons, cmd, r.G)
+								H: A2($elm$core$List$cons, cmd, r.H)
 							});
 					case 1:
 						var cmds = setting.a;
 						return _Utils_update(
 							r,
 							{
-								G: A3($elm$core$List$foldl, $elm$core$List$cons, r.G, cmds)
+								H: A3($elm$core$List$foldl, $elm$core$List$cons, r.H, cmds)
 							});
 					case 3:
 						var f = setting.a;
@@ -6837,7 +7011,7 @@ var $joakin$elm_canvas$Canvas$shapes = F2(
 			$joakin$elm_canvas$Canvas$addSettingsToRenderable,
 			settings,
 			{
-				G: _List_Nil,
+				H: _List_Nil,
 				ac: $joakin$elm_canvas$Canvas$Internal$Canvas$NotSpecified,
 				ad: $joakin$elm_canvas$Canvas$Internal$Canvas$DrawableShapes(ss)
 			});
@@ -6955,7 +7129,7 @@ var $author$project$Asteroids$renderAsteroid = F2(
 			[
 				tf,
 				A2($joakin$elm_canvas$Canvas$Settings$Advanced$translate, x, y),
-				$joakin$elm_canvas$Canvas$Settings$Advanced$rotate(asteroid.aF)
+				$joakin$elm_canvas$Canvas$Settings$Advanced$rotate(asteroid.aG)
 			]);
 		return A2(
 			$joakin$elm_canvas$Canvas$shapes,
@@ -7045,7 +7219,7 @@ var $author$project$Bullets$renderTail = F2(
 								]))
 						]));
 			},
-			bullet.aE);
+			bullet.aF);
 	});
 var $author$project$Bullets$warheadColor = A3($avh4$elm_color$Color$hsl, 199 / 360, 0.96, 0.9);
 var $author$project$Bullets$renderWarhead = F2(
@@ -7109,7 +7283,7 @@ var $author$project$Explosions$renderExplosion = F2(
 					A2(
 					$joakin$elm_canvas$Canvas$circle,
 					_Utils_Tuple2(0, 0),
-					explosion.aB)
+					explosion.aC)
 				]));
 	});
 var $author$project$Game$renderExplosions = function (tf) {
@@ -7126,7 +7300,7 @@ var $author$project$Ships$renderShip = F2(
 			[
 				tf,
 				A2($joakin$elm_canvas$Canvas$Settings$Advanced$translate, x, y),
-				$joakin$elm_canvas$Canvas$Settings$Advanced$rotate(ship.aF)
+				$joakin$elm_canvas$Canvas$Settings$Advanced$rotate(ship.aG)
 			]);
 		return A2(
 			$joakin$elm_canvas$Canvas$shapes,
@@ -7152,7 +7326,7 @@ var $joakin$elm_canvas$Canvas$rect = F3(
 		return A3($joakin$elm_canvas$Canvas$Internal$Canvas$Rect, pos, width, height);
 	});
 var $author$project$Game$renderSpace = function (game) {
-	var _v0 = game.aO;
+	var _v0 = game.aP;
 	var width = _v0.a;
 	var height = _v0.b;
 	return _List_fromArray(
@@ -7229,7 +7403,7 @@ var $joakin$elm_canvas$Canvas$text = F3(
 			$joakin$elm_canvas$Canvas$addSettingsToRenderable,
 			settings,
 			{
-				G: _List_Nil,
+				H: _List_Nil,
 				ac: $joakin$elm_canvas$Canvas$Internal$Canvas$NotSpecified,
 				ad: $joakin$elm_canvas$Canvas$Internal$Canvas$DrawableText(
 					{ba: $elm$core$Maybe$Nothing, bZ: point, bA: str})
@@ -7246,7 +7420,7 @@ var $author$project$Ships$renderTag = F2(
 		if (_v0 === 'SČR') {
 			return _List_Nil;
 		} else {
-			var tagTheta = $author$project$Ships$offset90deg(ship.aF);
+			var tagTheta = $author$project$Ships$offset90deg(ship.aG);
 			var tagDY = $author$project$Ships$tagOffset(
 				$ianmackenzie$elm_geometry$Circle2d$radius(ship.bp));
 			var tag = $author$project$Ships$trimTag(ship.bP);
@@ -7807,7 +7981,7 @@ var $joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$save = A2($joakin$el
 var $joakin$elm_canvas$Canvas$renderOne = F2(
 	function (_v0, cmds) {
 		var data = _v0;
-		var commands = data.G;
+		var commands = data.H;
 		var drawable = data.ad;
 		var drawOp = data.ac;
 		return A2(
@@ -7953,23 +8127,23 @@ var $joakin$elm_canvas$Canvas$toHtml = F3(
 var $author$project$Game$viewGame = function (game) {
 	var tags = A2(
 		$author$project$Game$renderTags,
-		game.Y,
-		$elm$core$Dict$values(game.U));
+		game.Z,
+		$elm$core$Dict$values(game.V));
 	var space = $author$project$Game$renderSpace(game);
 	var ships = A2(
 		$author$project$Game$renderShips,
-		game.Y,
-		$elm$core$Dict$values(game.U));
-	var explosions = A2($author$project$Game$renderExplosions, game.Y, game.ag);
+		game.Z,
+		$elm$core$Dict$values(game.V));
+	var explosions = A2($author$project$Game$renderExplosions, game.Z, game.ag);
 	var bullets = A2(
 		$author$project$Game$renderBullets,
-		game.Y,
-		$elm$core$Dict$values(game.ab));
+		game.Z,
+		$elm$core$Dict$values(game.G));
 	var asteroids = A2(
 		$author$project$Game$renderAsteroids,
-		game.Y,
-		$elm$core$Dict$values(game.aa));
-	var _v0 = game.aO;
+		game.Z,
+		$elm$core$Dict$values(game.ab));
+	var _v0 = game.aP;
 	var width = _v0.a;
 	var height = _v0.b;
 	return A3(
