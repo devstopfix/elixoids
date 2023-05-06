@@ -22,7 +22,7 @@ type alias Dimension =
 type alias Game =
     { dimension : Dimension
     , asteroids : Dict Int Asteroid
-    , bullets : Dict Int Bullet
+    , bullets : Dict Bullets.Id Bullet
     , explosions : List Explosion
     , ships : Dict String Ship
     , spaceColor : Color
@@ -137,8 +137,15 @@ mergeGame frame game =
     let
         new_explosions = 
             List.map newExplosion frame.explosions
-        audio_explosions = 
+        audio_explosions =        
             List.map explosionAudio new_explosions
+
+        bullet_audio = 
+            newBulletAudio (Dict.keys game.bullets) frame.bullets
+
+        audio = 
+            bullet_audio ++ audio_explosions
+
         next_game = 
             { game
                 | asteroids = updateAsteroids frame.asteroids game.asteroids
@@ -147,7 +154,7 @@ mergeGame frame game =
                 , ships = updateShips frame.ships game.ships
             }
     in
-        (next_game, audio_explosions)
+        (next_game, audio)
 
 
 updateAsteroids : List AsteroidLocation -> Dict Int Asteroid -> Dict Int Asteroid
@@ -164,6 +171,23 @@ mergeAsteroids graphics_asteroids game_asteroids =
         graphics_asteroids
         game_asteroids
         Dict.empty
+
+
+-- input compares list of bullet ids in the previous and current frames
+newBulletAudio : List Bullets.Id -> List BulletLocation -> List Audio
+newBulletAudio game_ids locations =
+    case locations of
+        [] ->
+            []
+        _ ->
+            case List.maximum game_ids of
+                Just max_id ->
+                    locations
+                    |> List.filter (\b -> b.id > max_id)
+                    |> List.take 4
+                    |> List.map bulletAudio
+                Nothing ->
+                    List.map bulletAudio locations
 
 
 updateBullets bullets game_bullets =
@@ -186,12 +210,12 @@ mergeShips graphics_ships game_ships =
         Dict.empty
 
 
-toAsteroidMap : List AsteroidLocation -> Dict Id AsteroidLocation
+toAsteroidMap : List AsteroidLocation -> Dict Asteroids.Id AsteroidLocation
 toAsteroidMap =
     Dict.fromList << List.map (\a -> ( a.id, a ))
 
 
-toBulletMap : List BulletLocation -> Dict Id BulletLocation
+toBulletMap : List BulletLocation -> Dict Asteroids.Id BulletLocation
 toBulletMap =
     Dict.fromList << List.map (\a -> ( a.id, a ))
 

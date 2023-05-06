@@ -9,16 +9,22 @@ function toggleSound() {
     }
 }
 
+function loadSoundBuffers(n, type, buffers) {
+    if (buffers.length < n) {
+        var root = [window.location.protocol, window.location.host].join('//');
+        for (var i = 1; i <= n; i++) {
+            var url = [root, 'audio', type, i + '.mp3'].join('/');
+            loadSoundBuffer(url, buffers);
+        }
+    }
+}
+
 function initFX() {
     try {
         fxAudioContext = new AudioContext();
         document.getElementById('toggle_audio').innerText = "AUDIO 🔉";
-        var root = [window.location.protocol, window.location.host].join('//');
-        // TODO check if we have empty buffer before reloading (or length is too short)
-        for (var i = 1; i <= 7; i++) {
-            var url = [root, 'audio', 'explosion', i + '.mp3'].join('/');
-            loadSoundBuffer(url, fxAudioBuffers.explosion);
-        }
+        loadSoundBuffers(7, 'explosion', fxAudioBuffers.explosion);
+        loadSoundBuffers(8, 'shoot', fxAudioBuffers.bullet);
         return true;
     }
     catch (e) {
@@ -56,4 +62,30 @@ function playExplosion(audio, buffers) {
         gainFadeOut.gain.exponentialRampToValueAtTime(0.01, fxAudioContext.currentTime + 2);
         source.start();
     }
+}
+
+function playShot(audio, buffers, context) {
+    if (buffers.length > 0) {
+        var index = (audio.index || 0) % buffers.length;
+        var source = context.createBufferSource();
+        source.buffer = buffers[index];
+        var gainFadeOut = context.createGain();
+        gainFadeOut.gain.setValueAtTime(gainFadeOut.gain.value - 0.2, context.currentTime);
+        source.connect(gainFadeOut)
+        gainFadeOut.connect(context.destination);
+        gainFadeOut.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
+        source.start();
+    }
+}
+
+function playSound(audio, context) {
+    console.log(audio)
+    switch(audio.name) {
+        case "explosion":
+          playExplosion(audio, fxAudioBuffers.explosion);
+          break;
+        case "bullet":
+          playShot(audio, fxAudioBuffers.bullet, context);
+          break;
+      }
 }

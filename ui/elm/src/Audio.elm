@@ -1,4 +1,4 @@
-module Audio exposing (Audio, newAudioExplosion)
+module Audio exposing (Audio, newAudioExplosion, newBulletExplosion)
 
 
 type alias Audio =
@@ -8,6 +8,14 @@ type alias Audio =
 newAudioExplosion : Int -> Audio
 newAudioExplosion index =
     { name = "explosion"
+    ,    index = index
+    ,    pan = 0.0
+    }
+
+
+newBulletExplosion : a -> { name : String, index : a, pan : Float }
+newBulletExplosion index =
+    { name = "bullet"
     ,    index = index
     ,    pan = 0.0
     }

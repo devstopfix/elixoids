@@ -1,4 +1,4 @@
-module Asteroids exposing (Asteroid, newAsteroid, renderAsteroid, rotateAsteroids)
+module Asteroids exposing (Asteroid, Id, newAsteroid, renderAsteroid, rotateAsteroids)
 
 import Canvas exposing (..)
 import Canvas.Settings exposing (fill, stroke)
