@@ -12,7 +12,6 @@ defmodule Elixoids.Game.Supervisor do
   use DynamicSupervisor
   alias Elixoids.Collision.Supervisor, as: CollisionSupervisor
   alias Elixoids.Game.Server, as: GameServer
-  import Elixoids.Game.Identifiers
 
   def start_link(_arg) do
     DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
@@ -30,7 +29,7 @@ defmodule Elixoids.Game.Supervisor do
   @spec start_game(asteroids: integer()) :: {:ok, pid(), integer()}
   def start_game(args = [asteroids: asteroid_count])
       when asteroid_count >= 0 and asteroid_count <= @max_asteroids do
-    game_id = next_game_id()
+    game_id = System.unique_integer([:positive])
     arg = [game_id: game_id]
     child_spec = {GameServer, arg ++ args}
     {:ok, pid} = DynamicSupervisor.start_child(__MODULE__, child_spec)
