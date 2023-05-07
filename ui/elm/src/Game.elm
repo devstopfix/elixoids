@@ -13,6 +13,7 @@ import GraphicsDecoder exposing (..)
 import Html exposing (Html)
 import List.FlatMap exposing (flatMap)
 import Ships exposing (..)
+import Stereo exposing(CalculateBalance)
 
 
 type alias Dimension =
@@ -23,6 +24,7 @@ type alias Game =
     { dimension : Dimension
     , asteroids : Dict Int Asteroid
     , bullets : Dict Bullets.Id Bullet
+    , calculateBalance : CalculateBalance
     , explosions : List Explosion
     , ships : Dict String Ship
     , spaceColor : Color
@@ -51,6 +53,7 @@ newGame dims =
     { dimension = dims
     , asteroids = Dict.empty
     , bullets = Dict.empty
+    , calculateBalance = Stereo.calculateBalance game_x
     , explosions = []
     , ships = Dict.empty
     , spaceColor = Color.black
@@ -138,7 +141,7 @@ mergeGame frame game =
         new_explosions = 
             List.map newExplosion frame.explosions
         audio_explosions =        
-            List.map explosionAudio new_explosions
+            List.map (explosionAudio game.calculateBalance) new_explosions
 
         bullet_audio = 
             newBulletAudio (Dict.keys game.bullets) frame.bullets

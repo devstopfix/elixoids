@@ -50,42 +50,52 @@ function loadSoundBuffer(url, target) {
     request.send();
 }
 
-function playExplosion(audio, buffers) {
+function playExplosion(audio, buffers, context) {
     if (buffers.length > 0) {
-        var index = (audio.index || 0) % buffers.length;
-        var source = fxAudioContext.createBufferSource();
+        const index = (audio.index || 0) % buffers.length;
+        const source = context.createBufferSource();
         source.buffer = buffers[index];
-        var gainFadeOut = fxAudioContext.createGain();
-        gainFadeOut.gain.setValueAtTime(gainFadeOut.gain.value - 0.2, fxAudioContext.currentTime);
+        const gainFadeOut = createFadeOut(context, 1.8);
+        const stereoPanner = createStereoPanner(context, audio.pan);
         source.connect(gainFadeOut)
-        gainFadeOut.connect(fxAudioContext.destination);
-        gainFadeOut.gain.exponentialRampToValueAtTime(0.01, fxAudioContext.currentTime + 2);
+        gainFadeOut.connect(stereoPanner);
+        stereoPanner.connect(context.destination);
         source.start();
     }
 }
 
 function playShot(audio, buffers, context) {
     if (buffers.length > 0) {
-        var index = (audio.index || 0) % buffers.length;
-        var source = context.createBufferSource();
+        const index = (audio.index || 0) % buffers.length;
+        const source = context.createBufferSource();
         source.buffer = buffers[index];
-        var gainFadeOut = context.createGain();
-        gainFadeOut.gain.setValueAtTime(gainFadeOut.gain.value - 0.2, context.currentTime);
+        const gainFadeOut = createFadeOut(context, 0.5);
         source.connect(gainFadeOut)
         gainFadeOut.connect(context.destination);
-        gainFadeOut.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
         source.start();
     }
 }
 
 function playSound(audio, context) {
-    console.log(audio)
     switch(audio.name) {
         case "explosion":
-          playExplosion(audio, fxAudioBuffers.explosion);
+          playExplosion(audio, fxAudioBuffers.explosion, context);
           break;
         case "bullet":
           playShot(audio, fxAudioBuffers.bullet, context);
           break;
       }
+}
+
+function createFadeOut(context, time) {
+    const gainFadeOut = context.createGain();
+    gainFadeOut.gain.setValueAtTime(gainFadeOut.gain.value - 0.2, context.currentTime);
+    gainFadeOut.gain.exponentialRampToValueAtTime(0.01, context.currentTime + time);
+    return gainFadeOut;
+}
+
+function createStereoPanner(context, pan) {
+    const stereoPanner = context.createStereoPanner();
+    stereoPanner.pan.setValueAtTime(pan, context.currentTime);
+    return stereoPanner;
 }
