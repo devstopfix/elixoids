@@ -1,12 +1,12 @@
 defmodule Elixoids.Ship.Shot do
   @moduledoc "Firing sound"
 
-  alias Elixoids.Api.SoundEvent
-  alias Elixoids.Space
   import Elixoids.News, only: [publish_audio: 2]
+  alias Elixoids.Api.SoundEvent
 
-  def fire_sound(%{game_id: game_id, pos: %{x: x}} = ship) do
-    e = x |> Space.frac_x() |> SoundEvent.fire()
+  def fire_sound(%{game_id: game_id} = ship) do
+    pan = 0.0
+    e = SoundEvent.fire(pan)
     publish_audio(game_id, e)
     ship
   end

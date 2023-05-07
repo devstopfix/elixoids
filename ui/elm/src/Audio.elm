@@ -1,15 +1,17 @@
 module Audio exposing (Audio, newAudioExplosion, newBulletExplosion)
 
 
+import Stereo exposing (Balance)
+
 type alias Audio =
     { name : String, index: Int, pan: Float}
 
 
-newAudioExplosion : Int -> Audio
-newAudioExplosion index =
+newAudioExplosion : Int -> Balance -> Audio
+newAudioExplosion index balance =
     { name = "explosion"
     ,    index = index
-    ,    pan = 0.0
+    ,    pan = balance
     }
 
 

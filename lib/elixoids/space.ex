@@ -12,7 +12,6 @@ defmodule Elixoids.Space do
 
   @width world_width_m()
   @height @width / @ratio
-  @half_width @width / 2.0
 
   @border @width / 100
 
@@ -79,17 +78,5 @@ defmodule Elixoids.Space do
     x = rand_grid_position(@width, @grid_points)
     y = rand_grid_position(@height, @grid_points - 2)
     %Point{x: x, y: y}
-  end
-
-  @doc """
-  Return the x ordinate as a fraction -1..1 of the screen width
-  """
-  def frac_x(x) do
-    cond do
-      x <= 0.0 -> -1.0
-      x >= @width -> 1.0
-      true -> (x - @half_width) / @half_width
-    end
-    |> Float.round(2)
   end
 end

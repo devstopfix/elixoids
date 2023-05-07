@@ -6,6 +6,7 @@ import Canvas.Settings exposing (fill, stroke)
 import Canvas.Settings.Advanced exposing (Transform, transform, translate)
 import Color exposing (Color)
 import Point2d exposing (Point2d, coordinates, xCoordinate)
+import Stereo exposing (CalculateBalance)
 
 
 type alias Radius =
@@ -97,10 +98,11 @@ modSamples =
     modBy 7
 
 
-explosionAudio : Explosion -> Audio
-explosionAudio e =
+explosionAudio : CalculateBalance -> Explosion -> Audio
+explosionAudio calculateBalance e =
     let
         x = (xCoordinate e.position)
         index = modSamples (truncate (abs x))
+        balance = calculateBalance e.position
     in
-        newAudioExplosion index
+        newAudioExplosion index balance

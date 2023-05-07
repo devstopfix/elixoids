@@ -90,13 +90,13 @@
         });
       };
 
-      ws.onclose = function (e) {
-        setTimeout(function () { run(url, id); }, 4000);
-      };
+      // ws.onclose = function (e) {
+      //   setTimeout(function () { run(url, id); }, 4000);
+      // };
 
-      ws.onerror = function (e) {
-        setTimeout(function () { run(url, id); }, 16000);
-      };
+      // ws.onerror = function (e) {
+      //   setTimeout(function () { run(url, id); }, 16000);
+      // };
 
       return ws;
     }

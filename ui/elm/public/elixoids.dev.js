@@ -5633,21 +5633,24 @@ var $elm$core$List$append = F2(
 	});
 var $elm$core$Basics$modBy = _Basics_modBy;
 var $author$project$Explosions$modSamples = $elm$core$Basics$modBy(7);
-var $author$project$Audio$newAudioExplosion = function (index) {
-	return {index: index, name: 'explosion', pan: 0.0};
-};
+var $author$project$Audio$newAudioExplosion = F2(
+	function (index, balance) {
+		return {index: index, name: 'explosion', pan: balance};
+	});
 var $elm$core$Basics$truncate = _Basics_truncate;
 var $ianmackenzie$elm_geometry$Point2d$xCoordinate = function (_v0) {
 	var _v1 = _v0.a;
 	var x = _v1.a;
 	return x;
 };
-var $author$project$Explosions$explosionAudio = function (e) {
-	var x = $ianmackenzie$elm_geometry$Point2d$xCoordinate(e.position);
-	var index = $author$project$Explosions$modSamples(
-		$elm$core$Basics$abs(x) | 0);
-	return $author$project$Audio$newAudioExplosion(index);
-};
+var $author$project$Explosions$explosionAudio = F2(
+	function (calculateBalance, e) {
+		var x = $ianmackenzie$elm_geometry$Point2d$xCoordinate(e.position);
+		var index = $author$project$Explosions$modSamples(
+			$elm$core$Basics$abs(x) | 0);
+		var balance = calculateBalance(e.position);
+		return A2($author$project$Audio$newAudioExplosion, index, balance);
+	});
 var $author$project$Bullets$modSamples = $elm$core$Basics$modBy(8);
 var $author$project$Audio$newBulletExplosion = function (index) {
 	return {index: index, name: 'bullet', pan: 0.0};
@@ -6658,7 +6661,10 @@ var $author$project$Game$mergeGame = F2(
 			$author$project$Game$newBulletAudio,
 			$elm$core$Dict$keys(game.bullets),
 			frame.bullets);
-		var audio_explosions = A2($elm$core$List$map, $author$project$Explosions$explosionAudio, new_explosions);
+		var audio_explosions = A2(
+			$elm$core$List$map,
+			$author$project$Explosions$explosionAudio(game.calculateBalance),
+			new_explosions);
 		var audio = _Utils_ap(bullet_audio, audio_explosions);
 		return _Utils_Tuple2(next_game, audio);
 	});
@@ -6761,6 +6767,24 @@ var $joakin$elm_canvas$Canvas$Settings$Advanced$ApplyMatrix = function (a) {
 };
 var $joakin$elm_canvas$Canvas$Settings$Advanced$applyMatrix = $joakin$elm_canvas$Canvas$Settings$Advanced$ApplyMatrix;
 var $avh4$elm_color$Color$black = A4($avh4$elm_color$Color$RgbaSpace, 0 / 255, 0 / 255, 0 / 255, 1.0);
+var $author$project$Stereo$panLeft = -1.0;
+var $author$project$Stereo$panRight = 1.0;
+var $author$project$Stereo$calculateBalance = F2(
+	function (sx, point) {
+		var px = $ianmackenzie$elm_geometry$Point2d$xCoordinate(point);
+		if (px <= 0) {
+			return $author$project$Stereo$panLeft;
+		} else {
+			if (_Utils_cmp(px, sx) > -1) {
+				return $author$project$Stereo$panRight;
+			} else {
+				var mid = sx / 2;
+				var frac = (px - mid) / mid;
+				var pan = (frac * frac) * frac;
+				return ((pan * 100) | 0) / 100;
+			}
+		}
+	});
 var $author$project$Game$gameDimensions = _Utils_Tuple2(4000.0, 2250.0);
 var $author$project$Game$newGame = function (dims) {
 	var _v0 = $author$project$Game$gameDimensions;
@@ -6772,6 +6796,7 @@ var $author$project$Game$newGame = function (dims) {
 	return {
 		asteroids: $elm$core$Dict$empty,
 		bullets: $elm$core$Dict$empty,
+		calculateBalance: $author$project$Stereo$calculateBalance(game_x),
 		dimension: dims,
 		explosions: _List_Nil,
 		ships: $elm$core$Dict$empty,
