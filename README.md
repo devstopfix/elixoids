@@ -4,7 +4,7 @@
 
 [![Elixoids](docs/elixoids-8fps.gif)][6] [![Elixoids](docs/elixoids.vimeo.JPG)][6]
 
-The original UI was rendered by [JavaScript asteroids-ui][3] and has had a recent [Elm conversion](ui/elm/README.md). Audio provided by [SonicAsteroids][4].
+The original UI was rendered by [JavaScript asteroids-ui][3] and has had a recent [Elm conversion](ui/elm/README.md). Audio originall provided by [SonicAsteroids][4] before conversion to [Web Audio][8].
 
 [![Build Status](https://github.com/devstopfix/elixoids/workflows/ci/badge.svg)](https://github.com/devstopfix/elixoids/actions)
 
@@ -29,10 +29,6 @@ To start a game use the [play script](bin/play.sh) or:
 Open the UI in your browser:
 
     open http://localhost:8065/0/game
-
-To hear the sound effects on a Mac, download and run [v3 of the SonicAsteroids.app][4] and set the address to listen to as:
-
-    ws://localhost:8065/0/sound
 
 In the REPL you can start multiple games on the same server:
 
@@ -59,12 +55,6 @@ Clients subscribe to an event stream from the game via Websockets. The resources
 | `/0/graphics`      | application/json         | Graphics stream           |
 | `/0/news`          | text/event-stream        | News stream               |
 | `/0/ship/PLY`      | application/json         | Game state for player PLY |
-| `/0/sound`         | application/json         | Sound stream              |
-| `/0/sound`         | application/octet-stream | Binary sound stream       |
-
-### Sound Client Protocol
-
-Sound events can be received at `ws://example.com/0/sound` and here is the [sound format](docs/sound_protocol.md). There is a Unicode visualizer using Protocol Buffers in [listen.py](clients/listen.py).
 
 ### News Client
 
@@ -137,3 +127,4 @@ This software is published under the [MIT License](LICENSE) and Copyright ©2019
 [5]: https://github.com/jrothwell
 [6]: https://vimeo.com/330017229
 [7]: https://codepen.io/ozer/pen/KwvKoR
+[8]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API

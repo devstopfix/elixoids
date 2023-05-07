@@ -5652,15 +5652,18 @@ var $author$project$Explosions$explosionAudio = F2(
 		return A2($author$project$Audio$newAudioExplosion, index, balance);
 	});
 var $author$project$Bullets$modSamples = $elm$core$Basics$modBy(8);
-var $author$project$Audio$newBulletExplosion = function (index) {
-	return {index: index, name: 'bullet', pan: 0.0};
-};
-var $author$project$Bullets$bulletAudio = function (b) {
-	var x = $ianmackenzie$elm_geometry$Point2d$xCoordinate(b.location);
-	var index = $author$project$Bullets$modSamples(
-		$elm$core$Basics$abs(x) | 0);
-	return $author$project$Audio$newBulletExplosion(index);
-};
+var $author$project$Audio$newBulletExplosion = F2(
+	function (index, balance) {
+		return {index: index, name: 'bullet', pan: balance};
+	});
+var $author$project$Bullets$bulletAudio = F2(
+	function (calculateBalance, b) {
+		var x = $ianmackenzie$elm_geometry$Point2d$xCoordinate(b.location);
+		var index = $author$project$Bullets$modSamples(
+			$elm$core$Basics$abs(x) | 0);
+		var balance = calculateBalance(b.location);
+		return A2($author$project$Audio$newBulletExplosion, index, balance);
+	});
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -5808,8 +5811,8 @@ var $elm$core$List$take = F2(
 	function (n, list) {
 		return A3($elm$core$List$takeFast, 0, n, list);
 	});
-var $author$project$Game$newBulletAudio = F2(
-	function (game_ids, locations) {
+var $author$project$Game$newBulletAudio = F3(
+	function (calculateBalance, game_ids, locations) {
 		if (!locations.b) {
 			return _List_Nil;
 		} else {
@@ -5818,7 +5821,7 @@ var $author$project$Game$newBulletAudio = F2(
 				var max_id = _v1.a;
 				return A2(
 					$elm$core$List$map,
-					$author$project$Bullets$bulletAudio,
+					$author$project$Bullets$bulletAudio(calculateBalance),
 					A2(
 						$elm$core$List$take,
 						4,
@@ -5829,7 +5832,10 @@ var $author$project$Game$newBulletAudio = F2(
 							},
 							locations)));
 			} else {
-				return A2($elm$core$List$map, $author$project$Bullets$bulletAudio, locations);
+				return A2(
+					$elm$core$List$map,
+					$author$project$Bullets$bulletAudio(calculateBalance),
+					locations);
 			}
 		}
 	});
@@ -6657,8 +6663,9 @@ var $author$project$Game$mergeGame = F2(
 				explosions: A2($elm$core$List$append, game.explosions, new_explosions),
 				ships: A2($author$project$Game$updateShips, frame.ships, game.ships)
 			});
-		var bullet_audio = A2(
+		var bullet_audio = A3(
 			$author$project$Game$newBulletAudio,
+			game.calculateBalance,
 			$elm$core$Dict$keys(game.bullets),
 			frame.bullets);
 		var audio_explosions = A2(

@@ -69,9 +69,11 @@ function playShot(audio, buffers, context) {
         const index = (audio.index || 0) % buffers.length;
         const source = context.createBufferSource();
         source.buffer = buffers[index];
-        const gainFadeOut = createFadeOut(context, 0.5);
+        const gainFadeOut = createFadeOut(context, 0.4);
+        const stereoPanner = createStereoPanner(context, audio.pan);
         source.connect(gainFadeOut)
-        gainFadeOut.connect(context.destination);
+        gainFadeOut.connect(stereoPanner);
+        stereoPanner.connect(context.destination);
         source.start();
     }
 }

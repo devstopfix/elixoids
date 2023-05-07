@@ -15,9 +15,9 @@ newAudioExplosion index balance =
     }
 
 
-newBulletExplosion : a -> { name : String, index : a, pan : Float }
-newBulletExplosion index =
+newBulletExplosion : a -> Balance -> { name : String, index : a, pan : Float }
+newBulletExplosion index balance =
     { name = "bullet"
     ,    index = index
-    ,    pan = 0.0
+    ,    pan = balance
     }
