@@ -600,11 +600,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.by.az === region.bJ.az)
+	if (region.by.aA === region.bJ.aA)
 	{
-		return 'on line ' + region.by.az;
+		return 'on line ' + region.by.aA;
 	}
-	return 'on lines ' + region.by.az + ' through ' + region.bJ.az;
+	return 'on lines ' + region.by.aA + ' through ' + region.bJ.aA;
 }
 
 
@@ -4189,8 +4189,8 @@ function _Browser_getViewport()
 	return {
 		b7: _Browser_getScene(),
 		cd: {
-			aW: _Browser_window.pageXOffset,
-			aX: _Browser_window.pageYOffset,
+			aX: _Browser_window.pageXOffset,
+			aY: _Browser_window.pageYOffset,
 			ce: _Browser_doc.documentElement.clientWidth,
 			bN: _Browser_doc.documentElement.clientHeight
 		}
@@ -4231,8 +4231,8 @@ function _Browser_getViewportOf(id)
 				bN: node.scrollHeight
 			},
 			cd: {
-				aW: node.scrollLeft,
-				aX: node.scrollTop,
+				aX: node.scrollLeft,
+				aY: node.scrollTop,
 				ce: node.clientWidth,
 				bN: node.clientHeight
 			}
@@ -4266,14 +4266,14 @@ function _Browser_getElement(id)
 		return {
 			b7: _Browser_getScene(),
 			cd: {
-				aW: x,
-				aX: y,
+				aX: x,
+				aY: y,
 				ce: _Browser_doc.documentElement.clientWidth,
 				bN: _Browser_doc.documentElement.clientHeight
 			},
 			cr: {
-				aW: x + rect.left,
-				aX: y + rect.top,
+				aX: x + rect.left,
+				aY: y + rect.top,
 				ce: rect.width,
 				bN: rect.height
 			}
@@ -5445,7 +5445,7 @@ var $author$project$GraphicsDecoder$asteroidDecoder = A2(
 								return $elm$json$Json$Decode$succeed(
 									{
 										bQ: id,
-										aA: A2(
+										aj: A2(
 											$ianmackenzie$elm_geometry$Circle2d$withRadius,
 											r,
 											$ianmackenzie$elm_geometry$Point2d$fromCoordinates(
@@ -5473,7 +5473,7 @@ var $author$project$GraphicsDecoder$bulletDecoder = A2(
 						return $elm$json$Json$Decode$succeed(
 							{
 								bQ: id,
-								aA: $ianmackenzie$elm_geometry$Point2d$fromCoordinates(
+								aj: $ianmackenzie$elm_geometry$Point2d$fromCoordinates(
 									_Utils_Tuple2(x, y))
 							});
 					},
@@ -5580,7 +5580,7 @@ var $author$project$GraphicsDecoder$shipDecoder = A2(
 										return $elm$json$Json$Decode$succeed(
 											{
 												bQ: tag,
-												aA: A2(
+												aj: A2(
 													$ianmackenzie$elm_geometry$Circle2d$withRadius,
 													r,
 													$ianmackenzie$elm_geometry$Point2d$fromCoordinates(
@@ -5636,15 +5636,18 @@ var $author$project$Explosions$explosionAudio = F2(
 		return A2($author$project$Audio$newAudioExplosion, index, balance);
 	});
 var $author$project$Bullets$modSamples = $elm$core$Basics$modBy(8);
-var $author$project$Audio$newBulletExplosion = function (index) {
-	return {a1: index, bd: 'bullet', bh: 0.0};
-};
-var $author$project$Bullets$bulletAudio = function (b) {
-	var x = $ianmackenzie$elm_geometry$Point2d$xCoordinate(b.aA);
-	var index = $author$project$Bullets$modSamples(
-		$elm$core$Basics$abs(x) | 0);
-	return $author$project$Audio$newBulletExplosion(index);
-};
+var $author$project$Audio$newBulletExplosion = F2(
+	function (index, balance) {
+		return {a1: index, bd: 'bullet', bh: balance};
+	});
+var $author$project$Bullets$bulletAudio = F2(
+	function (calculateBalance, b) {
+		var x = $ianmackenzie$elm_geometry$Point2d$xCoordinate(b.aj);
+		var index = $author$project$Bullets$modSamples(
+			$elm$core$Basics$abs(x) | 0);
+		var balance = calculateBalance(b.aj);
+		return A2($author$project$Audio$newBulletExplosion, index, balance);
+	});
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -5792,8 +5795,8 @@ var $elm$core$List$take = F2(
 	function (n, list) {
 		return A3($elm$core$List$takeFast, 0, n, list);
 	});
-var $author$project$Game$newBulletAudio = F2(
-	function (game_ids, locations) {
+var $author$project$Game$newBulletAudio = F3(
+	function (calculateBalance, game_ids, locations) {
 		if (!locations.b) {
 			return _List_Nil;
 		} else {
@@ -5802,7 +5805,7 @@ var $author$project$Game$newBulletAudio = F2(
 				var max_id = _v1.a;
 				return A2(
 					$elm$core$List$map,
-					$author$project$Bullets$bulletAudio,
+					$author$project$Bullets$bulletAudio(calculateBalance),
 					A2(
 						$elm$core$List$take,
 						4,
@@ -5813,7 +5816,10 @@ var $author$project$Game$newBulletAudio = F2(
 							},
 							locations)));
 			} else {
-				return A2($elm$core$List$map, $author$project$Bullets$bulletAudio, locations);
+				return A2(
+					$elm$core$List$map,
+					$author$project$Bullets$bulletAudio(calculateBalance),
+					locations);
 			}
 		}
 	});
@@ -6084,7 +6090,7 @@ var $ianmackenzie$elm_geometry$Polygon2d$makeOuterLoop = function (vertices_) {
 var $ianmackenzie$elm_geometry$Polygon2d$singleLoop = function (vertices_) {
 	return {
 		ah: _List_Nil,
-		ak: $ianmackenzie$elm_geometry$Polygon2d$makeOuterLoop(vertices_)
+		al: $ianmackenzie$elm_geometry$Polygon2d$makeOuterLoop(vertices_)
 	};
 };
 var $author$project$Asteroids$polygon = A2($elm$core$Basics$composeL, $ianmackenzie$elm_geometry$Polygon2d$singleLoop, $author$project$Points$readPoints);
@@ -6193,7 +6199,7 @@ var $author$project$Points$closePolygon = function (list) {
 var $author$project$Points$convertPoints = $elm$core$List$map($ianmackenzie$elm_geometry$Point2d$coordinates);
 var $ianmackenzie$elm_geometry$Polygon2d$outerLoop = function (_v0) {
 	var polygon = _v0;
-	return polygon.ak;
+	return polygon.al;
 };
 var $joakin$elm_canvas$Canvas$Internal$Canvas$LineTo = function (a) {
 	return {$: 2, a: a};
@@ -6252,8 +6258,8 @@ var $ianmackenzie$elm_geometry$Polygon2d$mapVertices = F3(
 			$ianmackenzie$elm_geometry$Polygon2d$innerLoops(polygon));
 		return invert ? {
 			ah: A2($elm$core$List$map, $elm$core$List$reverse, mappedInnerLoops),
-			ak: $elm$core$List$reverse(mappedOuterLoop)
-		} : {ah: mappedInnerLoops, ak: mappedOuterLoop};
+			al: $elm$core$List$reverse(mappedOuterLoop)
+		} : {ah: mappedInnerLoops, al: mappedOuterLoop};
 	});
 var $ianmackenzie$elm_geometry$Point2d$translateBy = F2(
 	function (vector, point) {
@@ -6324,7 +6330,7 @@ var $author$project$Game$mergeAsteroids = F2(
 					return A2(
 						$elm$core$Dict$insert,
 						id,
-						A2($author$project$Asteroids$newAsteroid, id, a.aA));
+						A2($author$project$Asteroids$newAsteroid, id, a.aj));
 				}),
 			F3(
 				function (id, a, b) {
@@ -6333,7 +6339,7 @@ var $author$project$Game$mergeAsteroids = F2(
 						id,
 						_Utils_update(
 							b,
-							{bq: a.aA}));
+							{bq: a.aj}));
 				}),
 			F2(
 				function (_v0, _v1) {
@@ -6378,15 +6384,15 @@ var $ianmackenzie$elm_geometry$Vector2d$squaredLength = function (vector) {
 };
 var $author$project$Bullets$bulletAndTail = F2(
 	function (f, b) {
-		var tail = A2($ianmackenzie$elm_geometry$Vector2d$from, b.bq, f.aA);
+		var tail = A2($ianmackenzie$elm_geometry$Vector2d$from, b.bq, f.aj);
 		return (_Utils_cmp(
 			$ianmackenzie$elm_geometry$Vector2d$squaredLength(tail),
 			$author$project$Bullets$longestTail) > 0) ? _Utils_update(
 			b,
-			{bq: f.aA, aF: $elm$core$Maybe$Nothing}) : _Utils_update(
+			{bq: f.aj, aF: $elm$core$Maybe$Nothing}) : _Utils_update(
 			b,
 			{
-				bq: f.aA,
+				bq: f.aj,
 				aF: $elm$core$Maybe$Just(tail)
 			});
 	});
@@ -6419,7 +6425,7 @@ var $author$project$Bullets$mergeBullets = F2(
 					return A2(
 						$elm$core$Dict$insert,
 						id,
-						A2($author$project$Bullets$newBullet, id, f.aA));
+						A2($author$project$Bullets$newBullet, id, f.aj));
 				}),
 			F3(
 				function (id, f, b) {
@@ -6588,7 +6594,7 @@ var $author$project$Game$mergeShips = F2(
 					return A2(
 						$elm$core$Dict$insert,
 						id,
-						A3($author$project$Ships$newShip, id, a.aA, a.aG));
+						A3($author$project$Ships$newShip, id, a.aj, a.aG));
 				}),
 			F3(
 				function (id, a, b) {
@@ -6597,7 +6603,7 @@ var $author$project$Game$mergeShips = F2(
 						id,
 						_Utils_update(
 							b,
-							{bq: a.aA, aG: a.aG}));
+							{bq: a.aj, aG: a.aG}));
 				}),
 			F2(
 				function (_v0, _v1) {
@@ -6632,13 +6638,14 @@ var $author$project$Game$mergeGame = F2(
 				ag: A2($elm$core$List$append, game.ag, new_explosions),
 				V: A2($author$project$Game$updateShips, frame.V, game.V)
 			});
-		var bullet_audio = A2(
+		var bullet_audio = A3(
 			$author$project$Game$newBulletAudio,
+			game.aP,
 			$elm$core$Dict$keys(game.G),
 			frame.G);
 		var audio_explosions = A2(
 			$elm$core$List$map,
-			$author$project$Explosions$explosionAudio(game.a_),
+			$author$project$Explosions$explosionAudio(game.aP),
 			new_explosions);
 		var audio = _Utils_ap(bullet_audio, audio_explosions);
 		return _Utils_Tuple2(next_game, audio);
@@ -6771,8 +6778,8 @@ var $author$project$Game$newGame = function (dims) {
 	return {
 		ab: $elm$core$Dict$empty,
 		G: $elm$core$Dict$empty,
-		a_: $author$project$Stereo$calculateBalance(game_x),
-		aP: dims,
+		aP: $author$project$Stereo$calculateBalance(game_x),
+		aQ: dims,
 		ag: _List_Nil,
 		V: $elm$core$Dict$empty,
 		bx: $avh4$elm_color$Color$black,
@@ -7351,7 +7358,7 @@ var $joakin$elm_canvas$Canvas$rect = F3(
 		return A3($joakin$elm_canvas$Canvas$Internal$Canvas$Rect, pos, width, height);
 	});
 var $author$project$Game$renderSpace = function (game) {
-	var _v0 = game.aP;
+	var _v0 = game.aQ;
 	var width = _v0.a;
 	var height = _v0.b;
 	return _List_fromArray(
@@ -7968,7 +7975,7 @@ var $joakin$elm_canvas$Canvas$Internal$Texture$drawTexture = F4(
 				} else {
 					var sprite = t.a;
 					var image = t.b;
-					return A9($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$drawImage, sprite.aW, sprite.aX, sprite.ce, sprite.bN, x, y, sprite.ce, sprite.bN, image.cD);
+					return A9($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$drawImage, sprite.aX, sprite.aY, sprite.ce, sprite.bN, x, y, sprite.ce, sprite.bN, image.cD);
 				}
 			}(),
 			cmds);
@@ -8168,7 +8175,7 @@ var $author$project$Game$viewGame = function (game) {
 		$author$project$Game$renderAsteroids,
 		game.Z,
 		$elm$core$Dict$values(game.ab));
-	var _v0 = game.aP;
+	var _v0 = game.aQ;
 	var width = _v0.a;
 	var height = _v0.b;
 	return A3(

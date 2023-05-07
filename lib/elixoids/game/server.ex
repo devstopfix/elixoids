@@ -9,7 +9,6 @@ defmodule Elixoids.Game.Server do
 
   use GenServer
 
-  alias Elixoids.Api.SoundEvent
   alias Elixoids.Asteroid.Server, as: Asteroid
   alias Elixoids.Bullet.Server, as: Bullet
   alias Elixoids.Collision.Server, as: CollisionServer
@@ -138,9 +137,7 @@ defmodule Elixoids.Game.Server do
     {:noreply, game}
   end
 
-  def handle_cast({:explosion, %{x: x, y: y}, radius}, game) do
-    pan = 0.0
-    News.publish_audio(game.game_id, SoundEvent.explosion(pan, radius))
+  def handle_cast({:explosion, %{x: x, y: y}, _radius}, game) do
     News.publish_explosion(game.game_id, [x, y])
     {:noreply, game}
   end

@@ -144,7 +144,7 @@ mergeGame frame game =
             List.map (explosionAudio game.calculateBalance) new_explosions
 
         bullet_audio = 
-            newBulletAudio (Dict.keys game.bullets) frame.bullets
+            newBulletAudio game.calculateBalance (Dict.keys game.bullets) frame.bullets
 
         audio = 
             bullet_audio ++ audio_explosions
@@ -177,8 +177,8 @@ mergeAsteroids graphics_asteroids game_asteroids =
 
 
 -- input compares list of bullet ids in the previous and current frames
-newBulletAudio : List Bullets.Id -> List BulletLocation -> List Audio
-newBulletAudio game_ids locations =
+newBulletAudio : CalculateBalance -> List Bullets.Id -> List BulletLocation -> List Audio
+newBulletAudio calculateBalance game_ids locations =
     case locations of
         [] ->
             []
@@ -188,9 +188,9 @@ newBulletAudio game_ids locations =
                     locations
                     |> List.filter (\b -> b.id > max_id)
                     |> List.take 4
-                    |> List.map bulletAudio
+                    |> List.map (bulletAudio calculateBalance)
                 Nothing ->
-                    List.map bulletAudio locations
+                    List.map (bulletAudio calculateBalance) locations
 
 
 updateBullets bullets game_bullets =

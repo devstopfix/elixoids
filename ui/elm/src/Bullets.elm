@@ -9,6 +9,7 @@ import Color exposing (Color)
 import Dict exposing (..)
 import GraphicsDecoder exposing (BulletLocation)
 import Point2d exposing (Point2d, coordinates, xCoordinate)
+import Stereo exposing (CalculateBalance)
 import Vector2d exposing (..)
 
 
@@ -108,12 +109,14 @@ modSamples =
     modBy 8
 
 
-bulletAudio : BulletLocation -> Audio
-bulletAudio b =
+bulletAudio : CalculateBalance -> BulletLocation -> Audio
+bulletAudio calculateBalance b =
     let
         x = 
             xCoordinate b.location
         index = 
             modSamples (truncate (abs x))
+        balance = 
+            calculateBalance b.location
     in
-        newBulletExplosion index
+        newBulletExplosion index balance

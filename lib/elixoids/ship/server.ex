@@ -15,7 +15,6 @@ defmodule Elixoids.Ship.Server do
   alias Elixoids.World.Point
   import Elixoids.Const
   import Elixoids.News
-  import Elixoids.Ship.Shot
   import Elixoids.Ship.Rotate
   import Elixoids.World.Clock
   import Elixoids.World.Angle
@@ -126,7 +125,6 @@ defmodule Elixoids.Ship.Server do
       state =
         ship
         |> fire()
-        |> fire_sound()
         |> recharge_laser()
         |> inc_bullets()
 

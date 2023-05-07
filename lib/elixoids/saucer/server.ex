@@ -16,7 +16,6 @@ defmodule Elixoids.Saucer.Server do
   import Elixoids.Const
   import Elixoids.News, only: [publish_news_fires: 2]
   import Elixoids.Ship.Rotate
-  import Elixoids.Ship.Shot
   import Elixoids.Space, only: [random_point_on_vertical_edge: 0, wrap: 1]
   import Elixoids.Translate
   import Elixoids.World.Angle, only: [normalize_radians: 1]
@@ -76,7 +75,6 @@ defmodule Elixoids.Saucer.Server do
       # Do we need to know when bullet ends? If so
       # Process.link(pid)
       publish_news_fires(saucer.game_id, saucer.tag)
-      fire_sound(saucer)
     end
 
     {:noreply, saucer}

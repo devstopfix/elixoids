@@ -14,7 +14,6 @@ defmodule Elixoids.Api do
           {"/:game/graphics", Elixoids.Server.WebsocketGameHandler, []},
           {"/:game/news", Elixoids.Server.WebsocketNewsHandler, []},
           {"/:game/ship/:tag", Elixoids.Server.WebsocketShipHandler, []},
-          {"/:game/sound", Elixoids.Server.WebsocketSoundHandler, []},
           {"/[...]", :cowboy_static, {:priv_dir, :elixoids, "html"}}
         ]
       }

@@ -7,7 +7,6 @@ defmodule Elixoids.FuzzTest do
   alias Elixoids.News
   alias Elixoids.Server.WebsocketGameHandler
   alias Elixoids.Server.WebsocketShipHandler
-  alias Elixoids.Server.WebsocketSoundHandler
   import Jason
 
   @tag fuzz: true, iterations: 1000
@@ -43,16 +42,6 @@ defmodule Elixoids.FuzzTest do
         {:error, :timeout} ->
           flunk(path)
       end
-    end
-  end
-
-  @tag fuzz: true, iterations: 100
-  property :sound_ws_ignores_input do
-    {:ok, _game, game_id} = GameSupervisor.start_game(asteroids: 1)
-    News.subscribe(game_id)
-
-    for_all msg in ws_input() do
-      assert {:ok, []} == WebsocketSoundHandler.websocket_handle(msg, [])
     end
   end
 
