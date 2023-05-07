@@ -34,6 +34,7 @@ defmodule Elixoids.Saucer.Server do
               radius: nil,
               rotation_rate_rad_per_sec: nil,
               saucer_radar_range: nil,
+              shields: 0,
               shooting_interval: nil,
               speed_m_per_s: nil,
               tag: @tag,
@@ -114,9 +115,14 @@ defmodule Elixoids.Saucer.Server do
     {:stop, {:shutdown, :crashed}, saucer}
   end
 
-  def handle_cast({:bullet_hit_ship, _ship_tag}, saucer) do
+  def handle_cast({:bullet_hit_ship, _tag}, %{shields: shields} = saucer) when shields <= 0 do
     explode(saucer)
     {:stop, {:shutdown, :crashed}, saucer}
+  end
+
+  def handle_cast({:bullet_hit_ship, _tag}, %{shields: shields} = saucer) when shields > 0 do
+    state = %{saucer | shields: shields - 1}
+    {:noreply, state}
   end
 
   defp explode(saucer) do
