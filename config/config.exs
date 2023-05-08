@@ -13,6 +13,7 @@ large_saucer = %{
   radius: 20.0 * (2.0 * 20 / 13.0),
   rotation_rate_rad_per_sec: :math.pi() * 2,
   saucer_radar_range: 1500.0,
+  shields: 3,
   shooting_interval: 500,
   speed_m_per_s: 240.0
 }
