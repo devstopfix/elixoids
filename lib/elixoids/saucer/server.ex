@@ -13,7 +13,7 @@ defmodule Elixoids.Saucer.Server do
   alias Elixoids.World.Point
   alias Elixoids.World.Velocity
 
-  import Elixoids.Const
+  import Elixoids.Const, only: [asteroid_radius_m: 0, saucer_tag: 0]
   import Elixoids.News, only: [publish_news_fires: 2]
   import Elixoids.Ship.Rotate
   import Elixoids.Space, only: [random_point_on_vertical_edge: 0, wrap: 1]
@@ -22,17 +22,39 @@ defmodule Elixoids.Saucer.Server do
 
   @tag saucer_tag()
 
+  defmodule State do
+    @moduledoc false
+    @tag saucer_tag()
+    defstruct accuracy: 0.025,
+              direction_change_interval: nil,
+              game_id: nil,
+              id: nil,
+              nose_radius_m: nil,
+              pos: nil,
+              radius: nil,
+              rotation_rate_rad_per_sec: nil,
+              saucer_radar_range: nil,
+              shooting_interval: nil,
+              speed_m_per_s: nil,
+              tag: @tag,
+              target_theta: 0,
+              thetas: [],
+              velocity: nil
+  end
+
   def start_link(game_id: game_id, saucer: saucer) do
     id = {game_id, @tag}
 
+    defaults = %{
+      game_id: game_id,
+      id: id,
+      tag: @tag,
+      nose_radius_m: saucer.radius * 1.05
+    }
+
     state =
       random_saucer(saucer.speed_m_per_s)
-      |> Map.merge(%{
-        game_id: game_id,
-        id: id,
-        tag: @tag,
-        nose_radius_m: saucer.radius * 1.05
-      })
+      |> Map.merge(defaults)
       |> Map.merge(saucer)
 
     GenServer.start_link(__MODULE__, state, name: via(id))
@@ -48,7 +70,8 @@ defmodule Elixoids.Saucer.Server do
     start_heartbeat()
     send_change_direction_after(saucer.direction_change_interval)
     send_fire_after(saucer.shooting_interval)
-    {:ok, saucer}
+    state = struct!(State, saucer)
+    {:ok, state}
   end
 
   # Pick a new direction
@@ -102,18 +125,20 @@ defmodule Elixoids.Saucer.Server do
 
   @impl Elixoids.Game.Tick
   def handle_tick(_pid, delta_t_ms, saucer = %{game_id: game_id}) do
-    next_saucer =
-      saucer
-      |> rotate_ship(delta_t_ms)
-      |> update_in([:pos], fn pos ->
-        pos |> Velocity.apply_velocity(saucer.velocity, delta_t_ms) |> wrap()
-      end)
+    pos =
+      saucer.pos
+      |> Velocity.apply_velocity(saucer.velocity, delta_t_ms)
+      |> wrap()
+
+    rotated_saucer = rotate_ship(saucer, delta_t_ms)
+
+    next_saucer = %{rotated_saucer | pos: pos}
 
     ship_loc = %ShipLoc{
       pid: self(),
       id: saucer.id,
       tag: saucer.tag,
-      pos: next_saucer.pos,
+      pos: pos,
       radius: saucer.radius,
       theta: 0.0
     }
