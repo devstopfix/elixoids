@@ -1,0 +1,103 @@
+# Elixoids Ship
+
+```elixir
+:ok = Mix.install([{:gun, "~> 2.0", hex: :grpc_gun}, {:jason, "~> 1.4"}])
+```
+
+## Behaviour
+
+```elixir
+defmodule Elixoids.ShipBehaviour do
+  @callback handle_frame(ships :: list, asteroids :: list) :: Keyword.t()
+end
+```
+
+```elixir
+defmodule Elixoids.GenShip do
+  defmacro __using__(_) do
+    quote do
+      use GenServer
+
+      @behaviour Elixoids.ShipBehaviour
+
+      def init(_arg) do
+        state = %{ws_pid: nil, connected: false, ref: nil, state: %{}}
+        {:ok, state, {:continue, :connect}}
+      end
+
+      def handle_continue(:connect, state) do
+        case :gun.open('localhost', 8065) do
+          {:ok, pid} ->
+            {:noreply, %{state | ws_pid: pid}}
+
+          e ->
+            {:stop, {:error, e}, state}
+        end
+      end
+
+      def handle_info({:gun_up, pid, _protocol}, state) do
+        ref = :gun.ws_upgrade(pid, "/0/ship/GRY")
+        {:noreply, %{state | connected: true, ref: ref}}
+      end
+
+      def handle_info({:gun_down, _pid, _protocol, :closed, []}, state) do
+        {:noreply, %{state | connected: false}}
+      end
+
+      def handle_info({:gun_ws, _pid, _ref, {:text, frame}}, state) do
+        IO.inspect(frame, label: "frame: ")
+        {:noreply, state}
+      end
+
+      def handle_info(msg, state) do
+        IO.inspect(msg)
+        {:noreply, state}
+      end
+
+      def handle_frame(_, _), do: []
+      # defoverridable count: 1
+    end
+  end
+end
+```
+
+## GenServer
+
+```elixir
+defmodule Elixoids.Ship.Client do
+  use Elixoids.GenShip
+end
+
+{:ok, _pid} = GenServer.start_link(Elixoids.Ship.Client, [])
+```
+
+## Run
+
+```elixir
+{:ok, _} = Application.ensure_all_started(:gun)
+```
+
+## Decode game frame
+
+Sample:
+
+```json
+"{\"rocks\":[[1,1.021,120.0,1088.0],[2,0.532,120.0,1511.0],[3,1.328,120.0,955.0],[4,1.547,120.0,704.0],[6,5.761,120.0,205.0]],\"ships\":[],\"theta\":0.0}"}
+```
+
+```elixir
+text =
+  "{\"rocks\":[[1,1.021,120.0,1088.0],[2,0.532,120.0,1511.0],[3,1.328,120.0,955.0],[4,1.547,120.0,704.0],[6,5.761,120.0,205.0]],\"ships\":[],\"theta\":0.0}"
+
+%{"rocks" => rocks, "ships" => ships, "theta" => theta} = Jason.decode!(text)
+rocks
+```
+
+## Rock
+
+```elixir
+keys = [:id, :theta, :radius, :distance]
+record = [1, 1.021, 120.0, 1088.0]
+
+Enum.zip(keys, record)
+```
