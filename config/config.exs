@@ -31,7 +31,7 @@ warthog = %{
   large_saucer
   | radius: 30.0,
     shields: 0,
-    shooting_interval: 125,
+    shooting_interval: 125
 }
 
 config :elixoids,
