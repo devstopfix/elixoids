@@ -20,6 +20,9 @@ defmodule Elixoids.GenShip do
 
       @behaviour Elixoids.ShipBehaviour
 
+      @ship_keys [:tag, :theta, :distance]
+      @rock_keys [:id, :theta, :radius, :distance]
+
       def init(_arg) do
         state = %{ws_pid: nil, connected: false, ref: nil, state: %{}}
         {:ok, state, {:continue, :connect}}
@@ -36,15 +39,27 @@ defmodule Elixoids.GenShip do
       end
 
       def handle_info({:gun_up, pid, _protocol}, state) do
-        ref = :gun.ws_upgrade(pid, "/0/ship/GRY")
+        ref = :gun.ws_upgrade(pid, "/0/ship/GRI")
         {:noreply, %{state | connected: true, ref: ref}}
       end
 
-      def handle_info({:gun_down, _pid, _protocol, :closed, []}, state) do
-        {:noreply, %{state | connected: false}}
+      def handle_info({:gun_down, _pid, _protocol, reason, []}, state) do
+        {:stop, reason, state}
       end
 
-      def handle_info({:gun_ws, _pid, _ref, {:text, frame}}, state) do
+      def handle_info({:gun_ws, _pid, _ref, {:text, text_frame}}, state) do
+        to_maps = fn keys ->
+          fn rows ->
+            for row <- rows, do: Map.new(Enum.zip(keys, row))
+          end
+        end
+
+        frame =
+          text_frame
+          |> Jason.decode!()
+          |> Map.update("rocks", [], to_maps.(@rock_keys))
+          |> Map.update("ships", [], to_maps.(@ship_keys))
+
         IO.inspect(frame, label: "frame: ")
         {:noreply, state}
       end
@@ -55,7 +70,7 @@ defmodule Elixoids.GenShip do
       end
 
       def handle_frame(_, _), do: []
-      # defoverridable count: 1
+      defoverridable handle_frame: 2
     end
   end
 end
@@ -108,5 +123,5 @@ Enum.zip(keys, record)
 keys = [:tag, :theta, :distance]
 record = ["SČR", 2.196, 1895.0]
 
-Enum.zip(keys, record)
+Map.new(Enum.zip(keys, record))
 ```
