@@ -81,9 +81,21 @@ end
 ```elixir
 defmodule Elixoids.Ship.Client do
   use Elixoids.GenShip
+
+  def start_link(_), do: GenServer.start_link(__MODULE__, [])
 end
 
 {:ok, _pid} = GenServer.start_link(Elixoids.Ship.Client, [])
+```
+
+```elixir
+# Supervised ship will reconnect
+
+children = [
+  {Elixoids.Ship.Client, []}
+]
+
+Supervisor.start_link(children, strategy: :one_for_one)
 ```
 
 ## Run
