@@ -16,9 +16,12 @@ import Vector2d exposing (..)
 type alias Id =
     Int
 
+type alias WarheadTailColor =
+    ( Color, Color )
+
 
 type alias Bullet =
-    { id : Id, position : Point2d, tail : Maybe Vector2d, shape : Shape }
+    { id : Id, position : Point2d, tail : Maybe Vector2d, shape : Shape, color : WarheadTailColor }
 
 
 newBullet : Id -> Point2d -> Bullet
@@ -27,6 +30,7 @@ newBullet id position =
     , position = position
     , shape = circle ( 0, 0 ) 4
     , tail = Nothing
+    , color = bulletColor id
     }
 
 
@@ -42,10 +46,13 @@ renderWarhead tf bullet =
     let
         ( x, y ) =
             coordinates bullet.position
+
+        ( color, _ ) =
+            bullet.color
     in
     Just
         (shapes
-            [ stroke warheadColor, fill warheadColor, transform [ tf, translate x y ] ]
+            [ stroke color, fill color, transform [ tf, translate x y ] ]
             [ bullet.shape ]
         )
 
@@ -60,9 +67,12 @@ renderTail tf bullet =
 
                 ( x, y ) =
                     components tail
+
+                ( _, color) = 
+                    bullet.color
             in
             shapes
-                [ stroke tailColor, lineWidth 2.0, transform [ tf ] ]
+                [ stroke color, lineWidth 2.0, transform [ tf ] ]
                 [ path ( ox, oy ) [ lineTo ( ox - x, oy - y ) ] ]
         )
         bullet.tail
@@ -90,14 +100,19 @@ bulletAndTail f b =
         { b | position = f.location, tail = Just tail }
 
 
-tailColor : Color
-tailColor =
-    Color.hsl (199 / 360) 0.96 0.82
+bulletColor : Id -> WarheadTailColor
+bulletColor id =
+    let 
+        hue = case modBy 3 (id // 64) of
+            0 -> 
+                199 / 360
+            1 ->
+                120 / 360
+            _ -> 
+                300 / 360
 
-
-warheadColor : Color
-warheadColor =
-    Color.hsl (199 / 360) 0.96 0.9
+    in
+    ((Color.hsl hue 0.96 0.82), (Color.hsl hue 0.96 0.82))
 
 
 longestTail : Float
@@ -120,3 +135,10 @@ bulletAudio calculateBalance b =
             calculateBalance b.location
     in
         newBulletExplosion index balance
+
+
+-- hashPlayerName : String -> Int
+-- hashPlayerName name = 
+--     String.toList name
+--     |> List.indexedMap (\i c -> (i + 1) * 256 * Char.toCode c)
+--     |> List.sum
