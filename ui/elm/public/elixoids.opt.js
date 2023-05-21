@@ -6396,6 +6396,26 @@ var $author$project$Bullets$bulletAndTail = F2(
 				aF: $elm$core$Maybe$Just(tail)
 			});
 	});
+var $avh4$elm_color$Color$hsl = F3(
+	function (h, s, l) {
+		return A4($avh4$elm_color$Color$hsla, h, s, l, 1.0);
+	});
+var $author$project$Bullets$bulletColor = function (id) {
+	var hue = function () {
+		var _v0 = A2($elm$core$Basics$modBy, 3, (id / 64) | 0);
+		switch (_v0) {
+			case 0:
+				return 199 / 360;
+			case 1:
+				return 120 / 360;
+			default:
+				return 300 / 360;
+		}
+	}();
+	return _Utils_Tuple2(
+		A3($avh4$elm_color$Color$hsl, hue, 0.96, 0.82),
+		A3($avh4$elm_color$Color$hsl, hue, 0.96, 0.82));
+};
 var $joakin$elm_canvas$Canvas$Internal$Canvas$Circle = F2(
 	function (a, b) {
 		return {$: 1, a: a, b: b};
@@ -6407,6 +6427,7 @@ var $joakin$elm_canvas$Canvas$circle = F2(
 var $author$project$Bullets$newBullet = F2(
 	function (id, position) {
 		return {
+			a$: $author$project$Bullets$bulletColor(id),
 			bQ: id,
 			bq: position,
 			bw: A2(
@@ -7213,11 +7234,6 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $avh4$elm_color$Color$hsl = F3(
-	function (h, s, l) {
-		return A4($avh4$elm_color$Color$hsla, h, s, l, 1.0);
-	});
-var $author$project$Bullets$tailColor = A3($avh4$elm_color$Color$hsl, 199 / 360, 0.96, 0.82);
 var $author$project$Bullets$renderTail = F2(
 	function (tf, bullet) {
 		return A2(
@@ -7229,11 +7245,13 @@ var $author$project$Bullets$renderTail = F2(
 				var _v1 = $ianmackenzie$elm_geometry$Point2d$coordinates(bullet.bq);
 				var ox = _v1.a;
 				var oy = _v1.b;
+				var _v2 = bullet.a$;
+				var color = _v2.b;
 				return A2(
 					$joakin$elm_canvas$Canvas$shapes,
 					_List_fromArray(
 						[
-							$joakin$elm_canvas$Canvas$Settings$stroke($author$project$Bullets$tailColor),
+							$joakin$elm_canvas$Canvas$Settings$stroke(color),
 							$joakin$elm_canvas$Canvas$Settings$Line$lineWidth(2.0),
 							$joakin$elm_canvas$Canvas$Settings$Advanced$transform(
 							_List_fromArray(
@@ -7253,19 +7271,20 @@ var $author$project$Bullets$renderTail = F2(
 			},
 			bullet.aF);
 	});
-var $author$project$Bullets$warheadColor = A3($avh4$elm_color$Color$hsl, 199 / 360, 0.96, 0.9);
 var $author$project$Bullets$renderWarhead = F2(
 	function (tf, bullet) {
 		var _v0 = $ianmackenzie$elm_geometry$Point2d$coordinates(bullet.bq);
 		var x = _v0.a;
 		var y = _v0.b;
+		var _v1 = bullet.a$;
+		var color = _v1.a;
 		return $elm$core$Maybe$Just(
 			A2(
 				$joakin$elm_canvas$Canvas$shapes,
 				_List_fromArray(
 					[
-						$joakin$elm_canvas$Canvas$Settings$stroke($author$project$Bullets$warheadColor),
-						$joakin$elm_canvas$Canvas$Settings$fill($author$project$Bullets$warheadColor),
+						$joakin$elm_canvas$Canvas$Settings$stroke(color),
+						$joakin$elm_canvas$Canvas$Settings$fill(color),
 						$joakin$elm_canvas$Canvas$Settings$Advanced$transform(
 						_List_fromArray(
 							[
