@@ -7469,6 +7469,11 @@ var $joakin$elm_canvas$Canvas$Settings$Text$font = function (_v0) {
 			$elm$core$String$fromInt(size) + ('px ' + family)));
 };
 var $author$project$Ships$offset90deg = $elm$core$Basics$add($elm$core$Basics$pi / 2);
+var $joakin$elm_canvas$Canvas$Settings$Advanced$Scale = F2(
+	function (a, b) {
+		return {$: 'Scale', a: a, b: b};
+	});
+var $joakin$elm_canvas$Canvas$Settings$Advanced$scale = $joakin$elm_canvas$Canvas$Settings$Advanced$Scale;
 var $avh4$elm_color$Color$rgb = F3(
 	function (r, g, b) {
 		return A4($avh4$elm_color$Color$RgbaSpace, r, g, b, 1.0);
@@ -7516,6 +7521,7 @@ var $author$project$Ships$renderTag = F2(
 					tf,
 					A2($joakin$elm_canvas$Canvas$Settings$Advanced$translate, x, y),
 					$joakin$elm_canvas$Canvas$Settings$Advanced$rotate(tagTheta),
+					A2($joakin$elm_canvas$Canvas$Settings$Advanced$scale, -1.0, 1.0),
 					A2($joakin$elm_canvas$Canvas$Settings$Advanced$translate, -x, -y),
 					A2($joakin$elm_canvas$Canvas$Settings$Advanced$translate, 0, tagDY)
 				]);

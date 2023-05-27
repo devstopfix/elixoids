@@ -2,7 +2,7 @@ module Ships exposing (Ship, newShip, renderShip, renderTag)
 
 import Canvas exposing (..)
 import Canvas.Settings exposing (fill, stroke)
-import Canvas.Settings.Advanced exposing (Transform, rotate, transform, translate)
+import Canvas.Settings.Advanced exposing (Transform, rotate, scale, transform, translate)
 import Canvas.Settings.Line exposing (lineWidth)
 import Canvas.Settings.Text exposing (TextAlign(..), align, font)
 import Circle2d exposing (Circle2d, centerPoint, radius)
@@ -87,7 +87,7 @@ renderTag tf ship =
                     tagOffset (radius ship.position)
 
                 transformations =
-                    [ tf, translate x y, rotate tagTheta, translate -x -y, translate 0 tagDY ]
+                    [ tf, translate x y, rotate tagTheta, scale -1.0 1.0, translate -x -y, translate 0 tagDY ]
             in
             [ text [ stroke tagColor, fill tagColor, transform transformations, font { size = 36, family = tagFont }, align Center ] ( x, y ) tag ]
 
