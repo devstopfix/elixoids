@@ -186,7 +186,7 @@ defmodule Elixoids.Game.Server do
   end
 
   def handle_info(msg = {:EXIT, pid, _}, state) do
-    [:EXIT, msg, state] |> inspect |> warn()
+    [:EXIT, msg, state] |> inspect |> warning()
     {:noreply, remove_pid_from_game_state(pid, state)}
   end
 
