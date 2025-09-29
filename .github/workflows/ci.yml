@@ -10,9 +10,9 @@ jobs:
       matrix:
         otp: ['27.x', '28.x']
         elixir: ['1.18.x', '1.19.x']
-      include:
-          - elixir: '1.14.4'
-            otp: '25.3'
+        include:
+            - elixir: '1.14.4'
+              otp: '25.3'
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
