@@ -42,7 +42,7 @@ defmodule Elixoids.Mixfile do
     [
       {:cowboy, "~> 2.10"},
       {:credo, "~> 1.7", only: [:dev, :test]},
-      {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:gnuplot, "~> 1.22", only: [:dev, :test]},
       {:jason, "~> 1.3"},
       {:protobuf, "~> 0.10"},
