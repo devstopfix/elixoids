@@ -169,7 +169,7 @@ def on_close(ws, close_status_code, close_msg):
     sys.stderr.write("GAME OVER!\n")
 
 
-def news_url(host, game, player_name="MIN"):
+def ship_url(host, game, player_name="MIN"):
     return "ws://{}/{}/ship/{}".format(host, game, urllib.parse.quote(player_name))
 
 # Runner
@@ -199,7 +199,8 @@ if __name__ == "__main__":
     player_name = args.name or name()
     miner = ConstantBearingMiner(player_name)
 
-    ws_url = news_url(args.host, args.game, player_name)
+    ws_url = ship_url(args.host, args.game, player_name)
+    print(ws_url)
     ws = websocket.WebSocketApp(ws_url,
                                 header={"Accept": "application/json"},
                                 on_message=partial(on_message, miner),
