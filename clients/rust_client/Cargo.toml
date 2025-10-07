@@ -1,0 +1,10 @@
+[package]
+name = "rust_client"
+version = "1.25.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = { version = "0.21", features = ["native-tls"] }
+url = "2"
+futures-util = { version = "0.3", features = ["sink"] }
